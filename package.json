@@ -4,7 +4,7 @@
   "description": "",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tap"
   },
   "keywords": [],
   "author": "Martin Grödl <martin@process.studio> (https://process.studio)",
@@ -15,5 +15,8 @@
   },
   "dependencies": {
     "gl-matrix": "^3.4.3"
-  }
+  },
+    "devDependencies": {
+      "tap": "^16.3.0"
+    }
 }

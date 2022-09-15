@@ -1,9 +1,14 @@
 import { vec2, mat3 } from 'gl-matrix';
+const EPSILON = 1e-10;
+const DEFAULT_FORWARD = 100;
+const DEFAULT_RIGHT = 90;
 
 // Constructor function
 export function make_turtle_graphics() {
-    let x, y     = 0;    // position
-    let px, py   = 0;    // previous position
+    let x        = 0;    // position (x)
+    let y        = 0;    // position (y)
+    let px       = 0;    // previous position (x)
+    let py       = 0;    // previous position (y)
     let a        = 0;    // angle (in degrees)
     let d        = true; // pen down status
     const matrix = mat3.create();  // transformation matrix
@@ -17,32 +22,42 @@ export function make_turtle_graphics() {
         }
     }
     
-    function forward(units) {
+    function clean_value(v) {
+        if (Math.abs(v) < EPSILON) {
+            return 0;
+        } else {
+            return v;
+        }
+    }
+    
+    function forward(units = DEFAULT_FORWARD) {
         px = x;
         py = y;
-        const angle_rad = (a-90) / 2 / Math.PI;
+        const angle_rad = (a-90) / 180 * Math.PI;
         // The velocity vector
         const v = [
             units * Math.cos(angle_rad),
             units * Math.sin(angle_rad)
         ];
         vec2.transformMat3(v, v, matrix); // Apply current transformation
+        v[0] = clean_value(v[0]);
+        v[1] = clean_value(v[1]);
         x += v[0];
         y += v[1];
         draw();
     }
     
-    function backward(units) {
+    function backward(units = DEFAULT_FORWARD) {
         return forward(-units);
     }
     
-    function right(angle) {
+    function right(angle = DEFAULT_RIGHT) {
         a += angle;
         a = a % 360;
         if (a < 0) { a += 360; }
     }
     
-    function left(angle) {
+    function left(angle = DEFAULT_RIGHT) {
         return right(-angle);
     }
     
@@ -77,6 +92,17 @@ export function make_turtle_graphics() {
         }
     }
     
+    function state() {
+        return {
+            x, y,
+            px, py,
+            a,
+            d,
+            matrix,
+            stack,
+        };
+    }
+    
     return {
       forward,
       backward,
@@ -88,7 +114,8 @@ export function make_turtle_graphics() {
       rotate,
       scale,
       push,
-      pop  
+      pop,
+      state,
     };
 }
 
