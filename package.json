@@ -1,0 +1,19 @@
+{
+  "name": "turtle-graphics",
+  "version": "0.1.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Martin Grödl <martin@process.studio> (https://process.studio)",
+  "license": "AGPL-3.0",
+  "engines": {
+    "node": "^16.17.0",
+    "npm": "^8.19.2"
+  },
+  "dependencies": {
+    "gl-matrix": "^3.4.3"
+  }
+}
