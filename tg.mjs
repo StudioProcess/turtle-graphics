@@ -1,3 +1,5 @@
+// TODO: coordinate system orientation
+
 import { vec2, mat3 } from 'gl-matrix';
 const EPSILON = 1e-10;
 const DEFAULT_FORWARD = 100;
@@ -31,9 +33,10 @@ export function make_turtle_graphics() {
         }
     }
     
+    // 50.000000000000014 -> 50
     function clean_zero(v) {
-        if (Math.abs(v) < EPSILON) {
-            return 0;
+        if (Math.abs(v % 1) < EPSILON) {
+            return Math.trunc(v);
         } else {
             return v;
         }

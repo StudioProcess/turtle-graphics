@@ -161,7 +161,8 @@ tap.test('rotate', async t => {
 });
 
 tap.test('rotate', async t => {
-    let g = tg.make_turtle_graphics();
+    let g;
+    g = tg.make_turtle_graphics();
     g.scale(2, 2);
     g.forward(0);
     t.match(g.state(), { x:0, y:0, a:0 }, 'in origin');
@@ -194,4 +195,56 @@ tap.test('rotate', async t => {
     g.right(90);
     g.forward(100);
     t.match(g.state(), { x:100, y:-100, a:90 }, 'no argument');
+});
+
+tap.only('compound transformations', async t => {
+    let g;
+    g = tg.make_turtle_graphics();
+    g.scale(2, 0.5);
+    g.translate(100, 50);
+    g.forward(100);
+    g.right(90);
+    g.forward(100);
+    t.match(g.state(), { x:400, y:-25, a:90 }, 'S/T');
+    
+    g = tg.make_turtle_graphics();
+    g.translate(100, 50);
+    g.scale(2, 0.5);
+    g.forward(100);
+    g.right(90);
+    g.forward(100);
+    t.match(g.state(), { x:300, y:0, a:90 }, 'T/S');
+    
+    g = tg.make_turtle_graphics();
+    g.scale(2, 0.5);
+    g.rotate(90);
+    g.forward(100);
+    g.right(90);
+    g.forward(100);
+    t.match(g.state(), { x:200, y:50, a:180 }, 'S/R'); // weird, but confirmed with p5
+    
+    g = tg.make_turtle_graphics();
+    g.rotate(90);
+    g.scale(2, 0.5);
+    g.forward(100);
+    g.right(90);
+    g.forward(100);
+    t.match(g.state(), { x:50, y:200, a:180 }, 'R/S'); // confirmed with p5
+    
+    g = tg.make_turtle_graphics();
+    g.rotate(90);
+    g.translate(100, 50);
+    g.forward(100);
+    g.right(90);
+    g.forward(100);
+    t.match(g.state(), { x:50, y:200, a:180 }, 'R/T'); // confirmed with p5
+    
+    g = tg.make_turtle_graphics();
+    g.translate(100, 50);
+    g.rotate(90);
+    g.forward(0);
+    g.forward(100);
+    g.right(90);
+    g.forward(100);
+    t.match(g.state(), { x:200, y:150, a:180 }, 'T/R'); // confirmed with p5
 });
