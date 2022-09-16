@@ -122,3 +122,76 @@ tap.test('pen', async t => {
     t.match(g.state(), { d:false });
     // TODO: test line_fn not being called with penup
 });
+
+tap.test('translate', async t => {
+    const g = tg.make_turtle_graphics();
+    g.translate(100, 50);
+    t.match(g.state(), { x:0, y:0, a:0 }, 'no immediate change');
+    g.forward(0);
+    t.match(g.state(), { x:100, y:50, a:0 });
+    g.forward(0);
+    t.match(g.state(), { x:100, y:50, a:0 });
+    
+    g.translate();
+    g.forward(0);
+    t.match(g.state(), { x:100, y:50, a:0 }, 'no argument');
+    g.translate(10);
+    g.forward(0);
+    t.match(g.state(), { x:110, y:50, a:0 }, 'single argument');
+    g.translate(-110, 50);
+    g.forward(100);
+    t.match(g.state(), { x:0, y:0, a:0 });
+});
+
+tap.test('rotate', async t => {
+    const g = tg.make_turtle_graphics();
+    g.rotate(90);
+    g.forward(100);
+    t.match(g.state(), { x:100, y:0, a:90 });
+    g.right(90);
+    t.match(g.state(), { x:100, y:0, a:180 });
+    g.forward(100);
+    t.match(g.state(), { x:100, y:100, a:180 });
+    g.rotate(-90);
+    g.forward(0);
+    t.match(g.state(), { x:100, y:-100, a:90 });
+    g.rotate();
+    g.forward(0);
+    t.match(g.state(), { x:100, y:-100, a:90 }, 'no argument');
+});
+
+tap.test('rotate', async t => {
+    let g = tg.make_turtle_graphics();
+    g.scale(2, 2);
+    g.forward(0);
+    t.match(g.state(), { x:0, y:0, a:0 }, 'in origin');
+    g.forward(100);
+    t.match(g.state(), { x:0, y:-200, a:0 });
+    g.right(90);
+    g.forward(100);
+    t.match(g.state(), { x:200, y:-200, a:90 });
+    g.scale(1, 1);
+    g.forward(0);
+    t.match(g.state(), { x:200, y:-200, a:90 });
+    g.scale(0.5, 0.5);
+    g.forward(0);
+    t.match(g.state(), { x:100, y:-100, a:90 });
+    g = tg.make_turtle_graphics();
+    g.scale(2, 0.5);
+    g.forward(100);
+    g.right(90);
+    g.forward(100);
+    t.match(g.state(), { x:200, y:-50, a:90 }, 'differing arguments');
+    g = tg.make_turtle_graphics();
+    g.scale(2);
+    g.forward(100);
+    g.right(90);
+    g.forward(100);
+    t.match(g.state(), { x:200, y:-200, a:90 }, 'single argument');
+    g = tg.make_turtle_graphics();
+    g.scale();
+    g.forward(100);
+    g.right(90);
+    g.forward(100);
+    t.match(g.state(), { x:100, y:-100, a:90 }, 'no argument');
+});

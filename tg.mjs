@@ -5,12 +5,21 @@ const DEFAULT_RIGHT = 90;
 
 // Constructor function
 export function make_turtle_graphics() {
+    // transformed state
     let x        = 0;    // position (x)
     let y        = 0;    // position (y)
     let px       = 0;    // previous position (x)
     let py       = 0;    // previous position (y)
     let a        = 0;    // angle (in degrees)
-    let d        = true; // pen down status
+    
+    // untransformed state
+    let ux       = 0;
+    let uy       = 0;
+    let upx      = 0;    // TODO: not really needed?
+    let upy      = 0;    // TODO: not really needed?
+    let ua       = 0;
+    
+    let d        = true;           // pen down status
     const matrix = mat3.create();  // transformation matrix
     const stack  = [];             // matrix stack
     
@@ -22,7 +31,7 @@ export function make_turtle_graphics() {
         }
     }
     
-    function clean_value(v) {
+    function clean_zero(v) {
         if (Math.abs(v) < EPSILON) {
             return 0;
         } else {
@@ -30,20 +39,31 @@ export function make_turtle_graphics() {
         }
     }
     
+    function clean_angle(a) {
+        a = a % 360;
+        if (a < 0) { a += 360; }
+        return a;
+    }
+    
     function forward(units = DEFAULT_FORWARD) {
-        px = x;
-        py = y;
-        const angle_rad = (a-90) / 180 * Math.PI;
-        // The velocity vector
-        const v = [
-            units * Math.cos(angle_rad),
-            units * Math.sin(angle_rad)
-        ];
-        vec2.transformMat3(v, v, matrix); // Apply current transformation
-        v[0] = clean_value(v[0]);
-        v[1] = clean_value(v[1]);
-        x += v[0];
-        y += v[1];
+        // save previous position
+        upx = ux;
+        upy = uy;
+        px  = x;
+        py  = y;
+        
+        // new position (untransformed)
+        const angle_rad = ( ua - 90 ) / 180 * Math.PI;
+        ux += units * Math.cos(angle_rad);
+        uy += units * Math.sin(angle_rad);
+        
+        // transformed position
+        const p = [ ux, uy ];
+        vec2.transformMat3(p, p, matrix); // Apply current transformation
+        p[0] = clean_zero(p[0]);
+        p[1] = clean_zero(p[1]);
+        x = p[0];
+        y = p[1];
         draw();
     }
     
@@ -52,9 +72,12 @@ export function make_turtle_graphics() {
     }
     
     function right(angle = DEFAULT_RIGHT) {
+        // update untransformed angle
+        ua += angle;
+        ua = clean_angle(ua);
+        // update transformed angle as well
         a += angle;
-        a = a % 360;
-        if (a < 0) { a += 360; }
+        a = clean_angle(a);
     }
     
     function left(angle = DEFAULT_RIGHT) {
@@ -69,15 +92,18 @@ export function make_turtle_graphics() {
         d = false;
     }
     
-    function translate(tx, ty) {
+    function translate(tx = 0, ty = 0) {
         mat3.translate( matrix, matrix, [tx, ty] );
     }
     
-    function rotate(ra) {
+    function rotate(ra = 0) {
         mat3.rotate( matrix, matrix, ra / 180 * Math.PI );
+        // update transformed angle as well
+        a += ra;
+        a = clean_angle(a);
     }
     
-    function scale(sx, sy) {
+    function scale(sx = 1, sy = undefined) {
         if (sy === undefined) { sy = sx; }
         mat3.scale( matrix, matrix, [sx, sy] );
     }
