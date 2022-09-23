@@ -4,6 +4,8 @@
   "description": "",
   "private": true,
   "scripts": {
+    "build": "rollup -c",
+    "start": "rollup -cw & browser-sync . --port 8080 --no-notify --files '*.html,dist'",
     "test": "tap"
   },
   "keywords": [],
@@ -16,7 +18,11 @@
   "dependencies": {
     "gl-matrix": "^3.4.3"
   },
-    "devDependencies": {
-      "tap": "^16.3.0"
-    }
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^14.1.0",
+    "browser-sync": "^2.27.10",
+    "p5": "^1.4.2",
+    "rollup": "^2.79.1",
+    "tap": "^16.3.0"
+  }
 }

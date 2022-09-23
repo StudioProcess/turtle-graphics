@@ -162,3 +162,9 @@ export function globalize(tg_instance = default_instance, global_object = global
 
 // Fresh instance as default export
 export default default_instance;
+
+
+// detect p5.js
+if (typeof globalThis?.p5?.VERSION === 'string' && typeof globalThis?.p5?.instance === 'object') {
+    console.log("p5 detected");
+}
