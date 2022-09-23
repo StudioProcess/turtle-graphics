@@ -6,8 +6,23 @@
     <title>Document</title>
     <script src="./node_modules/p5/lib/p5.min.js"></script>
     <script src="./dist/tg.mjs" type="module"></script>
+    <script>
+        function preload() {
+            console.log('-> original preload');
+        }
+        
+        function setup() {
+            console.log('-> setup');
+            createCanvas(400, 400);
+            console.log(t);
+        }
+        
+        function draw() {
+          background(220);
+        }
+    </script>
 </head>
 <body>
-    
+
 </body>
 </html>

@@ -4,6 +4,8 @@ import { vec2, mat3 } from 'gl-matrix';
 const EPSILON = 1e-10;
 const DEFAULT_FORWARD = 100;
 const DEFAULT_RIGHT = 90;
+const GLOBAL_VAR_NAME = 't';
+const VERSION = 1;
 
 // Constructor function
 export function make_turtle_graphics() {
@@ -132,6 +134,10 @@ export function make_turtle_graphics() {
         };
     }
     
+    function set_line_fn(fn) {
+        line_fn = fn;
+    }
+    
     return {
       forward,
       backward,
@@ -145,6 +151,8 @@ export function make_turtle_graphics() {
       push,
       pop,
       state,
+      set_line_fn,
+      VERSION,
     };
 }
 
@@ -152,7 +160,7 @@ const default_instance = make_turtle_graphics();
 
 // Put properties of an object into the global namespace
 export function globalize(tg_instance = default_instance, global_object = globalThis) {
-    for (const [key, val] of Object.entries(tg_instance)) {
+    for (const [key, val] of Object.entries(tg_instance).filter( x => x[0] != 'VERSION')) {
         if (global_object[key] !== undefined) {
             console.warn(`Global property '${key}' overwritten`);
         }
@@ -160,11 +168,26 @@ export function globalize(tg_instance = default_instance, global_object = global
     }
 }
 
+// detect p5.js global mode
+// -> set line function
+// -> put default instance into global scope (defined by GLOBAL_VAR_NAME)
+// -> ~~add all functions to global scope~~
+if (typeof window?.p5?.VERSION === 'string') {
+    console.log('-> p5 detected (%s)', window.p5.VERSION);
+    window[GLOBAL_VAR_NAME] = default_instance;
+    
+    // proxy preload function 
+    // this is the earliest the p5 instance is available
+    const original_preload = window.preload;
+    window.preload = (...args) => {
+        console.log('-> preload');
+        default_instance.set_line_fn(window.p5.instance.line);
+        //globalize();
+        if (typeof original_preload === 'function') {
+            original_preload(...args);
+        }
+    }
+}
+
 // Fresh instance as default export
 export default default_instance;
-
-
-// detect p5.js
-if (typeof globalThis?.p5?.VERSION === 'string' && typeof globalThis?.p5?.instance === 'object') {
-    console.log("p5 detected");
-}
