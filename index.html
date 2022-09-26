@@ -12,13 +12,22 @@
         }
         
         function setup() {
-            console.log('-> setup');
+            console.log('-> original setup');
             createCanvas(400, 400);
             console.log(t);
         }
         
         function draw() {
-          background(220);
+            translate(width/2, height/2);
+            background(220);
+            t.reset();
+            t.forward(50);
+            t.right(90);
+            t.forward(50);
+            t.right(90);
+            t.forward(50);
+            t.right(90);
+            t.forward(50);
         }
     </script>
 </head>

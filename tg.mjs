@@ -22,9 +22,9 @@ export function make_turtle_graphics() {
     let upy      = 0;    // TODO: not really needed?
     let ua       = 0;
     
-    let d        = true;           // pen down status
-    const matrix = mat3.create();  // transformation matrix
-    const stack  = [];             // matrix stack
+    let d      = true;             // pen down status
+    let matrix = mat3.create();    // transformation matrix
+    let stack  = [];               // matrix stack
     
     let line_fn; // line drawing function
     
@@ -137,6 +137,25 @@ export function make_turtle_graphics() {
         line_fn = fn;
     }
     
+    function reset() {
+        x        = 0;    // position (x)
+        y        = 0;    // position (y)
+        px       = 0;    // previous position (x)
+        py       = 0;    // previous position (y)
+        a        = 0;    // angle (in degrees)
+        
+        // untransformed state
+        ux       = 0;
+        uy       = 0;
+        upx      = 0;    // TODO: not really needed?
+        upy      = 0;    // TODO: not really needed?
+        ua       = 0;
+        
+        d      = true;             // pen down status
+        matrix = mat3.create();    // transformation matrix
+        stack  = [];               // matrix stack
+    }
+    
     return {
       forward,
       backward,
@@ -151,6 +170,7 @@ export function make_turtle_graphics() {
       pop,
       state,
       set_line_fn,
+      reset,
       VERSION,
     };
 }
@@ -183,7 +203,9 @@ if (window?.addEventListener) {
             const original_preload = window.preload;
             window.preload = (...args) => {
                 console.log('-> preload');
-                default_instance.set_line_fn(window.p5.instance.line);
+                // window.p5.instance.line doesn't work (the function exists, but fails when called)
+                // default_instance.set_line_fn(window.p5.instance.line);
+                default_instance.set_line_fn(window.line);
                 //globalize();
                 if (typeof original_preload === 'function') {
                     original_preload(...args);
