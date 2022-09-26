@@ -1,5 +1,4 @@
 // TODO: coordinate system orientation
-
 import { vec2, mat3 } from 'gl-matrix';
 const EPSILON = 1e-10;
 const DEFAULT_FORWARD = 100;
@@ -172,21 +171,26 @@ export function globalize(tg_instance = default_instance, global_object = global
 // -> set line function
 // -> put default instance into global scope (defined by GLOBAL_VAR_NAME)
 // -> ~~add all functions to global scope~~
-if (typeof window?.p5?.VERSION === 'string') {
-    console.log('-> p5 detected (%s)', window.p5.VERSION);
-    window[GLOBAL_VAR_NAME] = default_instance;
-    
-    // proxy preload function 
-    // this is the earliest the p5 instance is available
-    const original_preload = window.preload;
-    window.preload = (...args) => {
-        console.log('-> preload');
-        default_instance.set_line_fn(window.p5.instance.line);
-        //globalize();
-        if (typeof original_preload === 'function') {
-            original_preload(...args);
+// Use of DOMContentloaded makes sure this runs AFTER all script tags, but before p5 init (which runs on the 'load' event)
+if (window?.addEventListener) {
+    window.addEventListener('DOMContentLoaded', e => {
+        if (typeof window?.p5?.VERSION === 'string') {
+            console.log('-> p5 detected (%s)', window.p5.VERSION);
+            window[GLOBAL_VAR_NAME] = default_instance;
+            
+            // proxy preload function 
+            // this is the earliest the p5 instance is available
+            const original_preload = window.preload;
+            window.preload = (...args) => {
+                console.log('-> preload');
+                default_instance.set_line_fn(window.p5.instance.line);
+                //globalize();
+                if (typeof original_preload === 'function') {
+                    original_preload(...args);
+                }
+            }
         }
-    }
+    });
 }
 
 // Fresh instance as default export
