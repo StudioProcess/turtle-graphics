@@ -194,23 +194,33 @@ export function globalize(tg_instance = default_instance, global_object = global
 // Use of DOMContentloaded makes sure this runs AFTER all script tags, but before p5 init (which runs on the 'load' event)
 if (window?.addEventListener) {
     window.addEventListener('DOMContentLoaded', e => {
-        if (typeof window?.p5?.VERSION === 'string') {
+        if (window?.p5) {
+            // console.log(window.p5.instance); // === null
             console.log('-> p5 detected (%s)', window.p5.VERSION);
-            window[GLOBAL_VAR_NAME] = default_instance;
             
-            // proxy preload function 
-            // this is the earliest the p5 instance is available
+            // proxy the global preload function
+            // this is the earliest the p5 instance is available 
+            // AND p5 functions are in the global scope (so we can overwrite them)
             const original_preload = window.preload;
             window.preload = (...args) => {
-                console.log('-> preload');
-                // window.p5.instance.line doesn't work (the function exists, but fails when called)
-                // default_instance.set_line_fn(window.p5.instance.line);
-                default_instance.set_line_fn(window.line);
-                //globalize();
+                console.log('-> proxied preload');
+                // default_instance.set_line_fn(window.line);
+                default_instance.set_line_fn( window.p5.instance.line.bind(window.p5.instance) );
+                
+                // 'pre' runs before each draw
+                window.p5.instance.registerMethod('pre', function() {
+                    default_instance.reset();
+                    // "this" is bound to the p5 instance
+                    this.translate(this.width/2, this.height/2);
+                });
+                
+                window[GLOBAL_VAR_NAME] = default_instance;
+                // globalize();
+                
                 if (typeof original_preload === 'function') {
                     original_preload(...args);
                 }
-            }
+            };
         }
     });
 }
