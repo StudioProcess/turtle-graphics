@@ -4,7 +4,7 @@
   "description": "",
   "private": true,
   "scripts": {
-    "build": "rollup -c",
+    "build": "rollup -c && cp -Rf static/ dist",
     "start": "rollup -cw & browser-sync . --port 8080 --no-notify --files '*.html,dist'",
     "test": "tap"
   },
