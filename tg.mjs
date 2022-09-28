@@ -71,7 +71,7 @@ export function make_turtle_graphics() {
         draw();
     }
     
-    function backward(units = DEFAULT_FORWARD) {
+    function back(units = DEFAULT_FORWARD) {
         return forward(-units);
     }
     
@@ -201,7 +201,7 @@ export function make_turtle_graphics() {
     
     return {
       forward,
-      backward,
+      back,
       right,
       left,
       pendown,

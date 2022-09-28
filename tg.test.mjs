@@ -34,20 +34,20 @@ tap.test('forward', async t => {
     t.match(g.state(), { x:0, y:0, a:0 });
 });
 
-tap.test('backward', async t => {
+tap.test('back', async t => {
     const g = tg.make_turtle_graphics();
     t.match(g.state(), { x:0, y:0, a:0 });
-    g.backward(100);
+    g.back(100);
     t.match(g.state(), { x:0, y:100, a:0 });
-    g.backward(50);
+    g.back(50);
     t.match(g.state(), { x:0, y:150, a:0 });
-    g.backward(25);
+    g.back(25);
     t.match(g.state(), { x:0, y:175, a:0 });
-    g.backward(0);
+    g.back(0);
     t.match(g.state(), { x:0, y:175, a:0 });
-    g.backward();
+    g.back();
     t.match(g.state(), { x:0, y:275, a:0 });
-    g.backward(-275);
+    g.back(-275);
     t.match(g.state(), { x:0, y:0, a:0 });
 });
 
