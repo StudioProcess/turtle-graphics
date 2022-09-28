@@ -156,6 +156,29 @@ export function make_turtle_graphics() {
         stack  = [];               // matrix stack
     }
     
+    function turtle() {
+        const top_angle = 36;
+        const height = 10;
+        const base_angle = (180 - top_angle) / 2;
+        const side = height / Math.cos(top_angle/2 / 360 * Math.PI * 2);
+        const base = 2 * height * Math.tan(top_angle/2 / 360 * Math.PI * 2);
+        const original_d = d; // remember pen state
+        penup();
+        forward(height / 3 * 2);
+        pendown();
+        right(180 - top_angle/2);
+        forward(side);
+        right(180 - base_angle);
+        forward(base);
+        right(180 - base_angle);
+        forward(side);
+        penup();
+        right(180 - top_angle/2);
+        forward(height / 3 * 2);
+        right(180);
+        d = original_d;
+    }
+    
     return {
       forward,
       backward,
@@ -171,6 +194,7 @@ export function make_turtle_graphics() {
       state,
       set_line_fn,
       reset,
+      turtle,
       VERSION,
     };
 }
