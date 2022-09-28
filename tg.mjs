@@ -236,7 +236,8 @@ export function globalize(tg_instance = default_instance, global_object = global
 // -> put default instance into global scope (defined by GLOBAL_VAR_NAME)
 // -> ~~add all functions to global scope~~
 // Use of DOMContentloaded makes sure this runs AFTER all script tags, but before p5 init (which runs on the 'load' event)
-if (window?.addEventListener) {
+if (globalThis?.addEventListener !== undefined) {
+    const window = globalThis;
     window.addEventListener('DOMContentLoaded', e => {
         if (window?.p5) {
             // console.log(window.p5.instance); // === null

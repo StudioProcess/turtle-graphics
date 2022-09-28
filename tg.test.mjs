@@ -14,7 +14,7 @@ tap.test('globalize', async t => {
     const g = tg.make_turtle_graphics();
     const obj = {};
     tg.globalize(g, obj);
-    t.same(obj, g, 'global object has properties now');
+    t.match(g, obj, 'global object has properties now'); // use match because obj won't have VERSION
 });
 
 tap.test('forward', async t => {
