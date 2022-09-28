@@ -158,13 +158,33 @@ export function make_turtle_graphics() {
     
     function turtle() {
         const top_angle = 36;
-        const height = 10;
+        const height = 15;
+        const diamond_size = 1;
+        const center = 2/3; // 0 (top) .. 1 (bottom) (2/3 = center of gravity)
+        
         const base_angle = (180 - top_angle) / 2;
         const side = height / Math.cos(top_angle/2 / 360 * Math.PI * 2);
         const base = 2 * height * Math.tan(top_angle/2 / 360 * Math.PI * 2);
         const original_d = d; // remember pen state
+        const diamond_side = Math.sqrt(2) * diamond_size / 2;
+        
+        // center diamond
         penup();
-        forward(height / 3 * 2);
+        forward(diamond_size/2);
+        pendown();
+        right(135); // 180 - 45
+        forward(diamond_side);
+        right(90);
+        forward(diamond_side);
+        right(90);
+        forward(diamond_side);
+        right(90);
+        forward(diamond_side);
+        left(45);
+        
+        // turtle
+        penup();
+        forward(height * center);
         pendown();
         right(180 - top_angle/2);
         forward(side);
@@ -174,7 +194,7 @@ export function make_turtle_graphics() {
         forward(side);
         penup();
         right(180 - top_angle/2);
-        forward(height / 3 * 2);
+        forward(height * center);
         right(180);
         d = original_d;
     }
