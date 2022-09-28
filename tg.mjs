@@ -199,6 +199,23 @@ export function make_turtle_graphics() {
         d = original_d;
     }
     
+    function repeat(n, fn) {
+        if (!Number.isInteger(n) && n !== Infinity ) { 
+            // n is invalid
+            console.warn('repeat: number is invalid');
+            return; 
+        }
+        
+        if (typeof fn !== 'function') {
+            console.warn('repeat: function is invalid');
+            return;
+        }
+        
+        for (let i=0; i<n; i++) {
+            fn(i);
+        }
+    }
+    
     return {
       forward,
       back,
@@ -215,6 +232,7 @@ export function make_turtle_graphics() {
       set_line_fn,
       reset,
       turtle,
+      repeat,
       VERSION,
     };
 }

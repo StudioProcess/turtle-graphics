@@ -15,6 +15,7 @@
             console.log('-> original setup');
             createCanvas(400, 400);
             console.log(t);
+            noLoop();
         }
         
         function draw() {
@@ -40,6 +41,15 @@
             t.forward(100);
             t.turtle();
         }
+        
+        function my_circle() {
+            t.repeat(36, function () {
+                t.forward(10);
+                t.right(10);
+            });
+            t.turtle();
+        }
+        
     </script>
 </head>
 <body>
