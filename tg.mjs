@@ -154,10 +154,10 @@ export function make_turtle_graphics() {
     
     function state() {
         return {
-            x: turtle.x, y: turtle.y,
-            px: turtle.px, py: turtle.py,
-            a: turtle.a,
-            d: turtle.d,
+            turtle,
+            turtle_stack,
+            matrix,
+            matrix_stack,
         };
     }
     
@@ -245,6 +245,10 @@ export function make_turtle_graphics() {
       scale,
       push,
       pop,
+      push_turtle,
+      pop_turtle,
+      push_matrix,
+      pop_matrix,
       state,
       set_line_fn,
       reset,
