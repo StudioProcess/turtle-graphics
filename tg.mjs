@@ -8,29 +8,36 @@ const VERSION = 1;
 
 // Constructor function
 export function make_turtle_graphics() {
-    // transformed state
-    let x        = 0;    // position (x)
-    let y        = 0;    // position (y)
-    let px       = 0;    // previous position (x)
-    let py       = 0;    // previous position (y)
-    let a        = 0;    // angle (in degrees)
+    function create_turtle() {
+        return {
+            x:   0,    // position (x)
+            y:   0,    // position (y)
+            px:  0,    // previous position (x)
+            py:  0,    // previous position (y)
+            a:   0,    // angle (in degrees)
+            
+            // untransformed state
+            ux:  0,
+            uy:  0,
+            // upx: 0,    // TODO: not really needed?
+            // upy: 0,    // TODO: not really needed?
+            ua:  0,
+            
+            d:   true, // pen down status
+        };
+    }
     
-    // untransformed state
-    let ux       = 0;
-    let uy       = 0;
-    let upx      = 0;    // TODO: not really needed?
-    let upy      = 0;    // TODO: not really needed?
-    let ua       = 0;
+    let turtle = create_turtle(); // turtle state
+    let turtle_stack  = [];       // turtle stack
     
-    let d      = true;             // pen down status
-    let matrix = mat3.create();    // transformation matrix
-    let stack  = [];               // matrix stack
+    let matrix = mat3.create();   // transformation matrix
+    let matrix_stack  = [];       // matrix stack
     
     let line_fn; // line drawing function
     
     function draw() {
-        if (d && typeof line_fn === 'function') {
-            line_fn(px, py, x, y);
+        if (turtle.d && typeof line_fn === 'function') {
+            line_fn(turtle.px, turtle.py, turtle.x, turtle.y);
         }
     }
     
@@ -51,23 +58,23 @@ export function make_turtle_graphics() {
     
     function forward(units = DEFAULT_FORWARD) {
         // save previous position
-        upx = ux;
-        upy = uy;
-        px  = x;
-        py  = y;
+        turtle.upx = turtle.ux;
+        turtle.upy = turtle.uy;
+        turtle.px  = turtle.x;
+        turtle.py  = turtle.y;
         
         // new position (untransformed)
-        const angle_rad = ( ua - 90 ) / 180 * Math.PI;
-        ux += units * Math.cos(angle_rad);
-        uy += units * Math.sin(angle_rad);
+        const angle_rad = ( turtle.ua - 90 ) / 180 * Math.PI;
+        turtle.ux += units * Math.cos(angle_rad);
+        turtle.uy += units * Math.sin(angle_rad);
         
         // transformed position
-        const p = [ ux, uy ];
+        const p = [ turtle.ux, turtle.uy ];
         vec2.transformMat3(p, p, matrix); // Apply current transformation
         p[0] = clean_zero(p[0]);
         p[1] = clean_zero(p[1]);
-        x = p[0];
-        y = p[1];
+        turtle.x = p[0];
+        turtle.y = p[1];
         draw();
     }
     
@@ -77,11 +84,11 @@ export function make_turtle_graphics() {
     
     function right(angle = DEFAULT_RIGHT) {
         // update untransformed angle
-        ua += angle;
-        ua = clean_angle(ua);
+        turtle.ua += angle;
+        turtle.ua = clean_angle(turtle.ua);
         // update transformed angle as well
-        a += angle;
-        a = clean_angle(a);
+        turtle.a += angle;
+        turtle.a = clean_angle(turtle.a);
     }
     
     function left(angle = DEFAULT_RIGHT) {
@@ -89,47 +96,68 @@ export function make_turtle_graphics() {
     }
     
     function pendown() {
-        d = true;
+        turtle.d = true;
     }
     
     function penup() {
-        d = false;
+        turtle.d = false;
     }
     
     function translate(tx = 0, ty = 0) {
+        // update transformation matrix
         mat3.translate( matrix, matrix, [tx, ty] );
     }
     
     function rotate(ra = 0) {
+        // update transformation matrix
         mat3.rotate( matrix, matrix, ra / 180 * Math.PI );
         // update transformed angle as well
-        a += ra;
-        a = clean_angle(a);
+        turtle.a += ra;
+        turtle.a = clean_angle(turtle.a);
     }
     
     function scale(sx = 1, sy = undefined) {
         if (sy === undefined) { sy = sx; }
+        // update transformation matrix
         mat3.scale( matrix, matrix, [sx, sy] );
     }
     
+    function push_turtle() {
+        turtle_stack.push(turtle);
+    }
+    
+    function pop_turtle() {
+        if (turtle_stack.length > 0) {
+            turtle = turtle.pop();
+        }
+    }
+    
+    function push_matrix() {
+        matrix_stack.push(matrix);
+    }
+    
+    function pop_matrix() {
+        if (matrix_stack.length > 0) {
+            matrix = matrix_stack.pop();
+        }
+    }
+    
     function push() {
-        stack.push(matrix);
+        push_turtle();
+        push_matrix();
     }
     
     function pop() {
-        if (stack.length > 0) {
-            matrix = stack.pop();
-        }
+        pop_turtle();
+        pop_matrix();
     }
     
     function state() {
         return {
-            x, y,
-            px, py,
-            a,
-            d,
-            matrix,
-            stack,
+            x: turtle.x, y: turtle.y,
+            px: turtle.px, py: turtle.py,
+            a: turtle.a,
+            d: turtle.d,
         };
     }
     
@@ -138,25 +166,14 @@ export function make_turtle_graphics() {
     }
     
     function reset() {
-        x        = 0;    // position (x)
-        y        = 0;    // position (y)
-        px       = 0;    // previous position (x)
-        py       = 0;    // previous position (y)
-        a        = 0;    // angle (in degrees)
+        turtle = create_turtle(); // turtle state
+        turtle_stack = [];        // turtle stack
         
-        // untransformed state
-        ux       = 0;
-        uy       = 0;
-        upx      = 0;    // TODO: not really needed?
-        upy      = 0;    // TODO: not really needed?
-        ua       = 0;
-        
-        d      = true;             // pen down status
-        matrix = mat3.create();    // transformation matrix
-        stack  = [];               // matrix stack
+        matrix = mat3.create();   // transformation matrix
+        matrix_stack = [];        // matrix stack
     }
     
-    function turtle() {
+    function turtle_() {
         const top_angle = 36;
         const height = 15;
         const diamond_size = 1;
@@ -231,7 +248,7 @@ export function make_turtle_graphics() {
       state,
       set_line_fn,
       reset,
-      turtle,
+      turtle: turtle_,
       repeat,
       VERSION,
     };
