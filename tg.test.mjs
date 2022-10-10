@@ -5,8 +5,6 @@ import * as tg from './tg.mjs';
 // console.log(tg);
 
 // TODO:
-// * reset
-// * turtle
 // * push/pop
 // * repeat
 
@@ -289,4 +287,32 @@ tap.test('reset', async t => {
     t.notMatch(g.state(), initial_state, 'state has changed');
     g.reset();
     t.match(g.state(), initial_state, 'back to original state');
+});
+
+
+tap.test('push_turtle / pop_turtle', async t => {
+    let g = tg.make_turtle_graphics();
+    const state0 = JSON.parse(JSON.stringify(g.state())); // copy initial state
+    g.push_turtle();
+    t.equal(g.state().turtle_stack.length, 1, 'stack length 1');
+    // do stuff
+    g.forward(50);
+    g.right(50);
+    g.penup();
+    const state1 = JSON.parse(JSON.stringify(g.state()));
+    g.push_turtle();
+    t.equal(g.state().turtle_stack.length, 2, 'stack length 2');
+    g.pendown();
+    g.left(100);
+    g.back(100);
+    const state2 = JSON.parse(JSON.stringify(g.state()));
+    t.notMatch(g.state().turtle, state1.turtle, 'state changed (1/2)');
+    t.notMatch(g.state().turtle, state0.turtle, 'state changed (2/2)');
+    t.match(g.state().matrix, state1.matrix, 'matrix unchanged (1/2');
+    t.match(g.state().matrix, state0.matrix, 'matrix unchanged (1/2');
+    
+    g.pop_turtle();
+    t.match(g.state(), state1, 'back to state 1');
+    g.pop_turtle();
+    t.match(g.state(), state0, 'back to state 0');
 });

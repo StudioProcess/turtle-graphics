@@ -123,7 +123,7 @@ export function make_turtle_graphics() {
     }
     
     function push_turtle() {
-        turtle_stack.push(turtle);
+        turtle_stack.push( Object.assign({}, turtle) ); // push a copy
     }
     
     function pop_turtle() {
@@ -133,7 +133,7 @@ export function make_turtle_graphics() {
     }
     
     function push_matrix() {
-        matrix_stack.push(matrix);
+        matrix_stack.push( mat3.clone(matrix) ); // push a copy
     }
     
     function pop_matrix() {
@@ -183,7 +183,6 @@ export function make_turtle_graphics() {
         const base_angle = (180 - top_angle) / 2;
         const side = height / Math.cos(top_angle/2 / 360 * Math.PI * 2);
         const base = 2 * height * Math.tan(top_angle/2 / 360 * Math.PI * 2);
-        const original_d = turtle.d; // remember pen state
         const diamond_side = Math.sqrt(2) * diamond_size / 2;
         
         push_turtle();
