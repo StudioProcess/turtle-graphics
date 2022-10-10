@@ -210,7 +210,7 @@ tap.test('scale', async t => {
     t.match(g.state().turtle, { x:100, y:-100, a:90 }, 'no argument');
 });
 
-tap.only('compound transformations', async t => {
+tap.test('compound transformations', async t => {
     let g;
     g = tg.make_turtle_graphics();
     g.scale(2, 0.5);
@@ -262,7 +262,7 @@ tap.only('compound transformations', async t => {
     t.match(g.state().turtle, { x:200, y:150, a:180 }, 'T/R'); // confirmed with p5
 });
 
-tap.only('set_line_fn', async t => {
+tap.test('set_line_fn', async t => {
     let g = tg.make_turtle_graphics();
     let calls = [];
     function line_fn(...args) { calls.push(args); }
@@ -274,4 +274,19 @@ tap.only('set_line_fn', async t => {
     g.back(50);
     t.equal(calls.length, 1, 'back calls line_fn once');
     t.match(calls.pop(), [0,-50,-50,-50], 'correct call');
+});
+
+tap.test('reset', async t => {
+    let g = tg.make_turtle_graphics();
+    const initial_state = JSON.parse(JSON.stringify(g.state())); // copy initial state
+    // do stuff
+    g.scale(2,2);
+    g.rotate(45);
+    g.translate(10, 10);
+    g.forward(50);
+    g.right(50);
+    g.penup();
+    t.notMatch(g.state(), initial_state, 'state has changed');
+    g.reset();
+    t.match(g.state(), initial_state, 'back to original state');
 });

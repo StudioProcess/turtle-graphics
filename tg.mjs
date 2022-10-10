@@ -152,6 +152,7 @@ export function make_turtle_graphics() {
         pop_matrix();
     }
     
+    // Note: this function exposes the actual internal objects
     function state() {
         return {
             turtle,
