@@ -11,12 +11,12 @@ import * as tg from './tg.mjs';
 // * reset
 // * turtle
 // * repeat
-// * VERSION
 
 tap.test('instance creation', async t => {
     const g = tg.make_turtle_graphics();
     t.ok(g, 'non empty object created');
     t.same(g, tg.default, 'instance similar to default instance');
+    t.ok(typeof g.VERSION === 'number' || typeof g.VERSION === 'string', 'check VERSION property');
 });
 
 tap.test('globalize', async t => {
