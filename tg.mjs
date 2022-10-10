@@ -128,7 +128,7 @@ export function make_turtle_graphics() {
     
     function pop_turtle() {
         if (turtle_stack.length > 0) {
-            turtle = turtle.pop();
+            turtle = turtle_stack.pop();
         }
     }
     
@@ -182,8 +182,10 @@ export function make_turtle_graphics() {
         const base_angle = (180 - top_angle) / 2;
         const side = height / Math.cos(top_angle/2 / 360 * Math.PI * 2);
         const base = 2 * height * Math.tan(top_angle/2 / 360 * Math.PI * 2);
-        const original_d = d; // remember pen state
+        const original_d = turtle.d; // remember pen state
         const diamond_side = Math.sqrt(2) * diamond_size / 2;
+        
+        push_turtle();
         
         // center diamond
         penup();
@@ -209,11 +211,8 @@ export function make_turtle_graphics() {
         forward(base);
         right(180 - base_angle);
         forward(side);
-        penup();
-        right(180 - top_angle/2);
-        forward(height * center);
-        right(180);
-        d = original_d;
+        
+        pop_turtle();
     }
     
     function repeat(n, fn) {
