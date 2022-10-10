@@ -4,9 +4,6 @@ import * as tg from './tg.mjs';
 // console.log(tap);
 // console.log(tg);
 
-// TODO:
-// * repeat
-
 tap.test('instance creation', async t => {
     const g = tg.make_turtle_graphics();
     t.ok(g, 'non empty object created');
@@ -260,7 +257,7 @@ tap.test('compound transformations', async t => {
 });
 
 tap.test('set_line_fn', async t => {
-    let g = tg.make_turtle_graphics();
+    const g = tg.make_turtle_graphics();
     let calls = [];
     function line_fn(...args) { calls.push(args); }
     g.set_line_fn(line_fn);
@@ -274,7 +271,7 @@ tap.test('set_line_fn', async t => {
 });
 
 tap.test('reset', async t => {
-    let g = tg.make_turtle_graphics();
+    const g = tg.make_turtle_graphics();
     const initial_state = JSON.parse(JSON.stringify(g.state())); // copy initial state
     // do stuff
     g.scale(2,2);
@@ -289,7 +286,7 @@ tap.test('reset', async t => {
 });
 
 tap.test('push_turtle / pop_turtle', async t => {
-    let g = tg.make_turtle_graphics();
+    const g = tg.make_turtle_graphics();
     const state0 = JSON.parse(JSON.stringify(g.state())); // copy initial state
     g.push_turtle();
     t.equal(g.state().turtle_stack.length, 1, 'stack length 1');
@@ -318,7 +315,7 @@ tap.test('push_turtle / pop_turtle', async t => {
 });
 
 tap.test('push_matrix / pop_matrix', async t => {
-    let g = tg.make_turtle_graphics();
+    const g = tg.make_turtle_graphics();
     const state0 = JSON.parse(JSON.stringify(g.state())); // copy initial state
     g.push_matrix();
     t.equal(g.state().matrix_stack.length, 1, 'stack length 1');
@@ -343,7 +340,7 @@ tap.test('push_matrix / pop_matrix', async t => {
 });
 
 tap.test('push / pop', async t => {
-    let g = tg.make_turtle_graphics();
+    const g = tg.make_turtle_graphics();
     const state0 = JSON.parse(JSON.stringify(g.state())); // copy initial state
     g.push();
     t.equal(g.state().matrix_stack.length, 1, 'stack length 1');
@@ -367,4 +364,14 @@ tap.test('push / pop', async t => {
     t.match(g.state(), state0, 'back to state 0');
     g.pop();
     t.match(g.state(), state0, 'still at state 0');
+});
+
+tap.test('repeat', async t => {
+    const g = tg.make_turtle_graphics();
+    let calls = [];
+    function fn(...args) { calls.push(args); }
+    g.repeat(8, fn);
+    t.equal(calls.length, 8, 'calls 8 times');
+    const args = [...Array(8).keys()].map( (e, i) => { return [i]; } );
+    t.same(calls, args, 'calls with iteration index');
 });
