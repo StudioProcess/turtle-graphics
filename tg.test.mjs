@@ -5,10 +5,9 @@ import * as tg from './tg.mjs';
 // console.log(tg);
 
 // TODO:
-// * push/pop 
-// * set_line_fn
 // * reset
 // * turtle
+// * push/pop
 // * repeat
 
 tap.test('instance creation', async t => {
@@ -261,4 +260,18 @@ tap.only('compound transformations', async t => {
     g.right(90);
     g.forward(100);
     t.match(g.state().turtle, { x:200, y:150, a:180 }, 'T/R'); // confirmed with p5
+});
+
+tap.only('set_line_fn', async t => {
+    let g = tg.make_turtle_graphics();
+    let calls = [];
+    function line_fn(...args) { calls.push(args); }
+    g.set_line_fn(line_fn);
+    g.forward(50);
+    t.equal(calls.length, 1, 'forward calls line_fn once');
+    t.match(calls.pop(), [0,0,0,-50], 'correct call');
+    g.right(90);
+    g.back(50);
+    t.equal(calls.length, 1, 'back calls line_fn once');
+    t.match(calls.pop(), [0,-50,-50,-50], 'correct call');
 });
