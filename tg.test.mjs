@@ -5,7 +5,6 @@ import * as tg from './tg.mjs';
 // console.log(tg);
 
 // TODO:
-// * state
 // * push/pop 
 // * set_line_fn
 // * reset
@@ -24,6 +23,12 @@ tap.test('globalize', async t => {
     const obj = {};
     tg.globalize(g, obj);
     t.match(g, obj, 'global object has properties now'); // use match because obj won't have VERSION
+});
+
+tap.test('state', async t => {
+    const g = tg.make_turtle_graphics();
+    const s = g.state();
+    t.hasProps(g.state(), ['turtle', 'turtle_stack', 'matrix', 'matrix_stack']);
 });
 
 tap.test('forward', async t => {
@@ -169,7 +174,7 @@ tap.test('rotate', async t => {
     t.match(g.state().turtle, { x:100, y:-100, a:90 }, 'no argument');
 });
 
-tap.test('rotate', async t => {
+tap.test('scale', async t => {
     let g;
     g = tg.make_turtle_graphics();
     g.scale(2, 2);
