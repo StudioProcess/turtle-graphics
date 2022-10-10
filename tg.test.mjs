@@ -366,6 +366,20 @@ tap.test('push / pop', async t => {
     t.match(g.state(), state0, 'still at state 0');
 });
 
+tap.test('turtle', async t => {
+    let g = tg.make_turtle_graphics();
+    // do stuff
+    g.scale(2,2);
+    g.rotate(45);
+    g.translate(10, 10);
+    g.forward(50);
+    g.right(50);
+    g.penup();
+    const state_before_turtle = JSON.parse(JSON.stringify(g.state())); // copy state
+    g.turtle();
+    t.match(g.state(), state_before_turtle, 'state is unchanged');
+});
+
 tap.test('repeat', async t => {
     const g = tg.make_turtle_graphics();
     let calls = [];
