@@ -6,6 +6,7 @@ import * as tg from './tg.mjs';
 
 // TODO:
 // * setxy
+// * until, while
 
 tap.test('instance creation', async t => {
     const g = tg.make_turtle_graphics();

@@ -231,6 +231,30 @@ export function make_turtle_graphics() {
         }
     }
     
+    function until(cond, fn) {
+        if (typeof fn !== 'function') {
+            console.warn('until: function is invalid');
+            return;
+        }
+        let i=0;
+        do {
+            fn(i);
+            i += 1;
+        } while (!cond);
+    }
+    
+    function while_(cond, fn) {
+        if (typeof fn !== 'function') {
+            console.warn('until: function is invalid');
+            return;
+        }
+        let i=0;
+        while (cond) {
+            fn(i);
+            i += 1;
+        }
+    }
+    
     // TODO: think about naming (e.g. moveto, lineto)
     function setxy(x=0, y=0) {
         // save previous position
@@ -275,6 +299,8 @@ export function make_turtle_graphics() {
         reset,
         turtle: turtle_,
         repeat,
+        until,
+        while: while_,
         setxy,
     };
 }
