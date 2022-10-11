@@ -216,8 +216,7 @@ export function make_turtle_graphics() {
     }
     
     function repeat(n, fn) {
-        if (!Number.isInteger(n) && n !== Infinity ) { 
-            // n is invalid
+        if ( !Number.isInteger(n) ) { 
             console.warn('repeat: number is invalid');
             return; 
         }
@@ -232,28 +231,51 @@ export function make_turtle_graphics() {
         }
     }
     
+    // TODO: think about naming (e.g. moveto, lineto)
+    function setxy(x=0, y=0) {
+        // save previous position
+        turtle.upx = turtle.ux;
+        turtle.upy = turtle.uy;
+        turtle.px  = turtle.x;
+        turtle.py  = turtle.y;
+        
+        // new position (untransformed)
+        turtle.ux = x;
+        turtle.uy = y;
+        
+        // transformed position
+        const p = [ turtle.ux, turtle.uy ];
+        vec2.transformMat3(p, p, matrix); // Apply current transformation
+        p[0] = clean_zero(p[0]);
+        p[1] = clean_zero(p[1]);
+        turtle.x = p[0];
+        turtle.y = p[1];
+        draw();
+    }
+    
     return {
-      forward,
-      back,
-      right,
-      left,
-      pendown,
-      penup,
-      translate,
-      rotate,
-      scale,
-      push,
-      pop,
-      push_turtle,
-      pop_turtle,
-      push_matrix,
-      pop_matrix,
-      state,
-      set_line_fn,
-      reset,
-      turtle: turtle_,
-      repeat,
-      VERSION,
+        VERSION,
+        forward,
+        back,
+        right,
+        left,
+        pendown,
+        penup,
+        translate,
+        rotate,
+        scale,
+        push,
+        pop,
+        push_turtle,
+        pop_turtle,
+        push_matrix,
+        pop_matrix,
+        state,
+        set_line_fn,
+        reset,
+        turtle: turtle_,
+        repeat,
+        setxy,
     };
 }
 

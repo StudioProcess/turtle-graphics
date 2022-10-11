@@ -4,6 +4,9 @@ import * as tg from './tg.mjs';
 // console.log(tap);
 // console.log(tg);
 
+// TODO:
+// * setxy
+
 tap.test('instance creation', async t => {
     const g = tg.make_turtle_graphics();
     t.ok(g, 'non empty object created');

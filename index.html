@@ -13,23 +13,60 @@
         
         function setup() {
             console.log('-> original setup');
-            createCanvas(400, 400);
-            console.log(t);
+            createCanvas(500, 500);
+            // console.log(t);
             noLoop();
         }
         
         function draw() {
             background(220);
-            t.forward(50);
-            t.right(90);
-            t.forward(50);
-            t.right(90);
-            t.forward(50);
-            t.right(90);
-            t.forward(50);
+            
+            // figure_1_1();
+            // square_1();
+            // square_2();
+            // square_3(100);
+            // square_4(100);
+            // rectangle(100, 50);
+            // try_angle();
+            // triangle_1();
+            // triangle_2(50);
+            // house_1(100);
+            // house_2(100);
+            // thing();
+            // thing1();
+            // thing2();
+            // thing3();
+            // circle_();
+            // arcr(1, 180);
+            // arcl(1, 60);
+            // circles();
+            // flower(3);
+            // sun(0.8);
+            // cartesian_rectangle(100, 50);
+            // poly(100, 72);
+            // poly(150, 144);
+            // poly(1.5, 1);
+            // poly(100, 60);
+            // poly(180, 135);
+            // poly(180, 108);
+            // newpoly(80, 30);
+            // newpoly(80, 144);
+            // newpoly(100, 45);
+            // newpoly(25, 125);
+            // poly_2(10, 10);
+            // polyspi(10, 95, 100);
+            // polyspi(0, 90, 200);
+            // polyspi(10, 120);
+            // polyspi(10, 117, 100);
+            // polyspi_2(1, 120, 10, 40);
+            // inspi(12, 0, 7, 600);
+            // inspi(25, 40, 30);
+            inspi(40, 2, 20);
+            
             t.turtle();
         }
         
+        // p. 4
         function figure_1_1() {
             t.forward(100);
             t.right(90);
@@ -42,14 +79,264 @@
             t.turtle();
         }
         
-        function my_circle() {
-            t.repeat(36, function () {
-                t.forward(10);
-                t.right(10);
-            });
-            t.turtle();
+        // p. 5
+        function square_1() {
+            t.forward(100);
+            t.right(90);
+            t.forward(100);
+            t.right(90);
+            t.forward(100);
+            t.right(90);
+            t.forward(100);
         }
         
+        // p. 5
+        function square_2() {
+            t.repeat(4, function() {
+                t.forward(100);
+                t.right(90);
+            });
+        }
+        
+        // p. 5
+        function square_3(size) {
+            t.repeat(4, function() {
+                t.forward(size);
+                t.right(90);
+            });
+        }
+        
+        // p. 6
+        function squarepiece(size) {
+            t.forward(size);
+            t.right(90);
+        }
+        
+        // p. 6
+        function square_4(size) {
+            t.repeat(4, function() {
+                squarepiece(size);
+            });
+        }
+        
+        // p. 6
+        function rectangle(side1, side2) {
+            t.repeat(2, function() {
+                squarepiece(side1);
+                squarepiece(side2);
+            });
+        }
+        
+        // p. 7
+        function try_angle() {
+            t.repeat(3, function() {
+               t.forward(100);
+               t.right(60); 
+            });
+        }
+        
+        // p. 7
+        function triangle_1() {
+            t.repeat(3, function() {
+                t.forward(100);
+                t.right(120);
+            });
+        }
+        
+        function triangle_2(side) {
+            t.repeat(3, function() {
+                t.forward(side);
+                t.right(120);
+            });
+        }
+        
+        // p. 8
+        function house_1(side) {
+            square_4(side);
+            triangle_2(side);
+        }
+        
+        // p. 8
+        function house_2(side) {
+            square_4(side);
+            t.forward(side);
+            t.right(30);
+            triangle_2(side);
+        }
+        
+        // p. 9
+        function thing() {
+            t.forward(100);
+            t.right(90);
+            t.forward(100);
+            t.right(90);
+            t.forward(50);
+            t.right(90);
+            t.forward(50);
+            t.right(90);
+            t.forward(100);
+            t.right(90);
+            t.forward(25);
+            t.right(90);
+            t.forward(25);
+            t.right(90);
+            t.forward(50);
+        }
+        
+        // p. 9
+        function thing1() {
+            t.repeat(4, function() {
+                thing();
+            });
+        }
+        
+        // p. 9
+        function thing2() {
+            t.repeat(10, function() {
+                thing();
+                t.right(10);
+                t.forward(50);
+            });
+        }
+        
+        // p. 9
+        function thing3() {
+            t.repeat(10, function() {
+                thing();
+                t.left(45);
+                t.forward(100);
+            });
+        }
+        
+        // p. 10
+        function circle_() {
+            t.repeat(360, function () {
+                t.forward(1);
+                t.right(1);
+            });
+        }
+        
+        // p. 10
+        function arcr(r, deg) {
+            t.repeat(deg, function() {
+                t.forward(r);
+                t.right(1);
+            });
+        }
+        
+        // p. 11
+        function arcl(r, deg) {
+            t.repeat(deg, function() {
+                t.forward(r);
+                t.left(1);
+            });
+        }
+        
+        // p. 12
+        function circles() {
+            t.repeat(9, function() {
+               arcr(1, 360);
+               t.right(40); 
+            });
+        }
+        
+        // p. 12
+        function petal(size) {
+            arcr(size, 60);
+            t.right(120);
+            arcr(size, 60);
+            t.right(120);
+        }
+        
+        // p. 12
+        function flower(size) {
+            t.repeat(6, function() {
+               petal(size);
+               t.right(60); 
+            });
+        }
+        
+        // p. 12
+        function ray(r) {
+            t.repeat(2, function() {
+               arcl(r, 90);
+               arcr(r, 90);
+            });
+        }
+        
+        // p. 12
+        function sun(size) {
+            t.repeat(9, function() {
+               ray(size);
+               t.right(160); 
+            });
+        }
+        
+        // p. 11
+        function cartesian_rectangle(width, height) {
+            t.setxy(width, 0);
+            t.setxy(width, height);
+            t.setxy(0, height);
+            t.setxy(0, 0);
+        }
+        
+        // p. 15, 16
+        function poly(side, angle, n=360) {
+            t.repeat(n, function() {
+               t.forward(side);
+               t.right(angle); 
+            });
+        }
+        
+        // p. 15, 17
+        function newpoly(side, angle, n=360) {
+            t.repeat(n, function() {
+               t.forward(side);
+               t.right(angle); 
+               t.forward(side);
+               t.right(2 * angle);
+            });
+        }
+        
+        // p. 17
+        function poly_2(side, angle, depth=0) {
+            if (depth >= 360) return;
+            t.forward(side);
+            t.right(angle);
+            poly_2(side, angle, depth+1);
+        }
+        
+        // p. 18
+        function polyspi(side, angle, limit=360, depth=0) {
+            if (depth >= limit) return;
+            t.forward(side);
+            t.right(angle);
+            polyspi(side+1, angle, limit, depth+1);
+        }
+        
+        // p. 18
+        function polyspi(side, angle, limit=360, depth=0) {
+            if (depth >= limit) return;
+            t.forward(side);
+            t.right(angle);
+            polyspi(side+1, angle, limit, depth+1);
+        }
+        
+        // p. 19
+        function polyspi_2(side, angle, inc=1, limit=360, depth=0) {
+            if (depth >= limit) return;
+            t.forward(side);
+            t.right(angle);
+            polyspi_2(side + inc, angle, inc, limit, depth+1);
+        }
+        
+        // p. 20
+        function inspi(side, angle, inc, limit=360, depth=0) {
+            if (depth >= limit) return;
+            t.forward(side);
+            t.right(angle);
+            inspi(side, angle + inc, inc, limit, depth+1);
+        }
     </script>
 </head>
 <body>
