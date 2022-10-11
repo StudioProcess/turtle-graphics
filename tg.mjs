@@ -95,12 +95,12 @@ export function make_turtle_graphics() {
         return right(-angle);
     }
     
-    function pendown() {
-        turtle.d = true;
+    function pendown(down = true) {
+        turtle.d = down;
     }
     
-    function penup() {
-        turtle.d = false;
+    function penup(up = true) {
+        turtle.d = !up;
     }
     
     function translate(tx = 0, ty = 0) {
