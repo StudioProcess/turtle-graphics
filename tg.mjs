@@ -277,6 +277,17 @@ export function make_turtle_graphics() {
         draw();
     }
     
+    // TODO: think about naming
+    function setheading(angle=0) {
+        const rotation = turtle.a - turtle.ua; // get rotation applied via rotate()
+        // set untransformed angle
+        turtle.ua = angle;
+        turtle.ua = clean_angle(turtle.ua);
+        // set transformed angle as well
+        turtle.a = angle + rotation;
+        turtle.a = clean_angle(turtle.a);
+    }
+    
     return {
         VERSION,
         forward,
