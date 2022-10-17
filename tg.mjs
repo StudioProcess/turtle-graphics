@@ -364,7 +364,9 @@ export function make_turtle_graphics() {
         // vector to point xy
         const vx = x - turtle.x;
         const vy = y - turtle.y;
-        let b = Math.atan2(vy, vx) / Math.PI * 180; // [-180, +180]
+        if (vx == 0 && vy == 0) { return 0; }
+        let b = Math.atan2(vy, vx) / Math.PI * 180; // [-180, +180] angle between positive x-axis and vector
+        b = b + 90 - turtle.a;
         b = clean_angle(b);
         return b;
     }
@@ -407,6 +409,8 @@ export function make_turtle_graphics() {
         heading,
         isdown,
         isup,
+        bearing,
+        face,
     };
 }
 
