@@ -404,6 +404,7 @@ export function make_turtle_graphics() {
         setheading,
         xcor,
         ycor,
+        heading,
         isdown,
         isup,
     };

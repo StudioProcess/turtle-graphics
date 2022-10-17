@@ -5,8 +5,6 @@ import * as tg from './tg.mjs';
 // console.log(tg);
 
 // TODO:
-// * setheading
-// * xcor, ycor, heading, isdown, isup
 // * bearing, face
 // * until, while
 
@@ -471,4 +469,44 @@ tap.test('setheading', async t => {
     g.setheading(100);
     state.turtle.a = state.turtle.ua = 100;
     t.match(g.state(), state, 'only angle changed');
+});
+
+tap.test('xor/ycor', async t => {
+    let g, state;
+    g = tg.make_turtle_graphics();
+    g.forward(100);
+    g.right(90);
+    g.forward(50);
+    t.equal(g.xcor(), g.state().turtle.x, 'xcor');
+    t.equal(g.xcor(), 50, 'xcor');
+    t.equal(g.ycor(), g.state().turtle.y, 'ycor');
+    t.equal(g.ycor(), -100, 'ycor');
+});
+
+tap.test('heading', async t => {
+    let g, state;
+    g = tg.make_turtle_graphics();
+    g.right(45);
+    t.equal(g.heading(), g.state().turtle.a, 'heading');
+    t.equal(g.heading(), 45, 'heading');
+    g.right(180);
+    t.equal(g.heading(), g.state().turtle.a, 'heading (2)');
+    t.equal(g.heading(), 225, 'heading (2)');
+    g.right(135);
+    t.equal(g.heading(), g.state().turtle.a, 'heading (3)');
+    t.equal(g.heading(), 0, 'heading (3)');
+});
+
+tap.test('isdown/isup', async t => {
+    let g, state;
+    g = tg.make_turtle_graphics();
+    t.equal(g.isdown(), g.state().turtle.d, 'isdown');
+    t.equal(g.isdown(), true, 'isdown');
+    t.equal(g.isup(), !g.state().turtle.d, 'isup');
+    t.equal(g.isup(), false, 'isup');
+    g.penup();
+    t.equal(g.isdown(), g.state().turtle.d, 'isdown (2)');
+    t.equal(g.isdown(), false, 'isdown (2)');
+    t.equal(g.isup(), !g.state().turtle.d, 'isup (2)');
+    t.equal(g.isup(), true, 'isup (2)');
 });
