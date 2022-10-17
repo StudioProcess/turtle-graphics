@@ -231,29 +231,30 @@ export function make_turtle_graphics() {
         }
     }
     
-    function until(cond, fn) {
-        if (typeof fn !== 'function') {
-            console.warn('until: function is invalid');
-            return;
-        }
-        let i=0;
-        do {
-            fn(i);
-            i += 1;
-        } while (!cond);
-    }
-    
-    function while_(cond, fn) {
-        if (typeof fn !== 'function') {
-            console.warn('until: function is invalid');
-            return;
-        }
-        let i=0;
-        while (cond) {
-            fn(i);
-            i += 1;
-        }
-    }
+    // TODO: this can't work: cond is only evaluated once
+    // function until(cond, fn) {
+    //     if (typeof fn !== 'function') {
+    //         console.warn('until: function is invalid');
+    //         return;
+    //     }
+    //     let i=0;
+    //     do {
+    //         fn(i);
+    //         i += 1;
+    //     } while (!cond);
+    // }
+    // 
+    // function while_(cond, fn) {
+    //     if (typeof fn !== 'function') {
+    //         console.warn('until: function is invalid');
+    //         return;
+    //     }
+    //     let i=0;
+    //     while (cond) {
+    //         fn(i);
+    //         i += 1;
+    //     }
+    // }
     
     // function _warn(warning_domain, warning) {
     //     if (!warning_domain || !warning) { return; }
@@ -400,8 +401,8 @@ export function make_turtle_graphics() {
         reset,
         turtle: turtle_,
         repeat,
-        until,
-        while: while_,
+        // until,
+        // while: while_,
         setxy,
         setheading,
         xcor,

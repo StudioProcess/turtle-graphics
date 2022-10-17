@@ -4,9 +4,6 @@ import * as tg from './tg.mjs';
 // console.log(tap);
 // console.log(tg);
 
-// TODO:
-// * until, while
-
 tap.test('instance creation', async t => {
     const g = tg.make_turtle_graphics();
     t.ok(g, 'non empty object created');
@@ -599,3 +596,20 @@ tap.test('face', async t => {
     t.equal(g.state().turtle.a, 315, 'face (7)');
     g.face(0, -100);
 });
+
+// tap.test('while', async t => {
+//     const g = tg.make_turtle_graphics();
+//     let n = 0;
+//     let i = -1;
+//     const fn = (idx) => {
+//         n += 1;
+//         i = idx;
+//     };
+//     
+//     g.while(n != 0, fn);
+//     t.equal(n, 0, 'not called');
+//     
+//     g.while(n < 10, fn);
+//     t.equal(n, 10, 'called 10 times');
+//     t.equal(i, 9, 'last index 9');
+// });
