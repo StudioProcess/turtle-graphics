@@ -288,6 +288,22 @@ export function make_turtle_graphics() {
         turtle.a = clean_angle(turtle.a);
     }
     
+    function xcor() {
+        return turtle.x;
+    }
+    
+    function ycor() {
+        return turtle.y;
+    }
+    
+    function isdown() {
+        return turtle.d;
+    }
+    
+    function isup() {
+        return !turtle.d;
+    }
+    
     return {
         VERSION,
         forward,
@@ -313,6 +329,11 @@ export function make_turtle_graphics() {
         until,
         while: while_,
         setxy,
+        setheading,
+        xcor,
+        ycor,
+        isdown,
+        isup,
     };
 }
 
