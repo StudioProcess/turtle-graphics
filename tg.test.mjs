@@ -5,7 +5,7 @@ import * as tg from './tg.mjs';
 // console.log(tg);
 
 // TODO:
-// * setxy, setheading
+// * setheading
 // * xcor, ycor, heading, isdown, isup
 // * bearing, face
 // * until, while
@@ -462,4 +462,13 @@ tap.test('setxy', async t => {
     g.setxy([undefined, 50]), 999;
     state.turtle.y = state.turtle.uy = 50;
     t.match(g.state(), state, 'array arg: only y given');
+});
+
+tap.test('setheading', async t => {
+    let g, state;
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    g.setheading(100);
+    state.turtle.a = state.turtle.ua = 100;
+    t.match(g.state(), state, 'only angle changed');
 });
