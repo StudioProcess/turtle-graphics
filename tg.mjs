@@ -255,7 +255,7 @@ export function make_turtle_graphics() {
         }
     }
     
-    function to_point(x, y) {
+    function _to_point(x, y) {
         // allow {x, y} as first parameter
         if (typeof x === 'object') {
             const obj = x;
@@ -273,7 +273,7 @@ export function make_turtle_graphics() {
     
     // TODO: think about naming (e.g. moveto, lineto)
     function setxy(x, y) {
-        { x, y } = to_point(x, y);
+        ({ x, y } = _to_point(x, y));
         
         // TODO: check parameter types
         if (x === null || x === undefined) { x = turtle.x; }
@@ -318,6 +318,10 @@ export function make_turtle_graphics() {
         return turtle.y;
     }
     
+    function heading() {
+        return turtle.a;
+    }
+    
     function isdown() {
         return turtle.d;
     }
@@ -327,7 +331,7 @@ export function make_turtle_graphics() {
     }
     
     function bearing(x, y) {
-        { x, y } = to_point(x, y);
+        ({ x, y } = _to_point(x, y));
         // vector to point xy
         const vx = x - turtle.x;
         const vy = y - turtle.y;

@@ -5,9 +5,10 @@ import * as tg from './tg.mjs';
 // console.log(tg);
 
 // TODO:
-// * setxy
+// * setxy, setheading
+// * xcor, ycor, heading, isdown, isup
+// * bearing, face
 // * until, while
-// * xcor, ycor, isdown, isup
 
 tap.test('instance creation', async t => {
     const g = tg.make_turtle_graphics();
