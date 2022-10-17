@@ -255,16 +255,25 @@ export function make_turtle_graphics() {
         }
     }
     
-    // TODO: think about naming (e.g. moveto, lineto)
-    function setxy(x, y) {
+    function to_point(x, y) {
         // allow {x, y} as first parameter
         if (typeof x === 'object') {
-            setxy( x.x, x.y );
+            const obj = x;
+            x = obj?.x;
+            y = obj?.y;
         } 
         // allow [x, y] as first parameter
         else if (Array.isArray(x)) {
-            setxy( x.at(0), x.at(1) );
+            const arr = x;
+            x = x.at(0);
+            y = x.at(1);
         }
+        return { x, y };
+    }
+    
+    // TODO: think about naming (e.g. moveto, lineto)
+    function setxy(x, y) {
+        { x, y } = to_point(x, y);
         
         // TODO: check parameter types
         if (x === null || x === undefined) { x = turtle.x; }
@@ -315,6 +324,20 @@ export function make_turtle_graphics() {
     
     function isup() {
         return !turtle.d;
+    }
+    
+    function bearing(x, y) {
+        { x, y } = to_point(x, y);
+        // vector to point xy
+        const vx = x - turtle.x;
+        const vy = y - turtle.y;
+        let b = Math.atan2(vy, vx) / Math.PI * 180; // [-180, +180]
+        b = clean_angle(b);
+        return b;
+    }
+    
+    function face(x,y) {
+        return right( bearing(x, y) );
     }
     
     return {
