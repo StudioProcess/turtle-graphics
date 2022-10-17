@@ -256,7 +256,20 @@ export function make_turtle_graphics() {
     }
     
     // TODO: think about naming (e.g. moveto, lineto)
-    function setxy(x=0, y=0) {
+    function setxy(x, y) {
+        // allow {x, y} as first parameter
+        if (typeof x === 'object') {
+            setxy( x.x, x.y );
+        } 
+        // allow [x, y] as first parameter
+        else if (Array.isArray(x)) {
+            setxy( x.at(0), x.at(1) );
+        }
+        
+        // TODO: check parameter types
+        if (x === null || x === undefined) { x = turtle.x; }
+        if (y === null || y === undefined) { y = turtle.y; }
+        
         // save previous position
         turtle.upx = turtle.ux;
         turtle.upy = turtle.uy;
