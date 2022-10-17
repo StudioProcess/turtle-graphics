@@ -5,7 +5,6 @@ import * as tg from './tg.mjs';
 // console.log(tg);
 
 // TODO:
-// * face
 // * until, while
 
 tap.test('instance creation', async t => {
@@ -578,4 +577,25 @@ tap.test('bearing', async t => {
     t.equal(g.bearing(100, 0), 135, 'bearing (38)');
     t.equal(g.bearing(0, 100), 180, 'bearing (39)');
     t.equal(g.bearing(-100, 0), 225, 'bearing (40)');
+});
+
+tap.test('face', async t => {
+    const g = tg.make_turtle_graphics();
+    g.face(0,0);
+    t.equal(g.state().turtle.a, 0, 'face (0)');
+    g.face(100, -100);
+    t.equal(g.state().turtle.a, 45, 'face (1)');
+    g.face(100, 0);
+    t.equal(g.state().turtle.a, 90, 'face (2)');
+    g.face(100, 100);
+    t.equal(g.state().turtle.a, 135, 'face (3)');
+    g.face(0, 100);
+    t.equal(g.state().turtle.a, 180, 'face (4)');
+    g.face(-100, 100);
+    t.equal(g.state().turtle.a, 225, 'face (5)');
+    g.face(-100, 0);
+    t.equal(g.state().turtle.a, 270, 'face (6)');
+    g.face(-100, -100);
+    t.equal(g.state().turtle.a, 315, 'face (7)');
+    g.face(0, -100);
 });
