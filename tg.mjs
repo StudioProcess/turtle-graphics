@@ -255,27 +255,53 @@ export function make_turtle_graphics() {
         }
     }
     
+    // function _warn(warning_domain, warning) {
+    //     if (!warning_domain || !warning) { return; }
+    //     console.warn('%s: %s', warning_domain, warning);
+    // }
+    
+    function _check_number(val, warning_domain, var_name, allow_null_undefined = false) {
+        if (allow_null_undefined && (val === null || val === undefined)) {
+            return true;
+        }
+        if (!Number.isFinite(val)) {
+            if (warning_domain && var_name) {
+                console.warn('%s: %s needs to be a proper number (cannot be NaN or Infinity)', warning_domain, var_name);
+            }
+            return false;
+        }
+        if (typeof val !== 'number') {
+            if (warning_domain && var_name) {
+                console.warn('%s: %s needs to be a number', warning_domain, var_name);
+            }
+            return false;
+        }
+        return true;
+    }
+    
     function _to_point(x, y) {
+        // allow [x, y] as first parameter
+        // needs to be tested first, cause arrays of type 'object'
+        if (Array.isArray(x)) {
+            const arr = x;
+            x = arr.at(0);
+            y = arr.at(1);
+        }
         // allow {x, y} as first parameter
-        if (typeof x === 'object') {
+        else if (typeof x === 'object') {
             const obj = x;
             x = obj?.x;
             y = obj?.y;
         } 
-        // allow [x, y] as first parameter
-        else if (Array.isArray(x)) {
-            const arr = x;
-            x = x.at(0);
-            y = x.at(1);
-        }
+        
         return { x, y };
     }
     
     // TODO: think about naming (e.g. moveto, lineto)
     function setxy(x, y) {
         ({ x, y } = _to_point(x, y));
-        
-        // TODO: check parameter types
+        if ( ! _check_number(x, 'setxy', 'x', true) ) { return; }
+        if ( ! _check_number(y, 'setxy', 'y', true) ) { return; }
         if (x === null || x === undefined) { x = turtle.x; }
         if (y === null || y === undefined) { y = turtle.y; }
         
@@ -300,7 +326,8 @@ export function make_turtle_graphics() {
     }
     
     // TODO: think about naming
-    function setheading(angle=0) {
+    function setheading(angle) {
+        if ( ! _check_number(angle, 'setheading', 'angle') ) { return; }
         const rotation = turtle.a - turtle.ua; // get rotation applied via rotate()
         // set untransformed angle
         turtle.ua = angle;
@@ -332,6 +359,8 @@ export function make_turtle_graphics() {
     
     function bearing(x, y) {
         ({ x, y } = _to_point(x, y));
+        if ( ! _check_number(x, 'bearing', 'x') ) { return; }
+        if ( ! _check_number(y, 'bearing', 'y') ) { return; }
         // vector to point xy
         const vx = x - turtle.x;
         const vy = y - turtle.y;
@@ -341,7 +370,10 @@ export function make_turtle_graphics() {
     }
     
     function face(x,y) {
-        return right( bearing(x, y) );
+        ({ x, y } = _to_point(x, y));
+        if ( ! _check_number(x, 'face', 'x') ) { return; }
+        if ( ! _check_number(y, 'face', 'y') ) { return; }
+        right( bearing(x, y) );
     }
     
     return {

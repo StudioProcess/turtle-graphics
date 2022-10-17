@@ -395,3 +395,71 @@ tap.test('repeat', async t => {
     const args = [...Array(8).keys()].map( (e, i) => { return [i]; } );
     t.same(calls, args, 'calls with iteration index');
 });
+
+tap.test('setxy', async t => {
+    let g, state;
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    g.setxy(100, 50);
+    state.turtle.x = state.turtle.ux = 100;
+    state.turtle.y = state.turtle.uy = 50;
+    t.match(g.state(), state, 'only x and y changed');
+    g.setxy();
+    state.turtle.px = 100;
+    state.turtle.py = 50;
+    t.match(g.state(), state, 'both arguments undefined');
+    
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    g.setxy(100);
+    state.turtle.x = state.turtle.ux = 100;
+    t.match(g.state(), state, 'only x given');
+    
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    g.setxy(undefined, 50);
+    state.turtle.y = state.turtle.uy = 50;
+    t.match(g.state(), state, 'only y given');
+    
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    g.setxy( {x:100, y:50}, 999 );
+    state.turtle.x = state.turtle.ux = 100;
+    state.turtle.y = state.turtle.uy = 50;
+    t.match(g.state(), state, 'object arg');
+    g.setxy({z:99}, 999);
+    state.turtle.px = 100;
+    state.turtle.py = 50;
+    t.match(g.state(), state, 'object arg: both arguments undefined');
+    
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    g.setxy({x:100, z:99}, 999);
+    state.turtle.x = state.turtle.ux = 100;
+    t.match(g.state(), state, 'object arg: only x given');
+    
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    g.setxy({y:50, z:99}, 999);
+    state.turtle.y = state.turtle.uy = 50;
+    t.match(g.state(), state, 'object arg: only y given');
+    
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    g.setxy( [100, 50, 99], 999 );
+    state.turtle.x = state.turtle.ux = 100;
+    state.turtle.y = state.turtle.uy = 50;
+    t.match(g.state(), state, 'array arg');
+    
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    g.setxy([100], 999);
+    state.turtle.x = state.turtle.ux = 100;
+    t.match(g.state(), state, 'array arg: only x given');
+    
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    g.setxy([undefined, 50]), 999;
+    state.turtle.y = state.turtle.uy = 50;
+    t.match(g.state(), state, 'array arg: only y given');
+});
