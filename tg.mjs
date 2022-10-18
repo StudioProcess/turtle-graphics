@@ -215,6 +215,28 @@ export function make_turtle_graphics() {
         pop_turtle();
     }
     
+    function mark(x, y) {
+        const size = 10;
+        
+        push_turtle();
+        penup();
+        if (x !== undefined && y !== undefined) { setxy(x, y); }
+        setheading(0);
+        
+        push_turtle();
+        back(size/2);
+        pendown();
+        forward(size);
+        penup();
+        pop_turtle();
+        
+        right(90);
+        back(size/2);
+        pendown();
+        forward(size);
+        pop_turtle();
+    }
+    
     function repeat(n, fn) {
         if ( !Number.isInteger(n) ) { 
             console.warn('repeat: number is invalid');
@@ -372,7 +394,7 @@ export function make_turtle_graphics() {
         return b;
     }
     
-    function face(x,y) {
+    function face(x, y) {
         ({ x, y } = _to_point(x, y));
         if ( ! _check_number(x, 'face', 'x') ) { return; }
         if ( ! _check_number(y, 'face', 'y') ) { return; }
@@ -400,6 +422,7 @@ export function make_turtle_graphics() {
         set_line_fn,
         reset,
         turtle: turtle_,
+        mark,
         repeat,
         // until,
         // while: while_,
