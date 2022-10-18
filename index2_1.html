@@ -26,7 +26,34 @@
             
             // Figure 2.2
             // random_move_2(0, 10, -10, 10, 500);
-            random_move_3(0, 10, -10, 10, 750);
+            // random_move_3(0, 10, -10, 10, 750);
+            
+            // Figure 2.3
+            // t.penup(); t.setxy(-220, 220); t.pendown(); find_by_smell1(2000);
+            // t.penup(); t.setxy(-220, 220); t.pendown(); find_by_smell2(20);
+            // t.penup(); t.setxy(-220, 220); t.pendown(); find_by_smell2(60);
+            // t.penup(); t.setxy(-220, 220); t.pendown(); find_by_smell2(120);
+            
+            // Figure 2.4
+            // t.penup(); t.setxy(-220, 220); t.pendown(); find_by_smell3(0, 10, 60, 10);
+            // t.penup(); t.setxy(-220, 220); t.pendown(); find_by_smell3(0, 10, 60, 30, 120);
+            // t.penup(); t.setxy(-220, 220); t.pendown(); find_by_smell3(0, 10, 60, 120, 300);
+            
+            // Figure 2.5
+            // t.penup(); t.setxy(0, 150); t.pendown(); vary_step(1500, 10);
+            // t.penup(); t.setxy(0, 150); t.pendown(); vary_turn(10, 2000, 600);
+            
+            // Figure 2.6
+            // t.penup(); t.setxy(-220, 220); t.pendown(); t.mark(0,0); keep_a_bearing([0,0], 60);
+            
+            // Figure 2.8
+            // t.penup(); t.setxy(-220, 220); t.pendown(); t.mark(0,0); head_for([0,0]);
+            
+            // Figure 2.9
+            // t.penup(); t.setxy(-220, 220); t.pendown(); t.mark(0,0); find_by_sight([0,0]);
+            
+            // p. 67
+            t.penup(); t.setxy(-220, 220); t.pendown(); t.mark(100,0); t.mark(-100,0); find_by_sight2([100,0], [-100,0]);
             
             t.turtle();
         }
@@ -35,7 +62,7 @@
         function random_move(d1, d2, a1, a2, n=100) {
             t.repeat(n, function() {
                t.left( random(a1, a2) );
-               t.forward( random(d1, d2) ); 
+               t.forward( random(d1, d2) );
             });
         }
         
@@ -49,7 +76,6 @@
             forward_failed = out_of_bounds();
             t.pop();
             if (!forward_failed) t.forward(distance);
-            
         }
         
         function stuck() {
@@ -84,6 +110,126 @@
                 if (stuck()) wriggle();
             });
         }
+        
+        // p. 59
+        function distance_to_food(foodx = 0, foody = 0) {
+            return dist(t.xcor(), t.ycor(), foodx, foody);
+        }
+        
+        let distance_last_time = -1;
+        
+        function smell() {
+            let result;
+            if (distance_last_time == -1) result = 'stronger';
+            else if (distance_to_food() > distance_last_time) result = 'weaker';
+            else result = 'stronger';
+            distance_last_time = distance_to_food();
+            return result;
+        }
+        
+        function find_by_smell1(n=1000) {
+            t.repeat(n, function() {
+                t.forward(1);
+                if (smell() === 'weaker') t.right(1);
+            });
+        }
+        
+        // p. 60
+        function find_by_smell2(turn, n=1000) {
+            t.repeat(n, function() {
+                t.forward(1);
+                if (smell() === 'weaker') t.right(turn);
+            });
+        }
+        
+        function find_by_smell3(d1, d2, smell_turn, rand_turn, n=100) {
+            t.repeat(n, function() {
+                t.forward( random(d1, d2) );
+                t.left( random(-rand_turn, rand_turn) );
+                if (smell() === 'weaker') t.right(smell_turn);
+            });
+        }
+        
+        // p. 62
+        function factor() {
+            return 1 / dist(t.xcor(), t.ycor(), 0, 0);
+        }
+        
+        function vary_step(side, angle, n=1000) {
+            t.repeat(n, function() {
+                t.forward( factor() * side);
+                t.left(angle);
+            });
+        }
+        
+        function vary_turn(side, angle, n=1000) {
+            t.repeat(n, function() {
+                t.forward(side);
+                t.left( factor() * angle );
+            });
+        }
+        
+        // p. 63
+        function keep_a_bearing(point, angle, n=600) {
+            t.repeat(n, function() {
+                t.face(point);
+                t.left(angle);
+                t.forward(1);
+            });
+        }
+        
+        // p. 64
+        function right_eye_sees(point) {
+            if (t.bearing(point) > 350 || t.bearing(point) < 60) return true;
+            return false;
+        }
+        
+        function left_eye_sees(point) {
+            if (t.bearing(point) > 300 || t.bearing(point) < 10) return true;
+            return false;
+        }
+        
+        function head_for(point, n=110) {
+            t.repeat(n, function() {
+                if (left_eye_sees(point) || right_eye_sees(point)) t.forward(10);
+                else t.left(10);
+            });
+        }
+        
+        // p. 66
+        function find_by_sight(source, step=10, n=30) {
+            t.repeat(n, function() {
+               t.forward(step);
+               if (intensity_left(source) > intensity_right(source)) t.left(10);
+               else t.right(10); 
+            });
+        }
+        
+        function intensity_left(source, strength=1) {
+            if (! left_eye_sees(source)) return 0;
+            let factor = strength / dist(t.xcor(), t.ycor(), source[0], source[1]) ** 2;
+            let angle = t.bearing(source) + 45;
+            return factor * cos( radians(angle) );
+        }
+        
+        function intensity_right(source, strength=1) {
+            if (! right_eye_sees(source)) return 0;
+            let factor = strength / dist(t.xcor(), t.ycor(), source[0], source[1]) ** 2;
+            let angle = t.bearing(source) - 45;
+            return factor * cos( radians(angle) );
+        }
+        
+        // p. 67
+        function find_by_sight2(source1, source2, n=200) {
+            t.repeat(n, function() {
+               t.forward(5);
+               let total_left = intensity_left(source1) + intensity_left(source2);
+               let total_right = intensity_right(source1) + intensity_right(source2);
+               if (total_left > total_right) t.left(10);
+               else t.right(10);
+            });
+        }
+        
     </script>
 </head>
 <body>
