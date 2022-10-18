@@ -19,8 +19,8 @@ export function make_turtle_graphics() {
             // untransformed state
             ux:  0,
             uy:  0,
-            // upx: 0,    // TODO: not really needed?
-            // upy: 0,    // TODO: not really needed?
+            upx: 0,
+            upy: 0,
             ua:  0,
             
             d:   true, // pen down status
@@ -78,6 +78,7 @@ export function make_turtle_graphics() {
         
         // transformed position
         [ turtle.x, turtle.y ] = _transform( [turtle.ux, turtle.uy], matrix );
+        [ turtle.px, turtle.py ] = _transform( [turtle.upx, turtle.upy], matrix );
         draw();
     }
     
@@ -343,6 +344,7 @@ export function make_turtle_graphics() {
         
         // transformed position
         [ turtle.x, turtle.y ] = _transform( [turtle.ux, turtle.uy], matrix );
+        [ turtle.px, turtle.py ] = _transform( [turtle.upx, turtle.upy], matrix );
         draw();
     }
     

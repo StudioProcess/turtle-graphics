@@ -402,8 +402,8 @@ tap.test('setxy', async t => {
     state.turtle.y = state.turtle.uy = 50;
     t.match(g.state(), state, 'only x and y changed');
     g.setxy();
-    state.turtle.px = 100;
-    state.turtle.py = 50;
+    state.turtle.px = state.turtle.upx = 100;
+    state.turtle.py = state.turtle.upy = 50;
     t.match(g.state(), state, 'both arguments undefined');
     
     g = tg.make_turtle_graphics();
@@ -425,8 +425,8 @@ tap.test('setxy', async t => {
     state.turtle.y = state.turtle.uy = 50;
     t.match(g.state(), state, 'object arg');
     g.setxy({z:99}, 999);
-    state.turtle.px = 100;
-    state.turtle.py = 50;
+    state.turtle.px = state.turtle.upx = 100;
+    state.turtle.py = state.turtle.upy = 50;
     t.match(g.state(), state, 'object arg: both arguments undefined');
     
     g = tg.make_turtle_graphics();
