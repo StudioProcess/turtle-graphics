@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 1.3 – Looping Programs</title>
+    <script src="./node_modules/p5/lib/p5.min.js"></script>
+    <script src="./dist/tg.mjs" type="module"></script>
+    <script>
+        function preload() {
+        }
+        
+        function setup() {
+            createCanvas(500, 500);
+            // console.log(t);
+            noLoop();
+        }
+        
+        function draw() {
+            background(220);
+            
+            // Figure 1.21
+            // spiro(20, 90, 10, 2);
+            // spiro(20, 144, 8, 5);
+            // spiro(12, 60, 10, 3);
+            // spiro_alt(20, 90, 10, 2);
+            // spiro_alt(20, 144, 8, 5);
+            // spiro_alt(12, 60, 10, 3);
+            
+            // Figure 1.22
+            // gspiro(2, 45, 11, [8, 9], 8);
+            // gspiro(30, 120, 6, [1, 3], 3);
+            // gspiro(10, 90, 11, [3, 4, 5], 4);
+            
+            // Figure 1.23
+            // gspiro(20, 90, 8, [4, 8], 1);
+            gspiro(20, 120, 11, [3, 4, 6, 7], 1);
+            
+            t.turtle();
+        }
+        
+
+        // p. 37
+        function spiro(side, angle, max, n=36) {
+            t.repeat(n, function() {
+                subspiro(side, angle, max);
+            });
+        }
+        
+        // p. 37
+        function subspiro(side, angle, max) {
+            let count = 1;
+            do {
+                t.forward(side * count);
+                t.right(angle);
+                count += 1;
+            } while (count <= max);
+        }
+        
+        function spiro_alt(side, angle, max, n=36) {
+            t.repeat(n, function() {
+                subspiro_alt(side, angle, max);
+            });
+        }
+        
+        function subspiro_alt(side, angle, max) {
+            t.repeat(max, function(i) {
+                let count = i + 1;
+                t.forward(side * count);
+                t.right(angle);
+            });
+        }
+        
+        // p. 38
+        function gspiro(side, angle, max, list=[], n=36) {
+            t.repeat(n, function() {
+                subgspiro(side, angle, max, list);
+            });
+        }
+        
+        // p. 38
+        function subgspiro(side, angle, max, list) {
+            t.repeat(max, function(i) {
+               let count = i + 1;
+               t.forward(side * count);
+               if (list.includes(count)) t.left(angle);
+               else t.right(angle);
+            });
+        }
+        
+    </script>
+</head>
+<body>
+
+</body>
+</html>
