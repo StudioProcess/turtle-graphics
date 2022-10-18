@@ -56,6 +56,14 @@ export function make_turtle_graphics() {
         return a;
     }
     
+    function _transform([x, y], matrix) {
+        const p = [ x, y ];
+        vec2.transformMat3(p, p, matrix); // Apply given transformation
+        p[0] = clean_zero(p[0]);
+        p[1] = clean_zero(p[1]);
+        return p;
+    }
+    
     function forward(units = DEFAULT_FORWARD) {
         // save previous position
         turtle.upx = turtle.ux;
@@ -69,12 +77,7 @@ export function make_turtle_graphics() {
         turtle.uy += units * Math.sin(angle_rad);
         
         // transformed position
-        const p = [ turtle.ux, turtle.uy ];
-        vec2.transformMat3(p, p, matrix); // Apply current transformation
-        p[0] = clean_zero(p[0]);
-        p[1] = clean_zero(p[1]);
-        turtle.x = p[0];
-        turtle.y = p[1];
+        [ turtle.x, turtle.y ] = _transform( [turtle.ux, turtle.uy], matrix );
         draw();
     }
     
@@ -339,12 +342,7 @@ export function make_turtle_graphics() {
         turtle.uy = y;
         
         // transformed position
-        const p = [ turtle.ux, turtle.uy ];
-        vec2.transformMat3(p, p, matrix); // Apply current transformation
-        p[0] = clean_zero(p[0]);
-        p[1] = clean_zero(p[1]);
-        turtle.x = p[0];
-        turtle.y = p[1];
+        [ turtle.x, turtle.y ] = _transform( [turtle.ux, turtle.uy], matrix );
         draw();
     }
     
