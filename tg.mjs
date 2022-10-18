@@ -462,6 +462,19 @@ if (globalThis?.addEventListener !== undefined) {
                 if (typeof original_preload === 'function') {
                     original_preload(...args);
                 }
+                
+                // Hook into createCanvas()
+                // This is the earliest we know the size of the sketch, and can translate to the center
+                // So we can use setup-only sketches, provided we have createCanvas()
+                const original_createCanvas = window.createCanvas;
+                window.createCanvas = (...args) => {
+                    console.log('-> proxied createCanvas');
+                    if (typeof original_createCanvas === 'function') {
+                        original_createCanvas(...args);
+                    }
+                    // Translate to center
+                    window.p5.instance.translate.call( window.p5.instance, window.p5.instance.width/2, window.p5.instance.height/2 );
+                };
             };
         }
     });
