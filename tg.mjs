@@ -435,6 +435,7 @@ export function globalize(tg_instance = default_instance, global_object = global
 if (globalThis?.addEventListener !== undefined) {
     const window = globalThis;
     window.addEventListener('DOMContentLoaded', e => {
+        console.log(`Turtle graphics (v${VERSION})`);
         if (window?.p5) {
             // console.log(window.p5.instance); // === null
             console.log('-> p5 detected (%s)', window.p5.VERSION);
