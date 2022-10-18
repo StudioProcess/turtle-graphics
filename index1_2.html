@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 1.2. – POLYs and Other Closed Paths</title>
+    <script src="./node_modules/p5/lib/p5.min.js"></script>
+    <script src="./dist/tg.mjs" type="module"></script>
+    <script>
+        function preload() {
+        }
+        
+        function setup() {
+            createCanvas(500, 500);
+            // console.log(t);
+            noLoop();
+        }
+        
+        function draw() {
+            background(220);
+            // poly(100, 360 / 5, 5);
+            // poly(100, 360 / 6, 6);
+            // poly(100, 360 / 7, 7);
+            
+            // ngon(100, 3);
+            // ngon(100, 4);
+            // ngon(100, 5);
+            // ngon(100, 6);
+            // ngon(100, 7);
+            // ngon(100, 8);
+            
+            // poly(100, 144, 5); // p. 23
+            
+            // polystop(100, 80);
+            
+            // polyroll(100, 90, 30);
+            polyroll(100, 60, 45);
+            
+            t.turtle();
+        }
+        
+        //  p. 15
+        function poly(side, angle, n=360) {
+            t.repeat(n, function() {
+               t.forward(side);
+               t.right(angle); 
+            });
+        }
+        
+        function ngon(side, n) {
+            poly(side, 360/n, n);
+        }
+        
+        // p. 29
+        function polystop(side, angle) {
+            let turn = 0;
+            do {
+                t.forward(side);
+                t.right(angle);
+                turn += angle;
+            } while (turn % 360 != 0)
+        }
+        
+        function polyroll(side, angle1, angle2, n=36) {
+            t.repeat(n, function() {
+                polystop(side, angle1);
+                t.right(angle2);
+            });
+        }
+
+    </script>
+</head>
+<body>
+
+</body>
+</html>
