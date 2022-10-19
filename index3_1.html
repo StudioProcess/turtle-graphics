@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 3.1 – Vector Analysis of Turtle Programs</title>
+    <script src="./node_modules/p5/lib/p5.min.js"></script>
+    <script src="./dist/tg.mjs" type="module"></script>
+    <script>
+        function preload() {
+        }
+        
+        function setup() {
+            createCanvas(500, 500);
+            // console.log(t);
+            noLoop();
+        }
+        
+        function draw() {
+            background(220);
+            
+            // Figure 3.7
+            // duopoly(75, 90, 75, 320);
+            // duopoly(80, 90, 80, 300);
+            // duopoly(20, 10, 20, -15);
+            // duopoly(2, 2, 4, -2, 180);
+            // duopoly(80, 62, 80, 300, 180);
+            // duopoly(30, 19, 30, -20, 360);
+            
+            // Figure 3.9
+            // duopoly(25, 45, 10, 9, 100);
+            // duopoly(11.67, 32, 6.67, 4, 100);
+            
+            // p. 119
+            // multipoly([ [100,90], [50,60], [20,30] ], 12);
+            
+            // Figure 3.10
+            // multipoly([ [2,1], [2,-8], [2,16], [2,-2] ], 360);
+            // t.rotate(90); multipoly([ [2,2], [2,-3], [2,5], [2,-7] ], 360);
+            // t.rotate(-130); multipoly([ [20,20], [20,-30], [20,40], [20,-50] ], 360);
+            t.rotate(90); multipoly([ [7,7], [7,-8], [7,9], [7,-10] ], 360);
+            
+            // Figure 3.11
+            // t.scale(-1, 1); gspiro(20, 120, 11, [3,4,6,7]);
+            
+            // Figure 3.12
+            // gospel(150, 40);
+            // gospel(100, 10);
+        
+            t.turtle();
+        }
+        
+        // p. 114
+        function duopoly(side1, angle1, side2, angle2, n=100) {
+            let c = 0;
+            t.repeat(n, function() {
+                vector(c * angle1, side1);
+                vector(c * angle2, side2);
+                c += 1;
+            });
+        }
+        
+        // p. 115
+        function vector(direction, length) {
+            t.setheading(direction);
+            t.forward(length);
+        }
+        
+        // p. 119
+        function multipoly(input_list, n=10) {
+            let c = 0;
+            t.repeat(n, function() {
+                for (let [side, angle] of input_list) {
+                    vector(c * angle, side);
+                }
+                c += 1;
+            });
+        }
+        
+        // p. 121
+        function gspiro(side, angle, max, list, n=10) {
+            t.repeat(n, function() {
+                subgspiro(side, angle, max, list);
+            });
+        }
+        
+        function subgspiro(side, angle, max, list) {
+            let count = 1;
+            do {
+                t.forward(side * count);
+                if (list.includes(count)) t.right(angle);
+                else t.left(angle);
+                count += 1;
+            } while (count <= max);
+        }
+        
+        // p. 123
+        function gospel(side, angle, limit=10) {
+            if (limit == 0) return;
+            t.left(angle);
+            t.forward(side);
+            gospel(side, 2 * angle, limit-1);
+        }
+        
+    </script>
+</head>
+<body>
+
+</body>
+</html>
