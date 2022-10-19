@@ -156,6 +156,39 @@ export function make_turtle_graphics() {
         pop_matrix();
     }
     
+    function getturtle() {
+        return { x: turtle.x, y: turtle.y, a: turtle.a, d: turtle.d };
+    }
+    
+    function _to_turtle(x, y, a, d) {
+        // allow [x, y, a, d] as first parameter
+        // needs to be tested first, cause arrays of type 'object'
+        if (Array.isArray(x)) {
+            const arr = x;
+            x = arr.at(0);
+            y = arr.at(1);
+            a = arr.at(2);
+            d = arr.at(3);
+        }
+        // allow {x, y, a, d} as first parameter
+        else if (typeof x === 'object') {
+            const obj = x;
+            x = obj?.x;
+            y = obj?.y;
+            a = obj?.a;
+            d = obj?.d;
+        }
+        return { x, y, a, d };
+    }
+    
+    // TOOD: check new_turtle
+    function setturtle(x, y, a, d) {
+        const new_turtle = _to_turtle(x, y, a, d);
+        setxy(new_turtle.x, new_turtle.y); // tolerates undefined
+        if ( Number.isFinite(new_turtle.a) ) { setheading(new_turtle.a); }
+        if ( typeof new_turtle.d === 'boolean' ) { pendown(new_turtle.d); }
+    }
+    
     // Note: this function exposes the actual internal objects
     function state() {
         return {
@@ -418,6 +451,8 @@ export function make_turtle_graphics() {
         pop_turtle,
         push_matrix,
         pop_matrix,
+        getturtle,
+        setturtle,
         state,
         set_line_fn,
         reset,
