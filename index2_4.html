@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 2.4 – Recursive Designs</title>
+    <script src="./node_modules/p5/lib/p5.min.js"></script>
+    <script src="./dist/tg.mjs" type="module"></script>
+    <script>
+        function preload() {
+        }
+        
+        function setup() {
+            createCanvas(500, 500);
+            // console.log(t);
+            noLoop();
+        }
+        
+        function draw() {
+            background(220);
+            
+            // Figure 2.23
+            // nested_triangle(200);
+            
+            // p. 88
+            // corner_tri(100);
+            
+            // p. 89
+            // outward_tri(150);
+            
+            // Figure 2.24
+            // cornerpoly(100, 90);
+            // cornerpoly(100, 120);
+            // cornerpoly(65, 60);
+            // cornerpoly(100, 144);
+            
+            // p. 90
+            // nested_triangle_2(200, 6);
+            
+            // Figure 2.25
+            // snowflake(200, 2);
+            // snowflake(200, 4);
+            
+            // Figure 2.26a
+            // t.left(90); c(5, 10);
+            
+            // Figure 2.26b
+            // ldragon(5, 11);
+            
+            // Figure 2.27
+            // fill_(200, 1);
+            // fill_(200, 2);
+            // fill_(200, 4);
+            
+            // Figure 2.28
+            // lhilbert(10, 3);
+            // hilbert(50, 2);
+            // hilbert(25, 3);
+            hilbert(7, 5);
+            
+            
+            t.turtle();
+        }
+        
+        // p. 88
+        function nested_triangle(size) {
+            if (size < 10) return;
+            t.repeat(3, () => {
+                nested_triangle(size/2);
+                t.forward(size);
+                t.right(120);
+            });
+        }
+        
+        function corner_tri(size) {
+            if (size < 10) return;
+            t.repeat(3, () => {
+                t.forward(size);
+                corner_tri(size/2);
+                t.right(120);
+            });
+        }
+        
+        // p. 89
+        function outward_tri(size) {
+            if (size < 10) return;
+            t.repeat(3, () => {
+                t.forward(size/2);
+                insert(size);
+                t.forward(size/2);
+                t.right(120);
+            });
+        }
+        
+        function insert(size) {
+            t.left(120);
+            outward_tri(size/2);
+            // ensure state transparency of insert
+            t.right(120);
+        }
+        
+        function cornerpoly(size, angle, totalturn=0) {
+            if (size < 10) return;
+            do {
+                cornerpolystep(size, angle);
+                totalturn += angle;
+            } while (totalturn % 360 != 0);
+        }
+        
+        function cornerpolystep(size, angle) {
+            t.forward(size);
+            cornerpoly(size/2, -angle, 0);
+            //  using -angle "symmetrizes" the figure
+            t.right(angle);
+        }
+        
+        // p. 90
+        function nested_triangle_2(size, level=3) {
+            if (level == 0) return;
+            t.repeat(3, () =>  {
+                nested_triangle_2(size/2, level - 1);
+                t.forward(size);
+                t.right(120);
+            });
+        }
+        
+        // p. 91
+        function snowflake(size, level=3) {
+            t.repeat(3, () => {
+                side(size, level);
+                t.right(120);
+            });
+        }
+        
+        function side(size, level) {
+            if (level == 0) {
+                t.forward(size);
+                return;
+            }
+            side(size/3, level - 1);
+            t.left(60);
+            side(size/3, level - 1);
+            t.right(120);
+            side(size/3, level - 1);
+            t.left(60);
+            side(size/3, level - 1);
+        }
+        
+        // p. 92
+        function c(size, level=3) {
+            if (level == 0) {
+                t.forward(size);
+                return;
+            }
+            c(size, level - 1);
+            t.right(90);
+            c(size, level - 1);
+            t.left(90);
+        }
+        
+        // p. 93
+        function ldragon(size, level=11) {
+            if (level == 0) {
+                t.forward(size);
+                return;
+            }
+            ldragon(size, level - 1);
+            t.left(90);
+            rdragon(size, level - 1);
+        }
+        
+        function rdragon(size, level=11) {
+            if (level == 0) {
+                t.forward(size);
+                return;
+            }
+            ldragon(size, level - 1);
+            t.right(90);
+            rdragon(size, level - 1);
+        }
+        
+        // p. 94
+        function fill_(size, level=3) {
+            if (level == 0) {
+                t.forward(size);
+                return;
+            }
+            // side of small square is 1/3 side of large square
+            fill_(size/3, level - 1);
+            // interface to next subfigure is left(90);
+            t.left(90);
+            fill_(size/3, level - 1);
+            // next three subfigures have right(90) as interface
+            t.repeat(3, () => {
+                t.right(90);
+                fill_(size/3, level - 1);
+            });
+            // next three have left(90) as interface
+            t.repeat(3, () => {
+                t.left(90);
+                fill_(size/3, level - 1);
+            });
+            // final subfigure has right(90) as interface
+            t.right(90);
+            fill_(size/3, level - 1);
+        }
+        
+        // p. 96
+        function lhilbert(size, level=3) {
+            if (level == 0) return;
+            // rotate and draw first subcurve with opposite parity to big curve
+            t.left(90);
+            rhilbert(size, level - 1);
+            // interface to and draw second subcurve with same parity as big curve
+            t.forward(size);
+            t.right(90);
+            lhilbert(size, level - 1);
+            // third subcurve
+            t.forward(size);
+            lhilbert(size, level - 1);
+            // fourth subcurve
+            t.right(90);
+            t.forward(size);
+            rhilbert(size, level - 1);
+            // a final turn is needed to make the turtle end up facing outward from the large square
+            t.left(90);
+        }
+        
+        // p. 98
+        function rhilbert(size, level=3) {
+            if (level == 0) return;
+            t.right(90);
+            lhilbert(size, level - 1);
+            t.forward(size);
+            t.left(90);
+            rhilbert(size, level - 1);
+            t.forward(size);
+            rhilbert(size, level - 1);
+            t.left(90);
+            t.forward(size);
+            lhilbert(size, level - 1);
+            t.right(90);
+        }
+        
+        function hilbert(size, level=3, parity=1) {
+            if (level == 0) return;
+            t.left(parity * 90);
+            hilbert(size, level - 1, -parity);
+            t.forward(size);
+            t.right(parity * 90);
+            hilbert(size, level - 1, parity);
+            t.forward(size);
+            hilbert(size, level - 1, parity);
+            t.right(parity * 90);
+            t.forward(size);
+            hilbert(size, level - 1, -parity);
+            t.left(parity * 90);
+        }
+        
+    </script>
+</head>
+<body>
+
+</body>
+</html>
