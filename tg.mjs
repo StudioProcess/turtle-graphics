@@ -8,7 +8,7 @@ const VERSION = 1;
 
 // Constructor function
 export function make_turtle_graphics() {
-    function create_turtle() {
+    function _create_turtle() {
         return {
             x:   0,    // position (x)
             y:   0,    // position (y)
@@ -27,7 +27,7 @@ export function make_turtle_graphics() {
         };
     }
     
-    let turtle = create_turtle(); // turtle state
+    let turtle = _create_turtle(); // turtle state
     let turtle_stack  = [];       // turtle stack
     
     let matrix = mat3.create();   // transformation matrix
@@ -35,14 +35,14 @@ export function make_turtle_graphics() {
     
     let line_fn; // line drawing function
     
-    function draw() {
+    function _draw() {
         if (turtle.d && typeof line_fn === 'function') {
             line_fn(turtle.px, turtle.py, turtle.x, turtle.y);
         }
     }
     
     // 50.000000000000014 -> 50
-    function clean_zero(v) {
+    function _clean_zero(v) {
         if (Math.abs(v % 1) < EPSILON) {
             return Math.trunc(v);
         } else {
@@ -50,7 +50,7 @@ export function make_turtle_graphics() {
         }
     }
     
-    function clean_angle(a) {
+    function _clean_angle(a) {
         a = a % 360;
         if (a < 0) { a += 360; }
         return a;
@@ -59,8 +59,8 @@ export function make_turtle_graphics() {
     function _transform([x, y], matrix) {
         const p = [ x, y ];
         vec2.transformMat3(p, p, matrix); // Apply given transformation
-        p[0] = clean_zero(p[0]);
-        p[1] = clean_zero(p[1]);
+        p[0] = _clean_zero(p[0]);
+        p[1] = _clean_zero(p[1]);
         return p;
     }
     
@@ -84,7 +84,7 @@ export function make_turtle_graphics() {
         // transformed position
         [ turtle.x, turtle.y ] = _transform( [turtle.ux, turtle.uy], matrix );
         [ turtle.px, turtle.py ] = _transform( [turtle.upx, turtle.upy], matrix );
-        draw();
+        _draw();
     }
     
     /**
@@ -104,10 +104,10 @@ export function make_turtle_graphics() {
     function right(angle = DEFAULT_RIGHT) {
         // update untransformed angle
         turtle.ua += angle;
-        turtle.ua = clean_angle(turtle.ua);
+        turtle.ua = _clean_angle(turtle.ua);
         // update transformed angle as well
         turtle.a += angle;
-        turtle.a = clean_angle(turtle.a);
+        turtle.a = _clean_angle(turtle.a);
     }
     
     /**
@@ -157,7 +157,7 @@ export function make_turtle_graphics() {
         mat3.rotate( matrix, matrix, ra / 180 * Math.PI );
         // update transformed angle as well
         turtle.a += ra;
-        turtle.a = clean_angle(turtle.a);
+        turtle.a = _clean_angle(turtle.a);
     }
     
     /**
@@ -309,7 +309,7 @@ export function make_turtle_graphics() {
      * @function reset_turtle
      */
     function reset_turtle() {
-        turtle = create_turtle(); // turtle state
+        turtle = _create_turtle(); // turtle state
         turtle_stack = [];        // turtle stack
     }
     
@@ -510,7 +510,7 @@ export function make_turtle_graphics() {
         // transformed position
         [ turtle.x, turtle.y ] = _transform( [turtle.ux, turtle.uy], matrix );
         [ turtle.px, turtle.py ] = _transform( [turtle.upx, turtle.upy], matrix );
-        draw();
+        _draw();
     }
     
     /**
@@ -524,10 +524,10 @@ export function make_turtle_graphics() {
         const rotation = turtle.a - turtle.ua; // get rotation applied via rotate()
         // set untransformed angle
         turtle.ua = angle;
-        turtle.ua = clean_angle(turtle.ua);
+        turtle.ua = _clean_angle(turtle.ua);
         // set transformed angle as well
         turtle.a = angle + rotation;
-        turtle.a = clean_angle(turtle.a);
+        turtle.a = _clean_angle(turtle.a);
     }
     
     /**
@@ -590,7 +590,7 @@ export function make_turtle_graphics() {
         if (vx == 0 && vy == 0) { return 0; }
         let b = Math.atan2(vy, vx) / Math.PI * 180; // [-180, +180] angle between positive x-axis and vector
         b = b + 90 - turtle.a;
-        b = clean_angle(b);
+        b = _clean_angle(b);
         return b;
     }
     
