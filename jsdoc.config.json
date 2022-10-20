@@ -1,0 +1,8 @@
+{
+  "source": {
+    "includePattern": ".+\\.(m)?js(doc|x)?$"
+  },
+  "opts": {
+    "destination": "./docs/"
+  }
+}

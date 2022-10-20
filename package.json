@@ -6,7 +6,9 @@
   "scripts": {
     "build": "rollup -c && cp -Rf static/ dist",
     "start": "rollup -cw & browser-sync . --port 8080 --no-notify --files '*.html,dist'",
-    "test": "tap"
+    "test": "tap",
+    "build-docs": "jsdoc -c jsdoc.config.json tg.mjs",
+    "docs": "npm run build-docs"
   },
   "keywords": [],
   "author": "Martin Grödl <martin@process.studio> (https://process.studio)",
@@ -21,6 +23,7 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.0.0",
     "browser-sync": "^2.27.10",
+    "jsdoc": "^3.6.11",
     "p5": "^1.5.0",
     "rollup": "^3.2.3",
     "tap": "^16.3.0"

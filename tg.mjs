@@ -64,6 +64,11 @@ export function make_turtle_graphics() {
         return p;
     }
     
+    /**
+     * Move turtle forward.
+     * 
+     * @function forward
+     */
     function forward(units = DEFAULT_FORWARD) {
         // save previous position
         turtle.upx = turtle.ux;
@@ -82,10 +87,20 @@ export function make_turtle_graphics() {
         draw();
     }
     
+    /**
+     * Move turtle back.
+     * 
+     * @function back
+     */
     function back(units = DEFAULT_FORWARD) {
         return forward(-units);
     }
     
+    /**
+     * Turn turtle to the right.
+     * 
+     * @function right
+     */
     function right(angle = DEFAULT_RIGHT) {
         // update untransformed angle
         turtle.ua += angle;
@@ -95,23 +110,48 @@ export function make_turtle_graphics() {
         turtle.a = clean_angle(turtle.a);
     }
     
+    /**
+     * Turn turtle to the right.
+     * 
+     * @function left
+     */
     function left(angle = DEFAULT_RIGHT) {
         return right(-angle);
     }
     
+    /**
+     * Lower the pen.
+     * 
+     * @function pendown
+     */
     function pendown(down = true) {
         turtle.d = down;
     }
     
+    /**
+     * Raise the pen.
+     * 
+     * @function penup
+     */
     function penup(up = true) {
         turtle.d = !up;
     }
     
+    /**
+     * Translate the coordinate system.
+     * 
+     * @function translate
+     */
     function translate(tx = 0, ty = 0) {
         // update transformation matrix
         mat3.translate( matrix, matrix, [tx, ty] );
     }
     
+    /**
+     * Rotate the coordinate system.
+     * 
+     * @function rotate
+     */
     function rotate(ra = 0) {
         // update transformation matrix
         mat3.rotate( matrix, matrix, ra / 180 * Math.PI );
@@ -120,42 +160,82 @@ export function make_turtle_graphics() {
         turtle.a = clean_angle(turtle.a);
     }
     
+    /**
+     * Scale the coordinate system.
+     * 
+     * @function scale
+     */
     function scale(sx = 1, sy = undefined) {
         if (sy === undefined) { sy = sx; }
         // update transformation matrix
         mat3.scale( matrix, matrix, [sx, sy] );
     }
     
+    /**
+     * Push the turtles state onto the stack.
+     * 
+     * @function push_turtle
+     */
     function push_turtle() {
         turtle_stack.push( Object.assign({}, turtle) ); // push a copy
     }
     
+    /**
+     * Restore the last pushed turtle state from the stack.
+     * 
+     * @function pop_turtle
+     */
     function pop_turtle() {
         if (turtle_stack.length > 0) {
             turtle = turtle_stack.pop();
         }
     }
     
+    /**
+     * Push the current transformation matrix onto the stack.
+     * 
+     * @function push_matrix
+     */
     function push_matrix() {
         matrix_stack.push( mat3.clone(matrix) ); // push a copy
     }
     
+    /**
+     * Restore the last pushed transformation matrix from the stack.
+     * 
+     * @function pop_matrix
+     */
     function pop_matrix() {
         if (matrix_stack.length > 0) {
             matrix = matrix_stack.pop();
         }
     }
     
+    /**
+     * Push turtle state and transformation matrix onto the stack.
+     * 
+     * @function push
+     */
     function push() {
         push_turtle();
         push_matrix();
     }
     
+    /**
+     * Restore the last pushed turtle state and transformation matrix from the stack.
+     * 
+     * @function pop
+     */
     function pop() {
         pop_turtle();
         pop_matrix();
     }
     
+    /**
+     * Get turtle position, heading angle and pen state.
+     * 
+     * @function getturtle
+     */
     function getturtle() {
         return { x: turtle.x, y: turtle.y, a: turtle.a, d: turtle.d };
     }
@@ -181,6 +261,11 @@ export function make_turtle_graphics() {
         return { x, y, a, d };
     }
     
+    /**
+     * Set turtle position and/or heading angle and/or pen state.
+     * 
+     * @function setturtle
+     */
     // TOOD: check new_turtle
     function setturtle(x, y, a, d) {
         const new_turtle = _to_turtle(x, y, a, d);
@@ -189,6 +274,11 @@ export function make_turtle_graphics() {
         if ( typeof new_turtle.d === 'boolean' ) { pendown(new_turtle.d); }
     }
     
+    /**
+     * Get full internal state.
+     * 
+     * @function state
+     */
     // Note: this function exposes the actual internal objects
     function state() {
         return {
@@ -203,14 +293,41 @@ export function make_turtle_graphics() {
         line_fn = fn;
     }
     
+    /**
+     * Reset turtle state and transformations.
+     * 
+     * @function reset
+     */
     function reset() {
+        reset_turtle();
+        reset_matrix();
+    }
+    
+    /**
+     * Reset turtle state.
+     * 
+     * @function reset_turtle
+     */
+    function reset_turtle() {
         turtle = create_turtle(); // turtle state
         turtle_stack = [];        // turtle stack
-        
+    }
+    
+    /**
+     * Reset transformation matrix.
+     * 
+     * @function reset_turtle
+     */
+    function reset_matrix() {
         matrix = mat3.create();   // transformation matrix
         matrix_stack = [];        // matrix stack
     }
     
+    /**
+     * Draw the turtle at its current position.
+     * 
+     * @function turtle
+     */
     function turtle_() {
         const top_angle = 36;
         const height = 15;
@@ -252,6 +369,11 @@ export function make_turtle_graphics() {
         pop_turtle();
     }
     
+    /**
+     * Draw a small + at the turtles current position.
+     * 
+     * @function mark
+     */
     function mark(x, y) {
         const size = 10;
         
@@ -274,6 +396,11 @@ export function make_turtle_graphics() {
         pop_turtle();
     }
     
+    /**
+     * Repeat a function a number of times.
+     * 
+     * @function repeat
+     */
     function repeat(n, fn) {
         if ( !Number.isInteger(n) ) { 
             console.warn('repeat: number is invalid');
@@ -357,6 +484,11 @@ export function make_turtle_graphics() {
         return { x, y };
     }
     
+    /**
+     * Set the turtles x and y coordinates.
+     * 
+     * @function setxy
+     */
     // TODO: think about naming (e.g. moveto, lineto)
     function setxy(x, y) {
         ({ x, y } = _to_point(x, y));
@@ -381,6 +513,11 @@ export function make_turtle_graphics() {
         draw();
     }
     
+    /**
+     * Set the turtles heading.
+     * 
+     * @function setxy
+     */
     // TODO: think about naming
     function setheading(angle) {
         if ( ! _check_number(angle, 'setheading', 'angle') ) { return; }
@@ -393,26 +530,56 @@ export function make_turtle_graphics() {
         turtle.a = clean_angle(turtle.a);
     }
     
+    /**
+     * Get the turtles x coordinate.
+     * 
+     * @function xcor
+     */
     function xcor() {
         return turtle.x;
     }
     
+    /**
+     * Get the turtles y coordinate.
+     * 
+     * @function ycor
+     */
     function ycor() {
         return turtle.y;
     }
     
+    /**
+     * Get the turtles heading.
+     * 
+     * @function heading
+     */
     function heading() {
         return turtle.a;
     }
     
+    /**
+     * Get whether the pen is currently down.
+     * 
+     * @function isdown
+     */
     function isdown() {
         return turtle.d;
     }
     
+    /**
+     * Get whether the pen is currently up.
+     * 
+     * @function isup
+     */
     function isup() {
         return !turtle.d;
     }
     
+    /**
+     * Get the bearing from the turtle to a point x, y.
+     * 
+     * @function bearing
+     */
     function bearing(x, y) {
         ({ x, y } = _to_point(x, y));
         if ( ! _check_number(x, 'bearing', 'x') ) { return; }
@@ -427,6 +594,11 @@ export function make_turtle_graphics() {
         return b;
     }
     
+    /**
+     * Turn the turtle to face a point x, y.
+     * 
+     * @function face
+     */
     function face(x, y) {
         ({ x, y } = _to_point(x, y));
         if ( ! _check_number(x, 'face', 'x') ) { return; }
@@ -456,6 +628,8 @@ export function make_turtle_graphics() {
         state,
         set_line_fn,
         reset,
+        reset_turtle,
+        reset_matrix,
         turtle: turtle_,
         mark,
         repeat,
@@ -509,7 +683,7 @@ if (globalThis?.addEventListener !== undefined) {
                 
                 // 'pre' runs before each draw
                 window.p5.instance.registerMethod('pre', function() {
-                    default_instance.reset();
+                    default_instance.reset_matrix();
                     // "this" is bound to the p5 instance
                     this.translate(this.width/2, this.height/2);
                 });
