@@ -5,9 +5,7 @@ import * as tg from './tg.mjs';
 // console.log(tg);
 
 // TODO:
-// * getturtle, setturtle
 // * maketurtle
-// * jumpxy
 
 tap.test('instance creation', async t => {
     const g = tg.make_turtle_graphics();
@@ -491,6 +489,20 @@ tap.test('setxy', async t => {
     g.setxy([undefined, 50]), 999;
     state.turtle.y = state.turtle.uy = 50;
     t.match(g.state(), state, 'array arg: only y given');
+});
+
+tap.only('jumpxy', async t => {
+    let n = 0;
+    function line_fn() { n += 1; }
+    let g, state;
+    g = tg.make_turtle_graphics();
+    g.set_line_fn(line_fn);
+    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    g.jumpxy(100, 50);
+    state.turtle.x = state.turtle.ux = 100;
+    state.turtle.y = state.turtle.uy = 50;
+    t.match(g.state(), state, 'only x and y changed');
+    t.equal(n, 0, 'no lines drawn');
 });
 
 tap.test('setheading', async t => {
