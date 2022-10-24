@@ -4,8 +4,7 @@ import * as tg from './tg.mjs';
 // console.log(tap);
 // console.log(tg);
 
-// TODO: 
-// * mark
+// TODO:
 // * getturtle, setturtle
 // * maketurtle
 // * jumpxy
@@ -373,7 +372,9 @@ tap.test('push / pop', async t => {
 });
 
 tap.test('turtle', async t => {
-    let g = tg.make_turtle_graphics();
+    const g = tg.make_turtle_graphics();
+    let n = 0;
+    function line_fn() { n += 1; }
     // do stuff
     g.scale(2,2);
     g.rotate(45);
@@ -382,8 +383,30 @@ tap.test('turtle', async t => {
     g.right(50);
     g.penup();
     const state_before_turtle = JSON.parse(JSON.stringify(g.state())); // copy state
+    g.set_line_fn(line_fn);
+    t.ok(n === 0, 'no drawing up until now');
     g.turtle();
     t.match(g.state(), state_before_turtle, 'state is unchanged');
+    t.ok(n > 1, 'turtle did some drawing');
+});
+
+tap.test('mark', async t => {
+    const g = tg.make_turtle_graphics();
+    let n = 0;
+    function line_fn() { n += 1; }
+    // do stuff
+    g.scale(2,2);
+    g.rotate(45);
+    g.translate(10, 10);
+    g.back(50);
+    g.left(50);
+    g.penup();
+    const state_before_turtle = JSON.parse(JSON.stringify(g.state())); // copy state
+    g.set_line_fn(line_fn);
+    t.ok(n === 0, 'no drawing up until now');
+    g.mark();
+    t.match(g.state(), state_before_turtle, 'state is unchanged after mark');
+    t.ok(n > 1, 'mark did some drawing');
 });
 
 tap.test('repeat', async t => {
