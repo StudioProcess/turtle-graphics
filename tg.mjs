@@ -260,7 +260,7 @@ export function make_turtle_graphics(line_fn_ = undefined) {
             d = arr.at(3);
         }
         // allow {x, y, a, d} as first parameter
-        else if (typeof x === 'object') {
+        else if (typeof x === 'object' && x !== null) {     
             const obj = x;
             x = obj?.x;
             y = obj?.y;
@@ -484,7 +484,7 @@ export function make_turtle_graphics(line_fn_ = undefined) {
             y = arr.at(1);
         }
         // allow {x, y} as first parameter
-        else if (typeof x === 'object') {
+        else if (typeof x === 'object' && x !== null) {
             const obj = x;
             x = obj?.x;
             y = obj?.y;

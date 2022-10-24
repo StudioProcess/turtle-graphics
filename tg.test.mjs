@@ -446,6 +446,12 @@ tap.test('setxy', async t => {
     
     g = tg.make_turtle_graphics();
     state = JSON.parse(JSON.stringify(g.state())); // copy state
+    g.setxy(null, 50);
+    state.turtle.y = state.turtle.uy = 50;
+    t.match(g.state(), state, 'only y given (null)');
+    
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state())); // copy state
     g.setxy( {x:100, y:50}, 999 );
     state.turtle.x = state.turtle.ux = 100;
     state.turtle.y = state.turtle.uy = 50;
@@ -626,19 +632,79 @@ tap.test('face', async t => {
     g.face(0, -100);
 });
 
-// tap.test('while', async t => {
-//     const g = tg.make_turtle_graphics();
-//     let n = 0;
-//     let i = -1;
-//     const fn = (idx) => {
-//         n += 1;
-//         i = idx;
-//     };
-//     
-//     g.while(n != 0, fn);
-//     t.equal(n, 0, 'not called');
-//     
-//     g.while(n < 10, fn);
-//     t.equal(n, 10, 'called 10 times');
-//     t.equal(i, 9, 'last index 9');
-// });
+tap.test('getturtle', async t => {
+    const g = tg.make_turtle_graphics();
+    // do some stuff
+    g.scale(2,2);
+    g.rotate(45);
+    g.translate(10, 10);
+    g.forward(50);
+    g.right(50);
+    g.penup();
+    const x = g.getturtle();
+    const x_copy = JSON.parse(JSON.stringify(x));
+    t.match(g.state().turtle, x, 'getturtle matches current state');
+    // do more stuff
+    g.scale(2,2);
+    g.rotate(45);
+    g.translate(10, 10);
+    g.forward(50);
+    g.right(50);
+    g.pendown();
+    const y = g.getturtle();
+    t.match(x, x_copy, 'old getturtle is unchanged');
+    t.not(y, x, 'new getturtle returns new object');
+    t.match(g.state().turtle, y, 'new getturtle matches current state');
+});
+
+tap.test('setturtle', async t => {
+    let o = { x:10, y:20, a:30, d:false };
+    let g, state;
+    
+    g = tg.make_turtle_graphics();
+    g.setturtle(o.x, o.y, o.a, o.d, 99);
+    t.match(g.state().turtle, o, 'setturtle with all arguments');
+    
+    g = tg.make_turtle_graphics();
+    g.setturtle([o.x, o.y, o.a, o.d], 99, 99, 99, 99);
+    t.match(g.state().turtle, o, 'setturtle with array argument');
+    
+    g = tg.make_turtle_graphics();
+    g.setturtle(o, 99, 99, 99, 99);
+    t.match(g.state().turtle, o, 'setturtle with object argument');
+    
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state().turtle));
+    g.setturtle(o.x);
+    t.match(g.state().turtle, {x:o.x, y:state.y, a:state.a, d:state.d}, 'set only x');
+    
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state().turtle));
+    g.setturtle(undefined, o.y);
+    t.match(g.state().turtle, {x:state.x, y:o.y, a:state.a, d:state.d}, 'set only y');
+    
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state().turtle));
+    g.setturtle(undefined, undefined, o.a);
+    t.match(g.state().turtle, {x:state.x, y:state.y, a:o.a, d:state.d}, 'set only a');
+    
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state().turtle));
+    g.setturtle(undefined, undefined, undefined, o.d);
+    t.match(g.state().turtle, {x:state.x, y:state.y, a:state.a, d:o.d}, 'set only d');
+    
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state().turtle));
+    g.setturtle(null, o.y);
+    t.match(g.state().turtle, {x:state.x, y:o.y, a:state.a, d:state.d}, 'set only y (null)');
+    
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state().turtle));
+    g.setturtle(null, null, o.a);
+    t.match(g.state().turtle, {x:state.x, y:state.y, a:o.a, d:state.d}, 'set only a (null)');
+    
+    g = tg.make_turtle_graphics();
+    state = JSON.parse(JSON.stringify(g.state().turtle));
+    g.setturtle(null, null, null, o.d);
+    t.match(g.state().turtle, {x:state.x, y:state.y, a:state.a, d:o.d}, 'set only d (null)');
+});
