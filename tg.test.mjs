@@ -7,6 +7,7 @@ import * as tg from './tg.mjs';
 // TODO: 
 // * mark
 // * getturtle, setturtle
+// * maketurtle
 
 tap.test('instance creation', async t => {
     const g = tg.make_turtle_graphics();

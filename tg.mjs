@@ -7,8 +7,8 @@ const GLOBAL_VAR_NAME = 't';
 const VERSION = 1;
 
 // Constructor function
-export function make_turtle_graphics() {
-    function _create_turtle() {
+export function make_turtle_graphics(line_fn_ = undefined) {
+    function _make_turtle_state() {
         return {
             x:   0,    // position (x)
             y:   0,    // position (y)
@@ -27,13 +27,22 @@ export function make_turtle_graphics() {
         };
     }
     
-    let turtle = _create_turtle(); // turtle state
+    let turtle = _make_turtle_state(); // turtle state
     let turtle_stack  = [];       // turtle stack
     
     let matrix = mat3.create();   // transformation matrix
     let matrix_stack  = [];       // matrix stack
     
-    let line_fn; // line drawing function
+    let line_fn = line_fn_; // line drawing function
+    
+    /**
+     * Create a new turtle instance.
+     * 
+     * @function maketurtle
+     */
+    function maketurtle(line_fn_ = undefined) {
+        return make_turtle_graphics(line_fn_ || line_fn);
+    }
     
     function _draw() {
         if (turtle.d && typeof line_fn === 'function') {
@@ -309,8 +318,8 @@ export function make_turtle_graphics() {
      * @function reset_turtle
      */
     function reset_turtle() {
-        turtle = _create_turtle(); // turtle state
-        turtle_stack = [];        // turtle stack
+        turtle = _make_turtle_state(); // turtle state
+        turtle_stack = [];             // turtle stack
     }
     
     /**
@@ -608,6 +617,7 @@ export function make_turtle_graphics() {
     
     return {
         VERSION,
+        maketurtle,
         forward,
         back,
         right,
