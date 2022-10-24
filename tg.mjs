@@ -523,9 +523,21 @@ export function make_turtle_graphics(line_fn_ = undefined) {
     }
     
     /**
+     * Set the turtles x and y coordinates, without drawing to the new position.
+     * 
+     * @function jumpxy
+     */
+    function jumpxy(x, y) {
+        const down = isdown(); // save pen down state
+        penup();
+        setxy(x, y);
+        pendown(down); // restore pen down state
+    }
+    
+    /**
      * Set the turtles heading.
      * 
-     * @function setxy
+     * @function setheading
      */
     // TODO: think about naming
     function setheading(angle) {
@@ -646,6 +658,7 @@ export function make_turtle_graphics(line_fn_ = undefined) {
         // until,
         // while: while_,
         setxy,
+        jumpxy,
         setheading,
         xcor,
         ycor,
