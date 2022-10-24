@@ -295,6 +295,7 @@ export function make_turtle_graphics(line_fn_ = undefined) {
             turtle_stack,
             matrix,
             matrix_stack,
+            line_fn,
         };
     }
     

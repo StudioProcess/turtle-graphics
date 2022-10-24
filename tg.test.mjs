@@ -4,9 +4,6 @@ import * as tg from './tg.mjs';
 // console.log(tap);
 // console.log(tg);
 
-// TODO:
-// * maketurtle
-
 tap.test('instance creation', async t => {
     const g = tg.make_turtle_graphics();
     t.ok(g, 'non empty object created');
@@ -491,7 +488,7 @@ tap.test('setxy', async t => {
     t.match(g.state(), state, 'array arg: only y given');
 });
 
-tap.only('jumpxy', async t => {
+tap.test('jumpxy', async t => {
     let n = 0;
     function line_fn() { n += 1; }
     let g, state;
@@ -719,4 +716,20 @@ tap.test('setturtle', async t => {
     state = JSON.parse(JSON.stringify(g.state().turtle));
     g.setturtle(null, null, null, o.d);
     t.match(g.state().turtle, {x:state.x, y:state.y, a:state.a, d:o.d}, 'set only d (null)');
+});
+
+tap.test('maketurtle', async t => {
+    const g = tg.make_turtle_graphics();
+    let n = 0;
+    function line_fn() { n += 1; }
+    g.set_line_fn(line_fn);
+    
+    const t1 = g.maketurtle();
+    t.not(t1, g, 'not the old instance (t1)');
+    t.equal(t1.state().line_fn, line_fn, 'same line_fn (t1)');
+    
+    function line_fn2() {}
+    const t2 = g.maketurtle(line_fn2);
+    t.not(t2, g, 'not the old instance (t2)');
+    t.equal(t2.state().line_fn, line_fn2, 'own line_fn (t2)');
 });
