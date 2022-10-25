@@ -734,7 +734,42 @@ tap.test('maketurtle', async t => {
     t.equal(t2.state().line_fn, line_fn2, 'own line_fn (t2)');
 });
 
-tap.only('self', async t => {
+tap.test('self', async t => {
     const g = tg.make_turtle_graphics();
     t.equal(g.self(), g, 'self equals the original instance')
+});
+
+tap.test('clone', async t => {
+    const g = tg.make_turtle_graphics();
+    // modify state
+    g.set_line_fn(x => {});
+    g.forward(100);
+    g.right(90);
+    g.push();
+    g.forward(50);
+    g.right(45);
+    g.penup();
+    g.push();
+    const c = g.clone();
+    t.not(c, g, 'clone is another object');
+    // state objects are different
+    t.not(c.state().turtle, g.state().turtle, 'turtle state different');
+    t.not(c.state().turtle_stack, g.state().turtle_stack, 'turtle stack different');
+    t.not(c.state().matrix, g.state().matrix, 'matrix different');
+    t.not(c.state().matrix_stack, g.state().matrix_stack, 'matrix stack different');
+    // same content
+    t.same(c.state().turtle, g.state().turtle, 'turtle state same content');
+    t.same(c.state().matrix, g.state().matrix, 'matrix same content');
+    // stacks
+    t.equal(c.state().turtle_stack.length, g.state().turtle_stack.length, 'stack lengths equal (turtle)');
+    t.equal(c.state().matrix_stack.length, g.state().matrix_stack.length, 'stack lengths equal (matrix)');
+    for (let i=0; i<c.state().turtle_stack.length; i++) {
+        t.not(c.state().turtle_stack[i], g.state().turtle_stack[i], `turtle stack objects different (${i})`);
+        t.same(c.state().turtle_stack[i], g.state().turtle_stack[i], `turtle stack contents same (${i})`);
+    }
+    for (let i=0; i<c.state().matrix_stack.length; i++) {
+        t.not(c.state().matrix_stack[i], g.state().matrix_stack[i], `matrix stack objects different (${i})`);
+        t.same(c.state().matrix_stack[i], g.state().matrix_stack[i], `matrix stack contents same (${i})`);
+    }
+    t.equal(c.state().line_fn, g.state().line_fn, 'line_fn equal')
 });

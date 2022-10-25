@@ -53,6 +53,21 @@ export function make_turtle_graphics(line_fn_ = undefined) {
         return self;
     }
     
+    /**
+     * Get a copy of the turtle instance.
+     * 
+     * @function clone
+     */
+     // TODO: better have whole internal state as an object, to avoid copying mess.
+    function clone() {
+        const newturtle = maketurtle(); // sets same line_fn
+        Object.assign( newturtle.state().turtle, turtle ); // set turtle state
+        newturtle.state().turtle_stack.splice( 0, 0, ...turtle_stack.map(t => Object.assign({}, t)) ); // insert copies of stacked states
+        mat3.copy( newturtle.state().matrix, matrix ); // copy matrix values
+        newturtle.state().matrix_stack.splice( 0, 0, ...matrix_stack.map(m => mat3.clone(m)) ); // insert copies of stacked matrices
+        return newturtle;
+    }
+    
     function _draw() {
         if (turtle.d && typeof line_fn === 'function') {
             line_fn(turtle.px, turtle.py, turtle.x, turtle.y);
@@ -298,6 +313,7 @@ export function make_turtle_graphics(line_fn_ = undefined) {
      * @function state
      */
     // Note: this function exposes the actual internal objects
+    // TODO: better have whole internal state as an object and expose it directly
     function state() {
         return {
             turtle,
