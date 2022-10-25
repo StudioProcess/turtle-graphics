@@ -733,3 +733,8 @@ tap.test('maketurtle', async t => {
     t.not(t2, g, 'not the old instance (t2)');
     t.equal(t2.state().line_fn, line_fn2, 'own line_fn (t2)');
 });
+
+tap.only('self', async t => {
+    const g = tg.make_turtle_graphics();
+    t.equal(g.self(), g, 'self equals the original instance')
+});

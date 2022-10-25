@@ -44,6 +44,15 @@ export function make_turtle_graphics(line_fn_ = undefined) {
         return make_turtle_graphics(line_fn_ || line_fn);
     }
     
+    /**
+     * Get turtle instance itself.
+     * 
+     * @function self
+     */
+    function self_() {
+        return self;
+    }
+    
     function _draw() {
         if (turtle.d && typeof line_fn === 'function') {
             line_fn(turtle.px, turtle.py, turtle.x, turtle.y);
@@ -628,9 +637,11 @@ export function make_turtle_graphics(line_fn_ = undefined) {
         right( bearing(x, y) );
     }
     
-    return {
+    const self = {
         VERSION,
         maketurtle,
+        self: self_,
+        clone,
         forward,
         back,
         right,
@@ -668,7 +679,10 @@ export function make_turtle_graphics(line_fn_ = undefined) {
         isup,
         bearing,
         face,
+        distance,
     };
+    
+    return self;
 }
 
 const default_instance = make_turtle_graphics();
