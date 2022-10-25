@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tg-plot Test</title>
+    <script src="./node_modules/p5/lib/p5.min.js"></script>
+    <script src="./dist/tg.mjs" type="module"></script>
+    <script src="./dist/tg-plot.mjs" type="module"></script>
+    <script>
+        let t1, t2;
+        
+        function preload() {
+            
+        }
+        
+        function setup() {
+            createCanvas(500, 500);
+            // console.log(t);
+            noLoop();
+            t1 = t.maketurtle();
+            t2 = t.maketurtle();
+            // console.log(t1);
+        }
+        
+        function draw() {
+            background(220);
+            
+            t1.forward(100);
+            t1.turtle();
+            t1.jumpxy(100, 100);
+            t1.forward(25);
+            t1.turtle();
+            
+            t2.right(90);
+            t2.forward(100);
+            t2.turtle();
+        }
+        
+    </script>
+</head>
+<body>
+
+</body>
+</html>

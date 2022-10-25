@@ -718,7 +718,7 @@ export function make_turtle_graphics(line_fn_ = undefined) {
     return self;
 }
 
-const default_instance = make_turtle_graphics();
+export const default_instance = make_turtle_graphics();
 
 // Put properties of an object into the global namespace
 export function globalize(tg_instance = default_instance, global_object = globalThis) {
