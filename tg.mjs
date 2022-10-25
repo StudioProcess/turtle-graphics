@@ -89,9 +89,11 @@ export function make_turtle_graphics(line_fn_ = undefined) {
         return a;
     }
     
-    function _transform([x, y], matrix) {
+    // transform point by matrix (defaults to current matrix)
+    function _transform([x, y], m = undefined) {
         const p = [ x, y ];
-        vec2.transformMat3(p, p, matrix); // Apply given transformation
+        m = m ?? matrix; // use current matrix by default
+        vec2.transformMat3(p, p, m); // Apply given transformation
         p[0] = _clean_zero(p[0]);
         p[1] = _clean_zero(p[1]);
         return p;
@@ -651,6 +653,21 @@ export function make_turtle_graphics(line_fn_ = undefined) {
         if ( ! _check_number(x, 'face', 'x') ) { return; }
         if ( ! _check_number(y, 'face', 'y') ) { return; }
         right( bearing(x, y) );
+    }
+    
+    /**
+     * Get the distance from the turtle to a point x, y.
+     * 
+     * @function distance
+     */
+    function distance(x, y) {
+        ({ x, y } = _to_point(x, y));
+        if ( ! _check_number(x, 'distance', 'x') ) { return; }
+        if ( ! _check_number(y, 'distance', 'y') ) { return; }
+        [x, y] = _transform([x, y]); // apply current transformation to point
+        const dx = x - turtle.x;
+        const dy = y - turtle.y;
+        return Math.sqrt(dx*dx + dy*dy);
     }
     
     const self = {

@@ -773,3 +773,23 @@ tap.test('clone', async t => {
     }
     t.equal(c.state().line_fn, g.state().line_fn, 'line_fn equal')
 });
+
+tap.only('distance', async t => {
+    let g;
+    g = tg.make_turtle_graphics();
+    g.setxy(50, 100);
+    t.equal(g.distance(50, 100), 0, 'distance test 1');
+    t.equal(g.distance(150, 100), 100, 'distance test 2');
+    t.equal(g.distance(50, 199), 99, 'distance test 3');
+    g.scale(2, 1);
+    t.equal(g.distance(50, 100), 50, 'scale test 1');
+    t.equal(g.distance(150, 100), 250, 'scale test 2');
+    t.equal(g.distance(25, 199), 99, 'scale test 3');
+    
+    g = tg.make_turtle_graphics();
+    g.setxy(50, 100);
+    g.translate(50, 0);
+    t.equal(g.distance(50, 100), 50, 'translate test 1');
+    t.equal(g.distance(150, 100), 150, 'translate test 2');
+    t.equal(g.distance(0, 100), 0, 'translate test 3');
+});
