@@ -1,6 +1,6 @@
 function create_ui() {
     const tmp = document.createElement('template');
-    tmp.innerHTML = '<div style="font-family:system-ui; width:200px; height:100px; position:fixed; top:0; right:0;">client id: <span class="client_id"></span><br><span class="lines">0</span> lines<br><button class="clear">Clear</button> <button class="plot">Plot</button></div>';
+    tmp.innerHTML = '<div style="font-family:system-ui; width:200px; height:100px; position:fixed; top:0; right:0;"><input class="server" placeholder="Server" value="ws://plotter-server.local:4321"></input><button class="connect">Connect</button><span class="status">○</span><br>client id: <span class="client_id"></span><br><span class="lines">0</span> lines<br><button class="clear">Clear</button> <button class="plot">Plot</button></div>';
     const div = tmp.content.firstChild;
     document.body.appendChild(div);
     return div;
@@ -38,6 +38,9 @@ export function make_plotter_client(tg_instance) {
     const client_id_span = div.querySelector('.client_id');
     const clear_button = div.querySelector('.clear');
     const plot_button = div.querySelector('.plot');
+    const status_span = div.querySelector('.status');
+    const server_input = div.querySelector('.server');
+    const connect_button = div.querySelector('.connect');
     
     client_id_span.innerText = crypto.randomUUID().slice(0, 8);
     
@@ -57,6 +60,68 @@ export function make_plotter_client(tg_instance) {
         lines.push(args);
         lines_span.innerText = lines.length;
     });
+    
+    // ○●◌
+    let url;
+    let socket;
+    
+    function connect() {
+        connect_button.disabled = true;
+        connect_button.innerText = 'Connecting...';
+        status_span.innerText = '◌';
+        url = server_input.value;
+        
+        let timeout;
+        
+        function on_connect() {
+            if (timeout) clearTimeout(timeout);
+            status_span.innerText = '●';
+            connect_button.innerText = 'Disconnect';
+            connect_button.disabled = false;
+        }
+        
+        function on_disconnect() {
+            if (timeout) clearTimeout(timeout);
+            status_span.innerText = '○';
+            connect_button.innerText = 'Connect';
+            connect_button.disabled = false;
+        }
+        
+        try {
+            socket = new WebSocket(url);
+            timeout = setTimeout(() => {
+                console.log('connect timeout');
+                socket.close();
+            }, 3000);
+        
+            socket.onopen = (e) => {
+                console.log('open');
+                on_connect();
+            };
+            
+            socket.onclose = (e) => {
+                console.log('close');
+                on_disconnect();
+            };
+            
+            socket.onerror = (e) => {
+                console.log('error');
+                on_disconnect();
+            };
+        } catch (e) {
+            on_disconnect();
+        }
+    }
+
+    function disconnect() {
+        socket?.close();
+    }
+    
+    connect_button.onmousedown = () => {
+        if (!socket || socket?.readyState == 3) { connect(); }
+        else if (socket?.readyState == 1) { disconnect(); }
+    };
+    
 }
 
 if (globalThis?.addEventListener !== undefined) {
