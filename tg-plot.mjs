@@ -1,6 +1,6 @@
 function create_ui() {
     const tmp = document.createElement('template');
-    tmp.innerHTML = '<div style="font-family:system-ui; width:200px; height:100px; position:fixed; top:0; right:0;"><input class="server" placeholder="Server" value="ws://plotter-server.local:4321"></input><button class="connect">Connect</button><span class="status">○</span><br>client id: <span class="client_id"></span><br><span class="lines">0</span> lines<br><button class="clear">Clear</button> <button class="plot">Plot</button></div>';
+    tmp.innerHTML = '<div style="font-family:system-ui; width:200px; height:100px; position:fixed; top:0; right:0;"><input class="server" placeholder="Server" value="ws://plotter-server.local:4321"></input><br><button class="connect">Connect</button><span class="status">○</span><br>client id: <span class="client_id"></span><br><span class="lines">0</span> lines<br><button class="clear">Clear</button> <button class="plot">Plot</button></div>';
     const div = tmp.content.firstChild;
     document.body.appendChild(div);
     return div;
@@ -28,6 +28,126 @@ function to_path(lines, num_decimals = 2) {
     d = d.trimEnd();
     return d;
 }
+
+function autoconnect(options = {}) {
+    const STATE = { 'disconnected':0, 'connecting':1, 'connected':2 };
+    
+    function callback(fn, ...args) {
+        if (typeof fn === 'function') { fn(...args); }
+    }
+    
+    options = Object.assign({
+        connect_timeout: 10000,
+        wait_before_reconnect: 0,
+        retries: -1,
+        on_connecting: undefined,
+        on_waiting: undefined,
+        on_connected: undefined,
+        on_disconnected: undefined,
+    }, options);
+    
+    let url;
+    let socket;
+    let timeout; // timeout used for connecting and waiting for retry
+    let state = STATE.disconnected;
+    let retries = 0;
+    let should_stop = true;
+    
+    function retry() {
+        if (options.retries > -1 && retries + 1 > options.retries) { 
+            // no (more) retries
+            callback(options.on_disconnected);
+            return;
+        }
+        // console.log('retry');
+        state = STATE.connecting;
+        retries += 1;
+        if (options.wait_before_reconnect >= 1000) {
+            callback(options.on_waiting, retries);
+        }
+        timeout = setTimeout(connect, options.wait_before_reconnect);
+    }
+    
+    function on_open(e) {
+        clearTimeout(timeout);
+        state = STATE.connected;
+        callback(options.on_connected);
+    }
+    
+    function on_close_or_error(e) {
+        // can be called due to:
+        // * connect timeout (STATE.connecting) -> retry
+        // * connection error (STATE.connected) -> retry
+        // * intentional abort while connecting (STATE.connecting, should_stop)
+        // * intentional abort while connected (STATE.connected, should_stop)
+        
+        if (state === STATE.disconnected) { return; } // make this idempotent
+        // console.log('on_close_or_error', e.type);
+        
+        socket = null;
+        clearTimeout(timeout);
+        
+        if (should_stop) { // intentional abort
+            state = STATE.disconnected;
+            callback(options.on_disconnected);
+        } else {
+            if (state === STATE.connected) { retries = 0; }
+            state = STATE.disconnected;
+            setTimeout(retry, 0);
+        }
+    }
+    
+    // make a connection attempt, with timeout and retries.
+    function connect() {
+        state = STATE.connecting;
+        callback(options.on_connecting, retries);
+        try {
+            socket = new WebSocket(url);
+            
+            timeout = setTimeout(() => {
+                socket?.close();
+            }, options.connect_timeout);
+            
+            socket.onopen  = on_open;
+            socket.onclose = on_close_or_error;
+            socket.onerror = on_close_or_error;
+        } catch (e) {
+            // catches URL errors -> don't reconnect
+            state = STATE.disconnected;
+            callback(options.on_disconnected);
+        }
+    }
+    
+    function start(url_) {
+        if (state !== STATE.disconnected) { return; }
+        // console.log('starting');
+        url = url_;
+        retries = 0;
+        should_stop = false;
+        connect();
+    }
+    
+    function stop() {
+        if (state === STATE.disconnected) { return; }
+        // console.log('stopping');
+        clearTimeout(timeout);
+        should_stop = true;
+        if (socket) {
+            socket.close();
+        } else {
+            state = STATE.disconnected;
+            callback(options.on_disconnected);
+        }
+    }
+    
+    function toggle(url_) {
+        if (state === STATE.disconnected) { start(url_); }
+        else { stop(); }
+    }
+    
+    return { start, stop, toggle };
+}
+
 
 export function make_plotter_client(tg_instance) {
     let lines = [];
@@ -61,65 +181,30 @@ export function make_plotter_client(tg_instance) {
         lines_span.innerText = lines.length;
     });
     
-    // ○●◌
-    let url;
-    let socket;
-    
-    function connect() {
-        connect_button.disabled = true;
-        connect_button.innerText = 'Connecting...';
-        status_span.innerText = '◌';
-        url = server_input.value;
-        
-        let timeout;
-        
-        function on_connect() {
-            if (timeout) clearTimeout(timeout);
-            status_span.innerText = '●';
+    const ac = autoconnect({
+        on_connecting: (retries) => {
+            console.log('on_connecting')
+            connect_button.innerText = 'Stop';
+            status_span.innerText = `○ Connecting${retries > 0 ? ' (' + retries +')' : ''}...`;
+        },
+        on_waiting: (retries) => {
+            console.log('on_waiting')
+            status_span.innerText = `○ Waiting${retries > 0 ? ' (' + retries +')' : ''}...`;
+        },
+        on_connected: () => {
+            console.log('on_connected')
             connect_button.innerText = 'Disconnect';
-            connect_button.disabled = false;
-        }
-        
-        function on_disconnect() {
-            if (timeout) clearTimeout(timeout);
-            status_span.innerText = '○';
+            status_span.innerText = '● Connected';
+        },
+        on_disconnected: () => {
+            console.log('on_disconnected')
             connect_button.innerText = 'Connect';
-            connect_button.disabled = false;
-        }
-        
-        try {
-            socket = new WebSocket(url);
-            timeout = setTimeout(() => {
-                console.log('connect timeout');
-                socket.close();
-            }, 3000);
-        
-            socket.onopen = (e) => {
-                console.log('open');
-                on_connect();
-            };
-            
-            socket.onclose = (e) => {
-                console.log('close');
-                on_disconnect();
-            };
-            
-            socket.onerror = (e) => {
-                console.log('error');
-                on_disconnect();
-            };
-        } catch (e) {
-            on_disconnect();
-        }
-    }
-
-    function disconnect() {
-        socket?.close();
-    }
+            status_span.innerText = '○ Disconnected';
+        },
+    });
     
     connect_button.onmousedown = () => {
-        if (!socket || socket?.readyState == 3) { connect(); }
-        else if (socket?.readyState == 1) { disconnect(); }
+        ac.toggle(server_input.value);
     };
     
 }
