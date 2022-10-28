@@ -1,3 +1,5 @@
+const VERSION = 1;
+
 function create_ui() {
     const tmp = document.createElement('template');
     tmp.innerHTML = '<div style="font-family:system-ui; width:200px; height:100px; position:fixed; top:0; right:0;"><input class="server" placeholder="Server" value="ws://plotter-server.local:4321"></input><br><button class="connect">Connect</button><span class="status">○</span><br>client id: <span class="client_id"></span><br><span class="lines">0</span> lines<br><button class="clear">Clear</button> <button class="plot">Plot</button></div>';
@@ -151,7 +153,6 @@ function autoconnect(options = {}) {
 
 export function make_plotter_client(tg_instance) {
     let lines = [];
-    const original_line_fn = tg_instance.state().line_fn;
     
     const div = create_ui();
     const lines_span = div.querySelector('.lines');
@@ -175,8 +176,7 @@ export function make_plotter_client(tg_instance) {
         console.log(path);
     }
     
-    tg_instance.set_line_fn((...args) => {
-        original_line_fn(...args);
+    tg_instance.add_line_fn((...args) => {
         lines.push(args);
         lines_span.innerText = lines.length;
     });
@@ -209,6 +209,7 @@ export function make_plotter_client(tg_instance) {
     
 }
 
+/*
 if (globalThis?.addEventListener !== undefined) {
     const window = globalThis;
     window.addEventListener('DOMContentLoaded', e => {
@@ -230,3 +231,16 @@ if (globalThis?.addEventListener !== undefined) {
         }
     });
 }
+*/
+
+// browser bootstrap
+let _browser_bootstrapped = false;
+(function bootstrap_browser() {
+    if (_browser_bootstrapped) { return; }
+    const window = globalThis;
+    if (window.tg?.default_turtle) {
+        console.log(`🖨️ → Plotter Module (v${VERSION})`);
+        make_plotter_client(window.tg.default_turtle);
+    }
+    _browser_bootstrapped = true;
+})();

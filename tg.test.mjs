@@ -4,6 +4,15 @@ import * as tg from './tg.mjs';
 // console.log(tap);
 // console.log(tg);
 
+// TODO: 
+// * add_line_fn
+// * rm_line_fn
+
+// Copy everythig from g.state() except line_fns
+function copy_state(g) {
+    return JSON.parse( JSON.stringify(g.state(), (k, v) => k !== 'line_fns' ? v : undefined) );
+}
+
 tap.test('instance creation', async t => {
     const g = tg.make_turtle_graphics();
     t.ok(g, 'non empty object created');
@@ -272,7 +281,7 @@ tap.test('set_line_fn', async t => {
 
 tap.test('reset', async t => {
     const g = tg.make_turtle_graphics();
-    const initial_state = JSON.parse(JSON.stringify(g.state())); // copy initial state
+    const initial_state = copy_state(g); // copy initial state
     // do stuff
     g.scale(2,2);
     g.rotate(45);
@@ -287,20 +296,20 @@ tap.test('reset', async t => {
 
 tap.test('push_turtle / pop_turtle', async t => {
     const g = tg.make_turtle_graphics();
-    const state0 = JSON.parse(JSON.stringify(g.state())); // copy initial state
+    const state0 = copy_state(g); // copy initial state
     g.push_turtle();
     t.equal(g.state().turtle_stack.length, 1, 'stack length 1');
     // do stuff
     g.forward(50);
     g.right(50);
     g.penup();
-    const state1 = JSON.parse(JSON.stringify(g.state()));
+    const state1 = copy_state(g);
     g.push_turtle();
     t.equal(g.state().turtle_stack.length, 2, 'stack length 2');
     g.pendown();
     g.left(100);
     g.back(100);
-    const state2 = JSON.parse(JSON.stringify(g.state()));
+    const state2 = copy_state(g);
     t.notMatch(g.state().turtle, state1.turtle, 'turtle changed (1/2)');
     t.notMatch(g.state().turtle, state0.turtle, 'turtle changed (2/2)');
     t.match(g.state().matrix, state1.matrix, 'matrix unchanged (1/2)');
@@ -316,16 +325,16 @@ tap.test('push_turtle / pop_turtle', async t => {
 
 tap.test('push_matrix / pop_matrix', async t => {
     const g = tg.make_turtle_graphics();
-    const state0 = JSON.parse(JSON.stringify(g.state())); // copy initial state
+    const state0 = copy_state(g); // copy initial state
     g.push_matrix();
     t.equal(g.state().matrix_stack.length, 1, 'stack length 1');
     // do stuff
     g.translate(10, 10);
-    const state1 = JSON.parse(JSON.stringify(g.state()));
+    const state1 = copy_state(g);
     g.push_matrix();
     t.equal(g.state().matrix_stack.length, 2, 'stack length 2');
     g.translate(10, 10);
-    const state2 = JSON.parse(JSON.stringify(g.state()));
+    const state2 = copy_state(g);
     t.notMatch(g.state().matrix, state1.matrix, 'matrix changed (1/2)');
     t.notMatch(g.state().matrix, state0.matrix, 'matrix changed (1/2)');
     t.match(g.state().turtle, state1.turtle, 'turtle unchanged (1/2)');
@@ -341,18 +350,18 @@ tap.test('push_matrix / pop_matrix', async t => {
 
 tap.test('push / pop', async t => {
     const g = tg.make_turtle_graphics();
-    const state0 = JSON.parse(JSON.stringify(g.state())); // copy initial state
+    const state0 = copy_state(g); // copy initial state
     g.push();
     t.equal(g.state().matrix_stack.length, 1, 'stack length 1');
     // do stuff
     g.translate(10, 10);
     g.forward(50);
-    const state1 = JSON.parse(JSON.stringify(g.state()));
+    const state1 = copy_state(g);
     g.push();
     t.equal(g.state().matrix_stack.length, 2, 'stack length 2');
     g.rotate(45);
     g.right(90);
-    const state2 = JSON.parse(JSON.stringify(g.state()));
+    const state2 = copy_state(g);
     t.notMatch(g.state().turtle, state1.turtle, 'turtle changed (1/2)');
     t.notMatch(g.state().turtle, state0.turtle, 'turtle changed (2/2)');
     t.notMatch(g.state().matrix, state1.matrix, 'matrix changed (1/2)');
@@ -377,7 +386,7 @@ tap.test('turtle', async t => {
     g.forward(50);
     g.right(50);
     g.penup();
-    const state_before_turtle = JSON.parse(JSON.stringify(g.state())); // copy state
+    const state_before_turtle = copy_state(g); // copy state
     g.set_line_fn(line_fn);
     t.ok(n === 0, 'no drawing up until now');
     g.turtle();
@@ -396,7 +405,7 @@ tap.test('mark', async t => {
     g.back(50);
     g.left(50);
     g.penup();
-    const state_before_turtle = JSON.parse(JSON.stringify(g.state())); // copy state
+    const state_before_turtle = copy_state(g); // copy state
     g.set_line_fn(line_fn);
     t.ok(n === 0, 'no drawing up until now');
     g.mark();
@@ -417,7 +426,7 @@ tap.test('repeat', async t => {
 tap.test('setxy', async t => {
     let g, state;
     g = tg.make_turtle_graphics();
-    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    state = copy_state(g); // copy state
     g.setxy(100, 50);
     state.turtle.x = state.turtle.ux = 100;
     state.turtle.y = state.turtle.uy = 50;
@@ -428,25 +437,25 @@ tap.test('setxy', async t => {
     t.match(g.state(), state, 'both arguments undefined');
     
     g = tg.make_turtle_graphics();
-    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    state = copy_state(g); // copy state
     g.setxy(100);
     state.turtle.x = state.turtle.ux = 100;
     t.match(g.state(), state, 'only x given');
     
     g = tg.make_turtle_graphics();
-    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    state = copy_state(g); // copy state
     g.setxy(undefined, 50);
     state.turtle.y = state.turtle.uy = 50;
     t.match(g.state(), state, 'only y given');
     
     g = tg.make_turtle_graphics();
-    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    state = copy_state(g); // copy state
     g.setxy(null, 50);
     state.turtle.y = state.turtle.uy = 50;
     t.match(g.state(), state, 'only y given (null)');
     
     g = tg.make_turtle_graphics();
-    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    state = copy_state(g); // copy state
     g.setxy( {x:100, y:50}, 999 );
     state.turtle.x = state.turtle.ux = 100;
     state.turtle.y = state.turtle.uy = 50;
@@ -457,32 +466,32 @@ tap.test('setxy', async t => {
     t.match(g.state(), state, 'object arg: both arguments undefined');
     
     g = tg.make_turtle_graphics();
-    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    state = copy_state(g); // copy state
     g.setxy({x:100, z:99}, 999);
     state.turtle.x = state.turtle.ux = 100;
     t.match(g.state(), state, 'object arg: only x given');
     
     g = tg.make_turtle_graphics();
-    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    state = copy_state(g); // copy state
     g.setxy({y:50, z:99}, 999);
     state.turtle.y = state.turtle.uy = 50;
     t.match(g.state(), state, 'object arg: only y given');
     
     g = tg.make_turtle_graphics();
-    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    state = copy_state(g); // copy state
     g.setxy( [100, 50, 99], 999 );
     state.turtle.x = state.turtle.ux = 100;
     state.turtle.y = state.turtle.uy = 50;
     t.match(g.state(), state, 'array arg');
     
     g = tg.make_turtle_graphics();
-    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    state = copy_state(g); // copy state
     g.setxy([100], 999);
     state.turtle.x = state.turtle.ux = 100;
     t.match(g.state(), state, 'array arg: only x given');
     
     g = tg.make_turtle_graphics();
-    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    state = copy_state(g); // copy state
     g.setxy([undefined, 50]), 999;
     state.turtle.y = state.turtle.uy = 50;
     t.match(g.state(), state, 'array arg: only y given');
@@ -494,7 +503,7 @@ tap.test('jumpxy', async t => {
     let g, state;
     g = tg.make_turtle_graphics();
     g.set_line_fn(line_fn);
-    state = JSON.parse(JSON.stringify(g.state())); // copy state
+    state = copy_state(g);
     g.jumpxy(100, 50);
     state.turtle.x = state.turtle.ux = 100;
     state.turtle.y = state.turtle.uy = 50;
@@ -504,7 +513,7 @@ tap.test('jumpxy', async t => {
 
 tap.test('setheading', async t => {
     const g = tg.make_turtle_graphics();
-    const state = JSON.parse(JSON.stringify(g.state())); // copy state
+    const state = copy_state(g); // copy state
     g.setheading(100);
     state.turtle.a = state.turtle.ua = 100;
     t.match(g.state(), state, 'only angle changed');
@@ -726,12 +735,12 @@ tap.test('maketurtle', async t => {
     
     const t1 = g.maketurtle();
     t.not(t1, g, 'not the old instance (t1)');
-    t.equal(t1.state().line_fn, line_fn, 'same line_fn (t1)');
+    t.equal(t1.state().line_fns[0], line_fn, 'same line_fn (t1)');
     
     function line_fn2() {}
     const t2 = g.maketurtle(line_fn2);
     t.not(t2, g, 'not the old instance (t2)');
-    t.equal(t2.state().line_fn, line_fn2, 'own line_fn (t2)');
+    t.equal(t2.state().line_fns[0], line_fn2, 'own line_fn (t2)');
 });
 
 tap.test('self', async t => {
@@ -774,7 +783,7 @@ tap.test('clone', async t => {
     t.equal(c.state().line_fn, g.state().line_fn, 'line_fn equal')
 });
 
-tap.only('distance', async t => {
+tap.test('distance', async t => {
     let g;
     g = tg.make_turtle_graphics();
     g.setxy(50, 100);

@@ -10,7 +10,7 @@ const DONT_GLOBALIZE = [ 'VERSION', 'init' ];
 const VERSION = 1;
 
 // Constructor function
-export function make_turtle_graphics(line_fn_ = undefined) {
+export function make_turtle_graphics(...line_fns_) {
     function _make_turtle_state() {
         return {
             x:   0,    // position (x)
@@ -36,17 +36,17 @@ export function make_turtle_graphics(line_fn_ = undefined) {
     let matrix = mat3.create();        // transformation matrix
     let matrix_stack  = [];            // matrix stack
     
-    // let line_fns = [];                 // line drawing callbacks
-    // if (line_fn_) { line_fns.push(line_fn_); }
-    let line_fn = line_fn_;
+    let line_fns = [...line_fns_];     // line drawing callbacks
     
     /**
      * Create a new turtle instance.
      * 
      * @function maketurtle
      */
-    function maketurtle(line_fn_ = undefined) {
-        return make_turtle_graphics(line_fn_ || line_fn);
+    function maketurtle(...line_fns_) {
+        return make_turtle_graphics(
+            ...(line_fns_.length > 0 ? line_fns_ : line_fns)
+        );
     }
     
     /**
@@ -74,8 +74,11 @@ export function make_turtle_graphics(line_fn_ = undefined) {
     }
     
     function _draw() {
-        if (turtle.d && typeof line_fn === 'function') {
-            line_fn(turtle.px, turtle.py, turtle.x, turtle.y);
+        if (!turtle.d) { return; } // don't draw if pen isn't down
+        for (let line_fn of line_fns) {
+            if (typeof line_fn === 'function') {
+                line_fn(turtle.px, turtle.py, turtle.x, turtle.y);
+            }
         }
     }
     
@@ -327,21 +330,26 @@ export function make_turtle_graphics(line_fn_ = undefined) {
             turtle_stack,
             matrix,
             matrix_stack,
-            line_fn,
+            line_fns,
         };
     }
     
     function set_line_fn(fn) {
-        line_fn = fn;
+        add_line_fn(fn);
     }
     
-    // function add_line_fn(fn) {
-    //     
-    // }
-    // 
-    // function rm_line_fn(fn) {
-    //     
-    // }
+    function add_line_fn(fn) {
+        if (typeof fn === 'function') {
+            line_fns.push(fn);
+        }
+    }
+    
+    function rm_line_fn(fn) {
+        const idx = line_fns.indexOf(fn);
+        if (idx >= 0) {
+            line_fns.splice(idx, 1);
+        }
+    }
     
     /**
      * Reset turtle state and transformations.
@@ -708,6 +716,8 @@ export function make_turtle_graphics(line_fn_ = undefined) {
         setturtle,
         state,
         set_line_fn,
+        add_line_fn,
+        rm_line_fn,
         reset,
         reset_turtle,
         reset_matrix,
@@ -751,6 +761,7 @@ export function globalize(tg_instance = default_instance, global_object = global
     if (overwritten_keys.length > 0) {
         console.log(`🐢 → Overwritten global properties: ${overwritten_keys.join(', ')}`);
     }
+    const window = globalThis; // make this work in node too
     if (window && window[GLOBAL_OVERWRITTEN_NAME] === undefined) {
         window[GLOBAL_OVERWRITTEN_NAME] = overwritten;
         if (overwritten_keys.length > 0) {
@@ -793,11 +804,17 @@ export function init(do_globalize = false) {
 
 // Bootstrap browser
 let _browser_bootstrapped = false;
-function is_browser() { return window !== undefined || self !== undefined; }
+function is_browser() {
+    try {
+        return window !== undefined || self !== undefined; 
+    } catch {
+        return false;
+    }
+}
 
 (function bootstrap_browser() {
+    if (_browser_bootstrapped) { return; }
     if (is_browser()) {
-        if (_browser_bootstrapped) { return; }
         console.log(`🐢 Turtle Graphics (v${VERSION})`);
         
         // put lib functions into global scope
@@ -822,7 +839,7 @@ function is_browser() { return window !== undefined || self !== undefined; }
         // In case init() wasn't called (and line_fn wasn't manually set on the default instance)
         if (window.p5 && window[GLOBAL_LIB_NAME] !== undefined) {
             window.addEventListener('load', () => {
-                if (!window[GLOBAL_LIB_NAME]._init_called && default_instance.state().line_fn === undefined) {    
+                if (!_init_called && default_instance.state().line_fn === undefined) {    
                     console.warn(`🐢 → Not initialized. Please add the following statement to you p5.js setup function after createCanvas():  ${GLOBAL_LIB_NAME}.init();`);
                 }
             });
