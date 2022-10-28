@@ -6,7 +6,6 @@
     <title>tg-plot Test</title>
     <script src="./node_modules/p5/lib/p5.min.js"></script>
     <script src="./dist/tg.mjs" type="module"></script>
-    <script src="./dist/tg-plot.mjs" type="module"></script>
     <script>
         let t1, t2;
         
@@ -16,17 +15,23 @@
         
         function setup() {
             createCanvas(500, 500);
-            tg.init();
-            // console.log(t);
             noLoop();
+            
+            tg.init(); // after createCanvas
+            
+            background(220);
+            t.rotate(135);
+            t.forward();
+            t.turtle();
+            // rotate(135)
+            // forward();
+            // turtle();
+            
             t1 = t.maketurtle();
             t2 = t.maketurtle();
-            // console.log(t1);
         }
         
         function draw() {
-            background(220);
-            
             t1.forward(100);
             t1.turtle();
             t1.jumpxy(100, 100);

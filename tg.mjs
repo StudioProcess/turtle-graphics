@@ -3,7 +3,10 @@ import { vec2, mat3 } from 'gl-matrix';
 const EPSILON = 1e-10;
 const DEFAULT_FORWARD = 100;
 const DEFAULT_RIGHT = 90;
-const GLOBAL_VAR_NAME = 't';
+const GLOBAL_LIB_NAME = 'tg';
+const GLOBAL_INSTANCE_NAME = 't';
+const GLOBAL_OVERWRITTEN_NAME = 'old';
+const DONT_GLOBALIZE = [ 'VERSION', 'init' ];
 const VERSION = 1;
 
 // Constructor function
@@ -28,12 +31,14 @@ export function make_turtle_graphics(line_fn_ = undefined) {
     }
     
     let turtle = _make_turtle_state(); // turtle state
-    let turtle_stack  = [];       // turtle stack
+    let turtle_stack  = [];            // turtle stack
     
-    let matrix = mat3.create();   // transformation matrix
-    let matrix_stack  = [];       // matrix stack
+    let matrix = mat3.create();        // transformation matrix
+    let matrix_stack  = [];            // matrix stack
     
-    let line_fn = line_fn_; // line drawing function
+    // let line_fns = [];                 // line drawing callbacks
+    // if (line_fn_) { line_fns.push(line_fn_); }
+    let line_fn = line_fn_;
     
     /**
      * Create a new turtle instance.
@@ -329,6 +334,14 @@ export function make_turtle_graphics(line_fn_ = undefined) {
     function set_line_fn(fn) {
         line_fn = fn;
     }
+    
+    // function add_line_fn(fn) {
+    //     
+    // }
+    // 
+    // function rm_line_fn(fn) {
+    //     
+    // }
     
     /**
      * Reset turtle state and transformations.
@@ -672,6 +685,7 @@ export function make_turtle_graphics(line_fn_ = undefined) {
     
     const self = {
         VERSION,
+        init, // mirror init function, in case people use t.init() instead of tg.init()
         maketurtle,
         self: self_,
         clone,
@@ -718,21 +732,109 @@ export function make_turtle_graphics(line_fn_ = undefined) {
     return self;
 }
 
+
+// Fresh instance as default export
 export const default_instance = make_turtle_graphics();
+export default default_instance;
+
 
 // Put properties of an object into the global namespace
 export function globalize(tg_instance = default_instance, global_object = globalThis) {
-    for (const [key, val] of Object.entries(tg_instance).filter( x => x[0] != 'VERSION')) {
+    const overwritten = {};
+    for (const [key, val] of Object.entries(tg_instance).filter( x => ! DONT_GLOBALIZE.includes(x[0]) )) {
         if (global_object[key] !== undefined) {
-            console.warn(`Global property '${key}' overwritten`);
+            overwritten[key] = global_object[key];
         }
         global_object[key] = val;
     }
+    const overwritten_keys = Object.keys(overwritten);
+    if (overwritten_keys.length > 0) {
+        console.log(`🐢 → Overwritten global properties: ${overwritten_keys.join(', ')}`);
+    }
+    if (window && window[GLOBAL_OVERWRITTEN_NAME] === undefined) {
+        window[GLOBAL_OVERWRITTEN_NAME] = overwritten;
+        if (overwritten_keys.length > 0) {
+            console.log(`🐢 → Overwritten global properties are still available via: ${GLOBAL_OVERWRITTEN_NAME}`);
+        }
+    }
+    return overwritten;
 }
 
+// Initialize p5.js
+// Needs to be called in setup() after createCanvas()
+let _init_called = false;
+
+export function init(do_globalize = false) {
+    if (_init_called) { return; }
+    if (window.p5?.instance) {
+        console.log(`🐢 → Init: p5.js v${window.p5.VERSION}`);
+        // set line function of default instance
+        default_instance.set_line_fn( window.p5.instance.line.bind(window.p5.instance) );
+        
+        // translate to center on every draw
+        window.p5.instance.registerMethod('pre', function() {
+            default_instance.reset_matrix();
+            window.p5.instance.translate.call( window.p5.instance, window.p5.instance.width/2, window.p5.instance.height/2 );
+        });
+        
+        // translate to center (setup)
+        if (window.p5.instance._setupDone === false) {
+            window.p5.instance.translate.call( window.p5.instance, window.p5.instance.width/2, window.p5.instance.height/2 );
+        }
+        // globalize properties
+        if (do_globalize) { globalize(); }
+    } else {
+        console.warn('🐢 → Init: No p5.js detected');
+    }
+    _init_called = true;
+    return default_instance;
+}
+
+
+// Bootstrap browser
+let _browser_bootstrapped = false;
+function is_browser() { return window !== undefined || self !== undefined; }
+
+(function bootstrap_browser() {
+    if (is_browser()) {
+        if (_browser_bootstrapped) { return; }
+        console.log(`🐢 Turtle Graphics (v${VERSION})`);
+        
+        // put lib functions into global scope
+        if (window[GLOBAL_LIB_NAME] === undefined) {
+            window[GLOBAL_LIB_NAME] = {
+                default_turtle: default_instance,
+                maketurtle: default_instance.maketurtle,
+                init,
+                globalize,
+                _init_called: false,
+            };
+            console.log(`🐢 → Global library: ${GLOBAL_LIB_NAME}`);
+        }
+        
+        // put default instance into global scope
+        if (window[GLOBAL_INSTANCE_NAME] === undefined) {
+            window[GLOBAL_INSTANCE_NAME] = default_instance;
+            console.log(`🐢 → Global turtle: ${GLOBAL_INSTANCE_NAME}`);
+        }
+        
+        // Issue p5 init warning
+        // In case init() wasn't called (and line_fn wasn't manually set on the default instance)
+        if (window.p5 && window[GLOBAL_LIB_NAME] !== undefined) {
+            window.addEventListener('load', () => {
+                if (!window[GLOBAL_LIB_NAME]._init_called && default_instance.state().line_fn === undefined) {    
+                    console.warn(`🐢 → Not initialized. Please add the following statement to you p5.js setup function after createCanvas():  ${GLOBAL_LIB_NAME}.init();`);
+                }
+            });
+        }
+        _browser_bootstrapped = true;
+    }
+})();
+
+/*
 // detect p5.js global mode
 // -> set line function
-// -> put default instance into global scope (defined by GLOBAL_VAR_NAME)
+// -> put default instance into global scope (defined by GLOBAL_INSTANCE_NAME)
 // -> ~~add all functions to global scope~~
 // Use of DOMContentloaded makes sure this runs AFTER all script tags, but before p5 init (which runs on the 'load' event)
 if (globalThis?.addEventListener !== undefined) {
@@ -759,7 +861,7 @@ if (globalThis?.addEventListener !== undefined) {
                     this.translate(this.width/2, this.height/2);
                 });
                 
-                window[GLOBAL_VAR_NAME] = default_instance;
+                window[GLOBAL_INSTANCE_NAME] = default_instance;
                 // globalize();
                 
                 if (typeof original_preload === 'function') {
@@ -782,6 +884,4 @@ if (globalThis?.addEventListener !== undefined) {
         }
     });
 }
-
-// Fresh instance as default export
-export default default_instance;
+*/
