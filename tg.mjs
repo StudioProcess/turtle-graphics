@@ -837,10 +837,11 @@ function is_browser() {
         
         // Issue p5 init warning
         // In case init() wasn't called (and line_fn wasn't manually set on the default instance)
+        // TODO: this doesn't work in editor.p5js.org
         if (window.p5 && window[GLOBAL_LIB_NAME] !== undefined) {
             window.addEventListener('load', () => {
                 if (!_init_called && default_instance.state().line_fn === undefined) {    
-                    console.warn(`🐢 → Not initialized. Please add the following statement to you p5.js setup function after createCanvas():  ${GLOBAL_LIB_NAME}.init();`);
+                    console.warn(`🐢 → Please add the following statement to you p5.js setup function after createCanvas():  ${GLOBAL_LIB_NAME}.init();`);
                 }
             });
         }
