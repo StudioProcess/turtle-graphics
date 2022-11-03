@@ -693,7 +693,7 @@ export function make_turtle_graphics(...line_fns_) {
     
     const self = {
         VERSION,
-        init, // mirror init function, in case people use t.init() instead of tg.init()
+        // init, // mirror init function, in case people use t.init() instead of tg.init()
         maketurtle,
         self: self_,
         clone,
@@ -761,9 +761,8 @@ export function globalize(tg_instance = default_instance, global_object = global
     if (overwritten_keys.length > 0) {
         console.log(`🐢 → Overwritten global properties: ${overwritten_keys.join(', ')}`);
     }
-    const window = globalThis; // make this work in node too
-    if (window && window[GLOBAL_OVERWRITTEN_NAME] === undefined) {
-        window[GLOBAL_OVERWRITTEN_NAME] = overwritten;
+    if (global_object && global_object[GLOBAL_OVERWRITTEN_NAME] === undefined) {
+        global_object[GLOBAL_OVERWRITTEN_NAME] = overwritten;
         if (overwritten_keys.length > 0) {
             console.log(`🐢 → Overwritten global properties are still available via: ${GLOBAL_OVERWRITTEN_NAME}`);
         }
@@ -773,33 +772,33 @@ export function globalize(tg_instance = default_instance, global_object = global
 
 // Initialize p5.js
 // Needs to be called in setup() after createCanvas()
-let _init_called = false;
-
-export function init(do_globalize = false) {
-    if (_init_called) { return; }
-    if (window.p5?.instance) {
-        console.log(`🐢 → Init: p5.js v${window.p5.VERSION}`);
-        // set line function of default instance
-        default_instance.set_line_fn( window.p5.instance.line.bind(window.p5.instance) );
-        
-        // translate to center on every draw
-        window.p5.instance.registerMethod('pre', function() {
-            default_instance.reset_matrix();
-            window.p5.instance.translate.call( window.p5.instance, window.p5.instance.width/2, window.p5.instance.height/2 );
-        });
-        
-        // translate to center (setup)
-        if (window.p5.instance._setupDone === false) {
-            window.p5.instance.translate.call( window.p5.instance, window.p5.instance.width/2, window.p5.instance.height/2 );
-        }
-        // globalize properties
-        if (do_globalize) { globalize(); }
-    } else {
-        console.warn('🐢 → Init: No p5.js detected');
-    }
-    _init_called = true;
-    return default_instance;
-}
+// let _init_called = false;
+// 
+// export function init(do_globalize = false) {
+//     if (_init_called) { return; }
+//     if (window.p5?.instance) {
+//         console.log(`🐢 → Init: p5.js v${window.p5.VERSION}`);
+//         // set line function of default instance
+//         default_instance.set_line_fn( window.p5.instance.line.bind(window.p5.instance) );
+//         
+//         // translate to center on every draw
+//         window.p5.instance.registerMethod('pre', function() {
+//             default_instance.reset_matrix();
+//             window.p5.instance.translate.call( window.p5.instance, window.p5.instance.width/2, window.p5.instance.height/2 );
+//         });
+//         
+//         // translate to center (setup)
+//         if (window.p5.instance._setupDone === false) {
+//             window.p5.instance.translate.call( window.p5.instance, window.p5.instance.width/2, window.p5.instance.height/2 );
+//         }
+//         // globalize properties
+//         if (do_globalize) { globalize(); }
+//     } else {
+//         console.warn('🐢 → Init: No p5.js detected');
+//     }
+//     _init_called = true;
+//     return default_instance;
+// }
 
 
 // Bootstrap browser
@@ -812,6 +811,60 @@ function is_browser() {
     }
 }
 
+// Automatically init p5.js
+// Needs to be called after the p5 script is loaded, before the 'load' event
+let _init_called = false;
+
+function auto_init(do_globalize = false) {
+    if (_init_called) { return; }
+    if (window?.p5?.prototype) {
+        console.log(`🐢 → Init: p5.js v${window.p5.prototype.VERSION}`);
+        // console.log(window.p5.prototype);
+        
+        // init hook
+        // called in the p5 constructor
+        // after: _start(), _setup(), _draw(), remove() are added to the instance
+        // before: p5 properties are added to the window; _start() is called
+        window.p5.prototype._registeredMethods.init.push(function() {
+            // 'this' is the p5 instance
+            // -> set line function
+            default_instance.set_line_fn( this.line.bind(this) );
+            
+            const original__start = this._start;
+            this._start = function(...args) {
+                // 'this' is the p5 instance
+                // properties have just been added to window
+                // -> globalize properties
+                if (do_globalize) { globalize(); }
+                original__start.call(this, ...args);
+            };
+        });
+        
+        // -> translate to center (setup)
+        const original_createCanvas = window.p5.prototype.createCanvas;
+        window.p5.prototype.createCanvas = function(...args) {
+            // 'this' is the p5 instance
+            original_createCanvas.call(this, ...args);
+            this.translate(this.width/2, this.height/2);
+        }
+        
+        // -> reset transformations, translate to center (draw)
+        window.p5.prototype._registeredMethods.pre.push(function() {
+            // Warning: 'this' is either window (in p5.global mode) or the p5 instance (in instance mode)
+            default_instance.reset_matrix();
+            if (this === window) {
+                // global mode; instance is available via window.p5.instance
+                window.p5.instance.translate.call( window.p5.instance, window.p5.instance.width/2, window.p5.instance.height/2 );
+            } else {
+                this.translate(this.width/2, this.height/2);
+            }
+        });
+    } else {
+        console.warn('🐢 → Init: No p5.js detected');
+    }
+    _init_called = true;
+}
+
 (function bootstrap_browser() {
     if (_browser_bootstrapped) { return; }
     if (is_browser()) {
@@ -822,9 +875,8 @@ function is_browser() {
             window[GLOBAL_LIB_NAME] = {
                 default_turtle: default_instance,
                 maketurtle: default_instance.maketurtle,
-                init,
-                globalize,
-                _init_called: false,
+                // init,
+                globalize
             };
             console.log(`🐢 → Global library: ${GLOBAL_LIB_NAME}`);
         }
@@ -835,71 +887,10 @@ function is_browser() {
             console.log(`🐢 → Global turtle: ${GLOBAL_INSTANCE_NAME}`);
         }
         
-        // Issue p5 init warning
-        // In case init() wasn't called (and line_fn wasn't manually set on the default instance)
-        // TODO: this doesn't work in editor.p5js.org
-        if (window.p5 && window[GLOBAL_LIB_NAME] !== undefined) {
-            window.addEventListener('load', () => {
-                if (!_init_called && default_instance.state().line_fn === undefined) {    
-                    console.warn(`🐢 → Please add the following statement to you p5.js setup function after createCanvas():  ${GLOBAL_LIB_NAME}.init();`);
-                }
-            });
-        }
+        const url = new URL(import.meta.url);
+        const do_globalize = url.searchParams.get('globalize') !== null;
+        auto_init(do_globalize);
+        
         _browser_bootstrapped = true;
     }
 })();
-
-/*
-// detect p5.js global mode
-// -> set line function
-// -> put default instance into global scope (defined by GLOBAL_INSTANCE_NAME)
-// -> ~~add all functions to global scope~~
-// Use of DOMContentloaded makes sure this runs AFTER all script tags, but before p5 init (which runs on the 'load' event)
-if (globalThis?.addEventListener !== undefined) {
-    const window = globalThis;
-    window.addEventListener('DOMContentLoaded', e => {
-        console.log(`Turtle graphics (v${VERSION})`);
-        if (window?.p5) {
-            // console.log(window.p5.instance); // === null
-            console.log('-> p5 detected (%s)', window.p5.VERSION);
-            
-            // proxy the global preload function
-            // this is the earliest the p5 instance is available 
-            // AND p5 functions are in the global scope (so we can overwrite them)
-            const original_preload = window.preload;
-            window.preload = (...args) => {
-                console.log('-> proxied preload');
-                // default_instance.set_line_fn(window.line);
-                default_instance.set_line_fn( window.p5.instance.line.bind(window.p5.instance) );
-                
-                // 'pre' runs before each draw
-                window.p5.instance.registerMethod('pre', function() {
-                    default_instance.reset_matrix();
-                    // "this" is bound to the p5 instance
-                    this.translate(this.width/2, this.height/2);
-                });
-                
-                window[GLOBAL_INSTANCE_NAME] = default_instance;
-                // globalize();
-                
-                if (typeof original_preload === 'function') {
-                    original_preload(...args);
-                }
-                
-                // Hook into createCanvas()
-                // This is the earliest we know the size of the sketch, and can translate to the center
-                // So we can use setup-only sketches, provided we have createCanvas()
-                const original_createCanvas = window.createCanvas;
-                window.createCanvas = (...args) => {
-                    console.log('-> proxied createCanvas');
-                    if (typeof original_createCanvas === 'function') {
-                        original_createCanvas(...args);
-                    }
-                    // Translate to center
-                    window.p5.instance.translate.call( window.p5.instance, window.p5.instance.width/2, window.p5.instance.height/2 );
-                };
-            };
-        }
-    });
-}
-*/
