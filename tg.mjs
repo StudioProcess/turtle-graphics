@@ -5,7 +5,7 @@ const DEFAULT_FORWARD = 100;
 const DEFAULT_RIGHT = 90;
 const GLOBAL_LIB_NAME = 'tg';
 const GLOBAL_INSTANCE_NAME = 't';
-const GLOBAL_OVERWRITTEN_NAME = 'old';
+const GLOBAL_OVERWRITTEN_NAME = 'p5';
 const DONT_GLOBALIZE = [ 'VERSION', 'init' ];
 const VERSION = 1;
 
@@ -751,21 +751,47 @@ export default default_instance;
 // Put properties of an object into the global namespace
 export function globalize(tg_instance = default_instance, global_object = globalThis) {
     const overwritten = {};
+    const failed = {};
     for (const [key, val] of Object.entries(tg_instance).filter( x => ! DONT_GLOBALIZE.includes(x[0]) )) {
-        if (global_object[key] !== undefined) {
-            overwritten[key] = global_object[key];
+        const saved_value = global_object[key];
+        try {
+            // Use defineProperty, so p5 won't detect the change and complain
+            Object.defineProperty(global_object, key, {
+                configurable: true,
+                enumerable: true,
+                writable: true,
+                value: val
+            });
+            if (saved_value !== undefined) {
+                overwritten[key] = saved_value;
+            }
+        } catch {
+            failed[key] = saved_value;
         }
-        global_object[key] = val;
     }
     const overwritten_keys = Object.keys(overwritten);
     if (overwritten_keys.length > 0) {
         console.log(`🐢 → Overwritten global properties: ${overwritten_keys.join(', ')}`);
     }
+    if (overwritten_keys.length > 0) {
+        for (const [key, val] of Object.entries(overwritten)) {
+            Object.defineProperty(global_object[GLOBAL_OVERWRITTEN_NAME], key, {
+                configurable: true,
+                enumerable: true,
+                writable: true,
+                value: val
+            });
+        }
+        console.log(`🐢 → Overwritten global properties are still available via: ${GLOBAL_OVERWRITTEN_NAME}`);
+    }
+
     if (global_object && global_object[GLOBAL_OVERWRITTEN_NAME] === undefined) {
         global_object[GLOBAL_OVERWRITTEN_NAME] = overwritten;
-        if (overwritten_keys.length > 0) {
-            console.log(`🐢 → Overwritten global properties are still available via: ${GLOBAL_OVERWRITTEN_NAME}`);
-        }
+    }
+    
+    const failed_keys = Object.keys(failed);
+    if (failed_keys.length > 0) {
+        console.warn(`🐢 → Failed to overwrite global properties: ${failed_keys.join(', ')}`);
     }
     return overwritten;
 }
