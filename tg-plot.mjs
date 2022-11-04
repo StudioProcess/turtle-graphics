@@ -2,7 +2,15 @@ const VERSION = 1;
 
 function create_ui() {
     const tmp = document.createElement('template');
-    tmp.innerHTML = '<div style="font-family:system-ui; width:200px; height:100px; position:fixed; top:0; right:0;"><input class="server" placeholder="Server" value="ws://plotter-server.local:4321"></input><br><button class="connect">Connect</button><span class="status">○</span><br>client id: <span class="client_id"></span><br><span class="lines">0</span> lines<br><button class="clear">Clear</button> <button class="plot">Plot</button></div>';
+    tmp.innerHTML = `<div style="font-family:system-ui; width:200px; height:100px; position:fixed; top:0; right:0;">
+    <input class="server" placeholder="Server" value="ws://plotter-server.local:4321"></input><br>
+    <button class="connect">Connect</button><span class="status">○</span><br>
+    client id: <span class="client_id"></span><br>
+    <span class="lines">0</span> lines<br>
+    plotter queue: <span class="queue_len">–</span><br>
+    your job: <span class="queue_pos">–</span><br>
+    <button class="clear">Clear</button> <button class="plot">Plot</button> <button class="cancel">Cancel</button>
+    </div> `;
     const div = tmp.content.firstChild;
     document.body.appendChild(div);
     return div;
@@ -183,10 +191,13 @@ export function make_plotter_client(tg_instance) {
     const lines_span = div.querySelector('.lines');
     const client_id_span = div.querySelector('.client_id');
     const clear_button = div.querySelector('.clear');
+    const cancel_button = div.querySelector('.cancel');
     const plot_button = div.querySelector('.plot');
     const status_span = div.querySelector('.status');
     const server_input = div.querySelector('.server');
     const connect_button = div.querySelector('.connect');
+    const queue_pos_span = div.querySelector('.queue_pos');
+    const queue_len_span = div.querySelector('.queue_len');
     
     client_id_span.innerText = get_client_id();
     
@@ -206,6 +217,15 @@ export function make_plotter_client(tg_instance) {
         ac.send(msg);
     }
     
+    cancel_button.onmousedown = () => {
+        const msg = JSON.stringify({
+            type: 'cancel',
+            client: client_id_span.innerText,
+        });
+        console.log(msg);
+        ac.send(msg);
+    }
+    
     tg_instance.add_line_fn((...args) => {
         lines.push(args);
         lines_span.innerText = lines.length;
@@ -216,6 +236,8 @@ export function make_plotter_client(tg_instance) {
             console.log('on_connecting')
             connect_button.innerText = 'Stop';
             status_span.innerText = `○ Connecting${retries > 0 ? ' (' + retries +')' : ''}...`;
+            queue_pos_span.innerText = '–';
+            queue_len_span.innerText = '–';
         },
         on_waiting: (retries) => {
             console.log('on_waiting')
@@ -230,9 +252,25 @@ export function make_plotter_client(tg_instance) {
             console.log('on_disconnected')
             connect_button.innerText = 'Connect';
             status_span.innerText = '○ Disconnected';
+            queue_pos_span.innerText = '–';
+            queue_len_span.innerText = '–';
         },
         on_message: (e) => {
-           console.log('on_message', e);
+            const msg = JSON.parse(e.data)
+            console.log('on_message', msg);
+            if (msg.type === 'queue_length') {
+                queue_len_span.innerText = msg.length;
+            }
+            else if (msg.type === 'queue_position') {
+                const pos = msg.position === 0 ? '🖨️ Drawing...' : msg.position + " before you...";
+                queue_pos_span.innerText = pos;
+            }
+            else if (msg.type === 'job_done') {
+                queue_pos_span.innerText = '✔️ Done';
+            }
+            else if (msg.type === 'job_canceled') {
+                queue_pos_span.innerText = '❌ Canceled';
+            }
         },
     });
     
