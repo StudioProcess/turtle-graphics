@@ -166,6 +166,15 @@ function autoconnect(options = {}) {
     return { start, stop, toggle, send, socket:socket_ };
 }
 
+function get_client_id() {
+    let client_id = localStorage.getItem('tg-plot:client_id');
+    if (!client_id) {
+        client_id = crypto.randomUUID().slice(0, 8); // new client id
+        localStorage.setItem('tg-plot:client_id', client_id);
+    }
+    return client_id;
+}
+
 
 export function make_plotter_client(tg_instance) {
     let lines = [];
@@ -179,7 +188,7 @@ export function make_plotter_client(tg_instance) {
     const server_input = div.querySelector('.server');
     const connect_button = div.querySelector('.connect');
     
-    client_id_span.innerText = crypto.randomUUID().slice(0, 8);
+    client_id_span.innerText = get_client_id();
     
     clear_button.onmousedown = () => {
         lines = [];
