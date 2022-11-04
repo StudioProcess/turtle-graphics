@@ -46,6 +46,7 @@ function autoconnect(options = {}) {
         on_waiting: undefined,
         on_connected: undefined,
         on_disconnected: undefined,
+        on_message: undefined,
     }, options);
     
     let url;
@@ -73,7 +74,11 @@ function autoconnect(options = {}) {
     function on_open(e) {
         clearTimeout(timeout);
         state = STATE.connected;
-        callback(options.on_connected);
+        callback(options.on_connected, socket);
+    }
+    
+    function on_message(e) {
+        callback(options.on_message, e);
     }
     
     function on_close_or_error(e) {
@@ -113,6 +118,7 @@ function autoconnect(options = {}) {
             socket.onopen  = on_open;
             socket.onclose = on_close_or_error;
             socket.onerror = on_close_or_error;
+            socket.onmessage = on_message;
         } catch (e) {
             // catches URL errors -> don't reconnect
             state = STATE.disconnected;
@@ -147,7 +153,17 @@ function autoconnect(options = {}) {
         else { stop(); }
     }
     
-    return { start, stop, toggle };
+    function socket_() {
+        return socket;
+    }
+    
+    function send(data) {
+        if (socket && socket.readyState === 1) { // OPEN
+            socket.send(data);
+        }
+    }
+    
+    return { start, stop, toggle, send, socket:socket_ };
 }
 
 
@@ -171,9 +187,14 @@ export function make_plotter_client(tg_instance) {
     };
     
     plot_button.onmousedown = () => {
-        const path = to_path(lines);
-        console.log(lines);
-        console.log(path);
+        const msg = JSON.stringify({
+            type: 'plot',
+            client: client_id_span.innerText,
+            id: crypto.randomUUID(),
+            lines
+        });
+        console.log(msg);
+        ac.send(msg);
     }
     
     tg_instance.add_line_fn((...args) => {
@@ -191,7 +212,7 @@ export function make_plotter_client(tg_instance) {
             console.log('on_waiting')
             status_span.innerText = `○ Waiting${retries > 0 ? ' (' + retries +')' : ''}...`;
         },
-        on_connected: () => {
+        on_connected: (socket) => {
             console.log('on_connected')
             connect_button.innerText = 'Disconnect';
             status_span.innerText = '● Connected';
@@ -200,6 +221,9 @@ export function make_plotter_client(tg_instance) {
             console.log('on_disconnected')
             connect_button.innerText = 'Connect';
             status_span.innerText = '○ Disconnected';
+        },
+        on_message: (e) => {
+           console.log('on_message', e);
         },
     });
     
