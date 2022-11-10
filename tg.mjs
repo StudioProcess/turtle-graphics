@@ -872,6 +872,7 @@ function auto_init(do_globalize = false) {
             // 'this' is the p5 instance
             original_createCanvas.call(this, ...args);
             this.translate(this.width/2, this.height/2);
+            default_instance._p5_viewbox = [-this.width/2, -this.height/2, this.width, this.height ]; // TODO: beautify
         }
         
         // -> reset transformations, translate to center (draw)

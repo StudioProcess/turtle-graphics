@@ -9,14 +9,14 @@ function create_ui() {
     <span class="lines">0</span> lines<br>
     plotter queue: <span class="queue_len">–</span><br>
     your job: <span class="queue_pos">–</span><br>
-    <button class="clear">Clear</button> <button class="plot">Plot</button> <button class="cancel">Cancel</button>
+    <button class="clear">Clear</button> <button class="plot">Plot</button> <button class="cancel">Cancel</button> <button class="savesvg">Save SVG</button>
     </div> `;
     const div = tmp.content.firstChild;
     document.body.appendChild(div);
     return div;
 }
 
-function to_path(lines, num_decimals = 2) {
+function to_path(lines, num_decimals = -1) {
     function dec(n) {
         if (num_decimals < 0) { return n; }
         return parseFloat( n.toFixed(num_decimals) ); // parse again to make sure that 1.00 -> 1
@@ -37,6 +37,76 @@ function to_path(lines, num_decimals = 2) {
     }
     d = d.trimEnd();
     return d;
+}
+
+// move to the center given by (cx, cy), then scale by (sx, sy)
+function scale_lines(lines, sx = 1, sy = 1, cx = 0, cy = 0) {
+    if (sy === undefined || sy === null) { sy = sx; }
+    return lines.map( ([x0, y0, x1, y1]) => [
+        sx * (x0 - cx), 
+        sy * (y0 - cy), 
+        sx * (x1 - cx), 
+        sy * (y1 - cy) ] );
+}
+
+function get_bbox(lines) {
+    let tl = [ Infinity,  Infinity]; // top left
+    let br = [-Infinity, -Infinity]; // bottom right
+    function check(x, y) {
+        if ( x < tl[0] ) { tl[0] = x; }
+        if ( x > br[0] ) { br[0] = x; }
+        if ( y < tl[1] ) { tl[1] = y; }
+        if ( y > br[1] ) { br[1] = y; }
+    }
+    for (let [x0, y0, x1, y1] of lines) {
+        check(x0, y0);
+        check(x1, y1);
+    }
+    return [ tl[0], tl[1], br[0]-tl[0], br[1]-tl[1] ];
+}
+
+// TODO: stroke width
+function to_svg(lines, lines_viewbox = undefined, timestamp = undefined) {
+    // label : [ width_mm, height_mm ]
+    const sizes = {
+        a3_landscape: [ 420, 297 ],
+    };
+    const margin = 0.05;
+    const size = sizes.a3_landscape;
+    
+    if (lines_viewbox === undefined) { lines_viewbox = geb_bbox(lines); }     // if no viewbox given, calculate bounding box
+    const center = [ lines_viewbox[0] + lines_viewbox[2]/2, lines_viewbox[1] + lines_viewbox[3]/2 ];
+    const scale_w = size[0] / lines_viewbox[2];
+    const scale_h = size[1] / lines_viewbox[3];
+    const scale = Math.min(scale_w, scale_h) * (1 - margin);
+    const scaled_lines = scale_lines(lines, scale, scale, center[0], center[1]);
+    const d = to_path(scaled_lines);
+    
+    if (timestamp === undefined) {
+        timestamp = (new Date()).toISOString();
+    }
+    
+    const svg =`<!-- Created with tg-plot (v${VERSION}) at ${timestamp} -->
+<svg xmlns="http://www.w3.org/2000/svg" 
+     width="${size[0]}mm"
+     height="${size[1]}mm"
+     viewBox="-${size[0]/2} -${size[1]/2} ${size[0]} ${size[1]}"
+     stroke="black" fill="none" stroke-linecap="round">
+    <path d="${d}" />
+</svg>`;
+    return svg;
+}
+
+// Save text data to file
+// Triggers download mechanism in the browser
+function save_text(text, filename) {
+    let link = document.createElement('a');
+    link.download = filename;
+    link.href = 'data:text/plain;charset=UTF-8,' + encodeURIComponent(text);
+    link.style.display = 'none';     // Firefox
+    document.body.appendChild(link); // Firefox
+    link.click();
+    document.body.removeChild(link); // Firefox
 }
 
 function autoconnect(options = {}) {
@@ -198,6 +268,7 @@ export function make_plotter_client(tg_instance) {
     const connect_button = div.querySelector('.connect');
     const queue_pos_span = div.querySelector('.queue_pos');
     const queue_len_span = div.querySelector('.queue_len');
+    const savesvg_button = div.querySelector('.savesvg');
     
     client_id_span.innerText = get_client_id();
     
@@ -207,11 +278,15 @@ export function make_plotter_client(tg_instance) {
     };
     
     plot_button.onmousedown = () => {
+        if (lines.length == 0) { return; }
+        const ts = (new Date()).toISOString();
+        const svg = to_svg(lines, tg_instance._p5_viewbox, ts);
+        
         const msg = JSON.stringify({
             type: 'plot',
             client: client_id_span.innerText,
             id: crypto.randomUUID(),
-            lines
+            svg
         });
         console.log(msg);
         ac.send(msg);
@@ -224,6 +299,13 @@ export function make_plotter_client(tg_instance) {
         });
         console.log(msg);
         ac.send(msg);
+    }
+    
+    savesvg_button.onmousedown = () => {
+        if (lines.length == 0) { return; }
+        const ts = (new Date()).toISOString();
+        const svg = to_svg(lines, tg_instance._p5_viewbox, ts);
+        save_text(svg, ts + '.svg');
     }
     
     tg_instance.add_line_fn((...args) => {
