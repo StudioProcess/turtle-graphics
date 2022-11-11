@@ -344,7 +344,10 @@ export function make_plotter_client(tg_instance) {
                 queue_len_span.innerText = msg.length;
             }
             else if (msg.type === 'queue_position') {
-                const pos = msg.position === 0 ? '🖨️ Drawing...' : msg.position + " before you...";
+                let pos;
+                if (msg.position === 0) { pos = '🖨️📝 Ready to draw, load paper pen '; }
+                else if (msg.position === -1) { pos = '🖨️ Drawing...'; }
+                else { pos = "⌛ " + msg.position + " before you..."; }
                 queue_pos_span.innerText = pos;
             }
             else if (msg.type === 'job_done') {
