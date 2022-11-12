@@ -6,7 +6,7 @@ function create_ui() {
     <input class="server" placeholder="Server" value="ws://plotter-server.local:4321"></input><br>
     <button class="connect">Connect</button><span class="status">○</span><br>
     client id: <span class="client_id"></span><br>
-    <span class="lines">0</span> lines<br>
+    lines: <span class="lines">0</span> travel: <span class="travel">0</span> ink: <span class="ink">0</span><br>
     plotter queue: <span class="queue_len">–</span><br>
     your job: <span class="queue_pos">–</span><br>
     <button class="clear">Clear</button> <button class="plot">Plot</button> <button class="cancel">Cancel</button> <button class="savesvg">Save SVG</button>
@@ -100,31 +100,44 @@ function to_svg(lines, lines_viewbox = undefined, timestamp = undefined) {
     return { svg, stats, timestamp };
 }
 
-function dist(x0, y0, x1, y1) {
-    return Math.sqrt( (x1-x0)**2 + (y1-y0)**2 );
-}
-
-function line_stats(lines) {
+function make_line_stats() {
     const stats = {
-        count: lines.length,
+        count: 0,
         travel: 0,
         travel_ink: 0,
         travel_blank: 0
     };
-    if (lines.length == 0) { return stats; }
-    // previous end point
-    let px = lines[0][0];
-    let py = lines[0][1];
-    for (let [x0, y0, x1, y1] of lines) {
-        const blank = dist(px, py, x0, y0); // blank travel to line start
+    let px;
+    let py;
+    
+    function dist(x0, y0, x1, y1) {
+        return Math.sqrt( (x1-x0)**2 + (y1-y0)**2 );
+    }
+    
+    function add_line(x0, y0, x1, y1) {
+        const blank = px !== undefined ? dist(px, py, x0, y0) : 0; // blank travel to line start
         const ink = dist(x0, y0, x1, y1); // line
+        stats.count += 1;
         stats.travel_blank += blank;
         stats.travel_ink += ink;
         stats.travel += blank + ink;
         px = x1;
         py = y1;
     }
-    return stats;
+    
+    function get() {
+        return Object.assign({}, stats);
+    }
+    
+    return { add_line, get };
+}
+
+function line_stats(lines) {
+    const stats = make_line_stats();
+    for (let line of lines) {
+        stats.add_line(...line);
+    }
+    return stats.get();
 }
 
 // Save text data to file
@@ -286,9 +299,12 @@ function get_client_id() {
 
 export function make_plotter_client(tg_instance) {
     let lines = [];
+    let line_stats = make_line_stats();
     
     const div = create_ui();
     const lines_span = div.querySelector('.lines');
+    const travel_span = div.querySelector('.travel');
+    const ink_span = div.querySelector('.ink');
     const client_id_span = div.querySelector('.client_id');
     const clear_button = div.querySelector('.clear');
     const cancel_button = div.querySelector('.cancel');
@@ -304,7 +320,10 @@ export function make_plotter_client(tg_instance) {
     
     clear_button.onmousedown = () => {
         lines = [];
-        lines_span.innerText = 0;
+        line_stats = make_line_stats();
+        lines_span.innerText = '–';
+        travel_span.innerText = '–';
+        ink_span.innerText = '–';
     };
     
     plot_button.onmousedown = () => {
@@ -338,7 +357,11 @@ export function make_plotter_client(tg_instance) {
     
     tg_instance.add_line_fn((...args) => {
         lines.push(args);
-        lines_span.innerText = lines.length;
+        line_stats.add_line(...args);
+        const stats = line_stats.get();
+        lines_span.innerText = stats.count;
+        travel_span.innerText = Math.floor(stats.travel);
+        ink_span.innerText = Math.floor(stats.travel_ink);
     });
     
     const ac = autoconnect({
