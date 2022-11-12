@@ -1,4 +1,6 @@
 const VERSION = 1;
+const TARGET_SIZE = [420, 297]; // A3 Landscape, in mm
+const MARGIN = 0.05; // scale down (scaling factor = 1-MARGIN)
 
 function create_ui() {
     const tmp = document.createElement('template');
@@ -6,7 +8,9 @@ function create_ui() {
     <input class="server" placeholder="Server" value="ws://plotter-server.local:4321"></input><br>
     <button class="connect">Connect</button><span class="status">○</span><br>
     client id: <span class="client_id"></span><br>
-    lines: <span class="lines">0</span> travel: <span class="travel">0</span> ink: <span class="ink">0</span><br>
+    lines: <span class="lines">–</span><br>
+    travel: <span class="travel">–</span><br>
+    ink: <span class="ink">–</span><br>
     plotter queue: <span class="queue_len">–</span><br>
     your job: <span class="queue_pos">–</span><br>
     <button class="clear">Clear</button> <button class="plot">Plot</button> <button class="cancel">Cancel</button> <button class="savesvg">Save SVG</button>
@@ -39,14 +43,28 @@ function to_path(lines, num_decimals = -1) {
     return d;
 }
 
+// Fit viewbox into a target size, with margin
+// Returns [sx, sy, cx, cy]
+function scale_viewbox(viewbox, target_size = [420, 297], margin = 0.05) {
+    const center = [ viewbox[0] + viewbox[2]/2, viewbox[1] + viewbox[3]/2 ];
+    const scale_w = target_size[0] / viewbox[2];
+    const scale_h = target_size[1] / viewbox[3];
+    const scale = Math.min(scale_w, scale_h) * (1 - margin);
+    return [ scale, scale, center[0], center[1] ];
+}
+
 // move to the center given by (cx, cy), then scale by (sx, sy)
 function scale_lines(lines, sx = 1, sy = 1, cx = 0, cy = 0) {
-    if (sy === undefined || sy === null) { sy = sx; }
     return lines.map( ([x0, y0, x1, y1]) => [
         sx * (x0 - cx), 
         sy * (y0 - cy), 
         sx * (x1 - cx), 
         sy * (y1 - cy) ] );
+}
+
+function scale_lines_viewbox(lines, viewbox) {
+    const scale_args = scale_viewbox(viewbox, TARGET_SIZE, MARGIN);
+    return scale_lines(lines, ...scale_args);
 }
 
 function get_bbox(lines) {
@@ -67,21 +85,15 @@ function get_bbox(lines) {
 
 // TODO: stroke width
 function to_svg(lines, lines_viewbox = undefined, timestamp = undefined) {
-    // label : [ width_mm, height_mm ]
-    const sizes = {
-        a3_landscape: [ 420, 297 ],
-    };
-    const margin = 0.05;
-    const size = sizes.a3_landscape;
+    if (lines_viewbox === 'bbox') { // calculate bounding box
+        lines_viewbox = geb_bbox(lines);
+        lines = scale_lines_viewbox(lines, lines_viewbox);
+    } else if (Array.isArray(lines_viewbox)) { // viewbox given [x, y, w, h]
+        lines = scale_lines_viewbox(lines, lines_viewbox);
+    }
     
-    if (lines_viewbox === undefined) { lines_viewbox = geb_bbox(lines); }     // if no viewbox given, calculate bounding box
-    const center = [ lines_viewbox[0] + lines_viewbox[2]/2, lines_viewbox[1] + lines_viewbox[3]/2 ];
-    const scale_w = size[0] / lines_viewbox[2];
-    const scale_h = size[1] / lines_viewbox[3];
-    const scale = Math.min(scale_w, scale_h) * (1 - margin);
-    const scaled_lines = scale_lines(lines, scale, scale, center[0], center[1]);
-    const stats = line_stats(scaled_lines);
-    const d = to_path(scaled_lines);
+    const stats = line_stats(lines);
+    const d = to_path(lines);
     
     if (timestamp === undefined) {
         timestamp = (new Date()).toISOString();
@@ -90,10 +102,10 @@ function to_svg(lines, lines_viewbox = undefined, timestamp = undefined) {
     const svg =`<!-- Created with tg-plot (v${VERSION}) at ${timestamp} -->
 <svg xmlns="http://www.w3.org/2000/svg" 
      xmlns:tg="https://sketch.process.studio/turtle-graphics"
-     tg:count="${stats.count}" tg:travel="${Math.trunc(stats.travel)}" tg:travel_ink="${Math.trunc(stats.travel_ink)}" tg:travel_blank="${Math.trunc(stats.travel_blank)}"
-     width="${size[0]}mm"
-     height="${size[1]}mm"
-     viewBox="-${size[0]/2} -${size[1]/2} ${size[0]} ${size[1]}"
+     tg:count="${stats.count}" tg:travel="${Math.trunc(stats.travel)}" tg:travel_ink="${Math.trunc(stats.travel_ink)}" tg:travel_blank="${Math.trunc(stats.travel)-Math.trunc(stats.travel_ink)}"
+     width="${TARGET_SIZE[0]}mm"
+     height="${TARGET_SIZE[1]}mm"
+     viewBox="-${TARGET_SIZE[0]/2} -${TARGET_SIZE[1]/2} ${TARGET_SIZE[0]} ${TARGET_SIZE[1]}"
      stroke="black" fill="none" stroke-linecap="round">
     <path d="${d}" />
 </svg>`;
@@ -134,9 +146,7 @@ function make_line_stats() {
 
 function line_stats(lines) {
     const stats = make_line_stats();
-    for (let line of lines) {
-        stats.add_line(...line);
-    }
+    for (let line of lines) { stats.add_line(...line); }
     return stats.get();
 }
 
@@ -298,8 +308,8 @@ function get_client_id() {
 
 
 export function make_plotter_client(tg_instance) {
-    let lines = [];
-    let line_stats = make_line_stats();
+    let lines = []; // lines as they arrive from tg module (in px)
+    let line_stats = make_line_stats(); // stats based on lines
     
     const div = create_ui();
     const lines_span = div.querySelector('.lines');
@@ -338,7 +348,7 @@ export function make_plotter_client(tg_instance) {
         });
         console.log(msg);
         ac.send(msg);
-    }
+    };
     
     cancel_button.onmousedown = () => {
         const msg = JSON.stringify({
@@ -347,21 +357,22 @@ export function make_plotter_client(tg_instance) {
         });
         console.log(msg);
         ac.send(msg);
-    }
+    };
     
     savesvg_button.onmousedown = () => {
         if (lines.length == 0) { return; }
         const { svg, timestamp, stats } = to_svg(lines, tg_instance._p5_viewbox);
         save_text(svg, timestamp + '.svg');
-    }
+    };
     
-    tg_instance.add_line_fn((...args) => {
-        lines.push(args);
-        line_stats.add_line(...args);
+    tg_instance.add_line_fn((...line) => {
+        lines.push(line);
+        line_stats.add_line(...line);
         const stats = line_stats.get();
+        const scale = scale_viewbox(tg_instance._p5_viewbox, TARGET_SIZE, MARGIN)[0]; // scaling factor
         lines_span.innerText = stats.count;
-        travel_span.innerText = Math.floor(stats.travel);
-        ink_span.innerText = Math.floor(stats.travel_ink);
+        travel_span.innerText = Math.floor(stats.travel * scale) + ' mm';
+        ink_span.innerText = Math.floor(stats.travel_ink * scale) + ' mm';
     });
     
     const ac = autoconnect({
