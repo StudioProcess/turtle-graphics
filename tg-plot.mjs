@@ -80,6 +80,7 @@ function to_svg(lines, lines_viewbox = undefined, timestamp = undefined) {
     const scale_h = size[1] / lines_viewbox[3];
     const scale = Math.min(scale_w, scale_h) * (1 - margin);
     const scaled_lines = scale_lines(lines, scale, scale, center[0], center[1]);
+    const stats = line_stats(scaled_lines);
     const d = to_path(scaled_lines);
     
     if (timestamp === undefined) {
@@ -88,13 +89,42 @@ function to_svg(lines, lines_viewbox = undefined, timestamp = undefined) {
     
     const svg =`<!-- Created with tg-plot (v${VERSION}) at ${timestamp} -->
 <svg xmlns="http://www.w3.org/2000/svg" 
+     xmlns:tg="https://sketch.process.studio/turtle-graphics"
+     tg:count="${stats.count}" tg:travel="${Math.trunc(stats.travel)}" tg:travel_ink="${Math.trunc(stats.travel_ink)}" tg:travel_blank="${Math.trunc(stats.travel_blank)}"
      width="${size[0]}mm"
      height="${size[1]}mm"
      viewBox="-${size[0]/2} -${size[1]/2} ${size[0]} ${size[1]}"
      stroke="black" fill="none" stroke-linecap="round">
     <path d="${d}" />
 </svg>`;
-    return svg;
+    return { svg, stats, timestamp };
+}
+
+function dist(x0, y0, x1, y1) {
+    return Math.sqrt( (x1-x0)**2 + (y1-y0)**2 );
+}
+
+function line_stats(lines) {
+    const stats = {
+        count: lines.length,
+        travel: 0,
+        travel_ink: 0,
+        travel_blank: 0
+    };
+    if (lines.length == 0) { return stats; }
+    // previous end point
+    let px = lines[0][0];
+    let py = lines[0][1];
+    for (let [x0, y0, x1, y1] of lines) {
+        const blank = dist(px, py, x0, y0); // blank travel to line start
+        const ink = dist(x0, y0, x1, y1); // line
+        stats.travel_blank += blank;
+        stats.travel_ink += ink;
+        stats.travel += blank + ink;
+        px = x1;
+        py = y1;
+    }
+    return stats;
 }
 
 // Save text data to file
@@ -279,14 +309,13 @@ export function make_plotter_client(tg_instance) {
     
     plot_button.onmousedown = () => {
         if (lines.length == 0) { return; }
-        const ts = (new Date()).toISOString();
-        const svg = to_svg(lines, tg_instance._p5_viewbox, ts);
-        
+        const { svg, timestamp, stats } = to_svg(lines, tg_instance._p5_viewbox);
         const msg = JSON.stringify({
             type: 'plot',
             client: client_id_span.innerText,
             id: crypto.randomUUID(),
-            svg
+            svg,
+            stats
         });
         console.log(msg);
         ac.send(msg);
@@ -303,9 +332,8 @@ export function make_plotter_client(tg_instance) {
     
     savesvg_button.onmousedown = () => {
         if (lines.length == 0) { return; }
-        const ts = (new Date()).toISOString();
-        const svg = to_svg(lines, tg_instance._p5_viewbox, ts);
-        save_text(svg, ts + '.svg');
+        const { svg, timestamp, stats } = to_svg(lines, tg_instance._p5_viewbox);
+        save_text(svg, timestamp + '.svg');
     }
     
     tg_instance.add_line_fn((...args) => {
