@@ -7,7 +7,7 @@ function create_ui() {
     tmp.innerHTML = `<div style="font-family:system-ui; width:200px; height:100px; position:fixed; top:0; right:0;">
     <input class="server" placeholder="Server" value="ws://plotter-server.local:4321"></input><br>
     <button class="connect">Connect</button><span class="status">○</span><br>
-    client id: <span class="client_id"></span><br>
+    client id: <span class="client_id">–</span><br>
     lines: <span class="lines">–</span><br>
     travel: <span class="travel">–</span><br>
     ink: <span class="ink">–</span><br>
@@ -83,8 +83,29 @@ function get_bbox(lines) {
     return [ tl[0], tl[1], br[0]-tl[0], br[1]-tl[1] ];
 }
 
+function timestamp(date = undefined) {
+    if (date === undefined) {
+        date = new Date();
+    }
+    function pad(val, digits = 2) {
+        return (new String(val)).padStart(digits, '0');
+    }
+    function tz_offset() {
+        const offset = date.getTimezoneOffset() / -60;
+        return (offset >= 0 ? '+' : '') + pad(offset, 1);
+    }
+    return `${date.getFullYear()}${pad(date.getMonth())}${pad(date.getDate())}_${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)}_UTC${tz_offset()}`;
+}
+
+// Returns a promise
+async function hash(str) {
+    const buffer = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(str));
+    const array = Array.from(new Uint8Array(buffer));
+    return array.map( (b) => b.toString(16).padStart(2, '0') ).join('');
+}
+
 // TODO: stroke width
-function to_svg(lines, lines_viewbox = undefined, timestamp = undefined) {
+async function to_svg(lines, lines_viewbox = undefined, date = undefined) {
     if (lines_viewbox === 'bbox') { // calculate bounding box
         lines_viewbox = geb_bbox(lines);
         lines = scale_lines_viewbox(lines, lines_viewbox);
@@ -95,12 +116,9 @@ function to_svg(lines, lines_viewbox = undefined, timestamp = undefined) {
     const stats = line_stats(lines);
     const d = to_path(lines);
     
-    if (timestamp === undefined) {
-        timestamp = (new Date()).toISOString();
-    }
+    const _timestamp = timestamp(date);
     
-    const svg =`<!-- Created with tg-plot (v${VERSION}) at ${timestamp} -->
-<svg xmlns="http://www.w3.org/2000/svg" 
+    let svg =`<svg xmlns="http://www.w3.org/2000/svg" 
      xmlns:tg="https://sketch.process.studio/turtle-graphics"
      tg:count="${stats.count}" tg:travel="${Math.trunc(stats.travel)}" tg:travel_ink="${Math.trunc(stats.travel_ink)}" tg:travel_blank="${Math.trunc(stats.travel)-Math.trunc(stats.travel_ink)}"
      width="${TARGET_SIZE[0]}mm"
@@ -109,7 +127,12 @@ function to_svg(lines, lines_viewbox = undefined, timestamp = undefined) {
      stroke="black" fill="none" stroke-linecap="round">
     <path d="${d}" />
 </svg>`;
-    return { svg, stats, timestamp };
+    
+    const _hash = await hash(svg); // hash without comment (contains timestamp)
+    svg = `<!-- Created with tg-plot (v${VERSION}) at ${_timestamp} -->\n`
+        + `<!-- SHA-1 (after this line): ${_hash} -->\n`
+        + svg;
+    return { svg, stats, timestamp: _timestamp, hash: _hash };
 }
 
 function make_line_stats() {
@@ -336,15 +359,17 @@ export function make_plotter_client(tg_instance) {
         ink_span.innerText = '–';
     };
     
-    plot_button.onmousedown = () => {
+    plot_button.onmousedown = async () => {
         if (lines.length == 0) { return; }
-        const { svg, timestamp, stats } = to_svg(lines, tg_instance._p5_viewbox);
+        const { svg, timestamp, stats, hash } = await to_svg(lines, tg_instance._p5_viewbox);
         const msg = JSON.stringify({
             type: 'plot',
             client: client_id_span.innerText,
             id: crypto.randomUUID(),
             svg,
-            stats
+            stats,
+            timestamp,
+            hash, 
         });
         console.log(msg);
         ac.send(msg);
@@ -359,10 +384,10 @@ export function make_plotter_client(tg_instance) {
         ac.send(msg);
     };
     
-    savesvg_button.onmousedown = () => {
+    savesvg_button.onmousedown = async () => {
         if (lines.length == 0) { return; }
-        const { svg, timestamp, stats } = to_svg(lines, tg_instance._p5_viewbox);
-        save_text(svg, timestamp + '.svg');
+        const { svg, timestamp, stats, hash } = await to_svg(lines, tg_instance._p5_viewbox);
+        save_text(svg, `${timestamp}_${hash.slice(0,5)}.svg`);
     };
     
     tg_instance.add_line_fn((...line) => {
