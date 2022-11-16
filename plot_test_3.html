@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plot Test 3 (High)</title>
+    <script src="./node_modules/p5/lib/p5.min.js"></script>
+    <script src="./dist/tg.mjs" type="module"></script>
+    <script src="./dist/tg-plot.mjs" type="module"></script>
+    <script>
+        
+        function setup() {
+            // createCanvas(500, 500);
+            // createCanvas(500, 250);
+            createCanvas(250, 500);
+            noLoop();
+        }
+        
+        function draw() {
+            background(220);
+            
+            // outer box
+            t.jumpxy(-width/2, -height/2); // top left
+            t.right(90);
+            t.forward(width);
+            t.right(90);
+            t.forward(height);
+            t.right(90);
+            t.forward(width);
+            t.right(90);
+            t.forward(height);
+            
+            // plus
+            t.jumpxy(0, height/2); // bottom middle
+            t.forward(height);
+            t.jumpxy(-width/2, 0);
+            t.right(90);
+            t.forward(width);
+            
+            // top arrow
+            t.jumpxy(0, -height/2);
+            t.push();
+            t.setheading(90+45);
+            t.forward((width+height)/2*0.1);
+            t.pop();
+            t.setheading(-90-45);
+            t.forward((width+height)/2*0.1);
+            
+            // t.turtle();
+        }
+        
+    </script>
+</head>
+<body>
+
+</body>
+</html>

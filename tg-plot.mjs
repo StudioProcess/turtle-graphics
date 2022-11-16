@@ -1,5 +1,11 @@
 const VERSION = 1;
 const TARGET_SIZE = [420, 297]; // A3 Landscape, in mm
+const SIZES = {
+    'A3_LANDSCAPE': [420, 297],
+    'A3_PORTRAIT' : [297, 420],
+    'A4_LANDSCAPE': [297, 210],
+    'A4_PORTRAIT':  [210, 297],
+};
 const MARGIN = 0.05; // scale down (scaling factor = 1-MARGIN)
 
 function create_ui() {
@@ -13,6 +19,7 @@ function create_ui() {
     ink: <span class="ink">–</span><br>
     plotter queue: <span class="queue_len">–</span><br>
     your job: <span class="queue_pos">–</span><br>
+    format: <select class="format"><option value="A3_LANDSCAPE">A3 Landscape</option><option value="A3_PORTRAIT">A3 Portrait</option></select><br>
     speed: <input class="speed" placeholder="Drawing Speed (%)" type="number" value="100" min="50" max="100"></input><br>
     <button class="clear">Clear</button> <button class="plot">Plot</button> <button class="cancel">Cancel</button> <button class="savesvg">Save SVG</button>
     </div> `;
@@ -63,8 +70,8 @@ function scale_lines(lines, sx = 1, sy = 1, cx = 0, cy = 0) {
         sy * (y1 - cy) ] );
 }
 
-function scale_lines_viewbox(lines, viewbox) {
-    const scale_args = scale_viewbox(viewbox, TARGET_SIZE, MARGIN);
+function scale_lines_viewbox(lines, viewbox, target_size = [420, 297]) {
+    const scale_args = scale_viewbox(viewbox, target_size, MARGIN);
     return scale_lines(lines, ...scale_args);
 }
 
@@ -106,12 +113,12 @@ async function hash(str) {
 }
 
 // TODO: stroke width
-async function to_svg(lines, lines_viewbox = undefined, date = undefined) {
+async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date = undefined) {
     if (lines_viewbox === 'bbox') { // calculate bounding box
         lines_viewbox = geb_bbox(lines);
-        lines = scale_lines_viewbox(lines, lines_viewbox);
+        lines = scale_lines_viewbox(lines, lines_viewbox, target_size);
     } else if (Array.isArray(lines_viewbox)) { // viewbox given [x, y, w, h]
-        lines = scale_lines_viewbox(lines, lines_viewbox);
+        lines = scale_lines_viewbox(lines, lines_viewbox, target_size);
     }
     
     const stats = line_stats(lines);
@@ -122,9 +129,9 @@ async function to_svg(lines, lines_viewbox = undefined, date = undefined) {
     let svg =`<svg xmlns="http://www.w3.org/2000/svg" 
      xmlns:tg="https://sketch.process.studio/turtle-graphics"
      tg:count="${stats.count}" tg:travel="${Math.trunc(stats.travel)}" tg:travel_ink="${Math.trunc(stats.travel_ink)}" tg:travel_blank="${Math.trunc(stats.travel)-Math.trunc(stats.travel_ink)}"
-     width="${TARGET_SIZE[0]}mm"
-     height="${TARGET_SIZE[1]}mm"
-     viewBox="-${TARGET_SIZE[0]/2} -${TARGET_SIZE[1]/2} ${TARGET_SIZE[0]} ${TARGET_SIZE[1]}"
+     width="${target_size[0]}mm"
+     height="${target_size[1]}mm"
+     viewBox="-${target_size[0]/2} -${target_size[1]/2} ${target_size[0]} ${target_size[1]}"
      stroke="black" fill="none" stroke-linecap="round">
     <path d="${d}" />
 </svg>`;
@@ -350,6 +357,7 @@ export function make_plotter_client(tg_instance) {
     const queue_pos_span = div.querySelector('.queue_pos');
     const queue_len_span = div.querySelector('.queue_len');
     const savesvg_button = div.querySelector('.savesvg');
+    const format_select = div.querySelector('.format');
     
     client_id_span.innerText = get_client_id();
     
@@ -363,7 +371,9 @@ export function make_plotter_client(tg_instance) {
     
     plot_button.onmousedown = async () => {
         if (lines.length == 0) { return; }
-        const { svg, timestamp, stats, hash } = await to_svg(lines, tg_instance._p5_viewbox);
+        const format = format_select.value;
+        const size = SIZES[format]; // target size in mm
+        const { svg, timestamp, stats, hash } = await to_svg(lines, tg_instance._p5_viewbox, size);
         let speed = parseInt(speed_input.value);
         if (isNaN(speed)) { speed = 100; }
         const msg = JSON.stringify({
@@ -375,6 +385,8 @@ export function make_plotter_client(tg_instance) {
             timestamp,
             hash,
             speed,
+            format,
+            size,
         });
         console.log(msg);
         ac.send(msg);
@@ -391,18 +403,28 @@ export function make_plotter_client(tg_instance) {
     
     savesvg_button.onmousedown = async () => {
         if (lines.length == 0) { return; }
-        const { svg, timestamp, stats, hash } = await to_svg(lines, tg_instance._p5_viewbox);
+        const size = SIZES[format_select.value]; // target size in mm
+        const { svg, timestamp, stats, hash } = await to_svg(lines, tg_instance._p5_viewbox, size);
         save_text(svg, `${timestamp}_${hash.slice(0,5)}.svg`);
+    };
+    
+    
+    function update_stats() {
+        const stats = line_stats.get();
+        const scale = scale_viewbox(tg_instance._p5_viewbox, SIZES[format_select.value], MARGIN)[0]; // scaling factor
+        lines_span.innerText = stats.count;
+        travel_span.innerText = Math.floor(stats.travel * scale) + ' mm';
+        ink_span.innerText = Math.floor(stats.travel_ink * scale) + ' mm';
+    }
+    
+    format_select.onchange = () => {
+        update_stats();
     };
     
     tg_instance.add_line_fn((...line) => {
         lines.push(line);
         line_stats.add_line(...line);
-        const stats = line_stats.get();
-        const scale = scale_viewbox(tg_instance._p5_viewbox, TARGET_SIZE, MARGIN)[0]; // scaling factor
-        lines_span.innerText = stats.count;
-        travel_span.innerText = Math.floor(stats.travel * scale) + ' mm';
-        ink_span.innerText = Math.floor(stats.travel_ink * scale) + ' mm';
+        update_stats();
     });
     
     const ac = autoconnect({
