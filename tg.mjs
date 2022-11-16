@@ -30,24 +30,23 @@ export function make_turtle_graphics(...line_fns_) {
         };
     }
     
-    let turtle = _make_turtle_state(); // turtle state
-    let turtle_stack  = [];            // turtle stack
+    // Full internal state
+    const _state = {
+        turtle:       _make_turtle_state(), // turtle state
+        turtle_stack: [],                   // turtle stack
+        matrix:       mat3.create(),        // transformation matrix
+        matrix_stack: [],                   // matrix stack
+        line_fns:     [...line_fns_],       // line drawing callbacks
+    };
     
-    let matrix = mat3.create();        // transformation matrix
-    let matrix_stack  = [];            // matrix stack
     
-    let line_fns = [...line_fns_];     // line drawing callbacks
-    
-    
-    
-    let _aliases = {};
-    let _aliases_deprecated = {};
-    
+    // Aliases and deprecation mechanism
+    const _aliases = {};
+    const _aliases_deprecated = {};
     function _add_aliases(orig, aliases, aliases_array = _aliases) {
         if (!(orig in aliases_array)) { aliases_array[orig] = []; }
         aliases_array[orig].push(...aliases);
     }
-    
     function _add_aliases_deprecated(orig, aliases) {
         return _add_aliases(orig, aliases, _aliases_deprecated);
     }
@@ -58,10 +57,10 @@ export function make_turtle_graphics(...line_fns_) {
      * 
      * @function new
      */
-    function new_(...line_fns_) {
+    function new_(...new_line_fns) {
         // use same line_fns as the current instance, if none are explicitly provided
         return make_turtle_graphics(
-            ...(line_fns_.length > 0 ? line_fns_ : line_fns)
+            ...(new_line_fns.length > 0 ? new_line_fns : _state.line_fns)
         );
     }
     _add_aliases('new', ['newturtle']);
@@ -81,19 +80,19 @@ export function make_turtle_graphics(...line_fns_) {
      * 
      * @function clone
      */
-     // TODO: better have whole internal state as an object, to avoid copying mess.
     function clone() {
-        const newturtle = new_(); // sets same line_fns
-        Object.assign( newturtle.state().turtle, turtle ); // set turtle state
-        newturtle.state().turtle_stack.splice( 0, 0, ...turtle_stack.map(t => Object.assign({}, t)) ); // insert copies of stacked states
-        mat3.copy( newturtle.state().matrix, matrix ); // copy matrix values
-        newturtle.state().matrix_stack.splice( 0, 0, ...matrix_stack.map(m => mat3.clone(m)) ); // insert copies of stacked matrices
+        const newturtle = make_turtle_graphics(...line_fns_); // make new turtle with same line_fns
+        // clone all internal state properties except for line_fns (which cannot be cloned, because it containes functions)
+        for (let key of Object.keys(_state).filter(x => x !== 'line_fns')) {
+            newturtle._state[key] = structuredClone( _state[key] );
+        }
         return newturtle;
     }
     
     function _draw() {
+        const turtle = _state.turtle;
         if (!turtle.d) { return; } // don't draw if pen isn't down
-        for (let line_fn of line_fns) {
+        for (let line_fn of _state.line_fns) {
             if (typeof line_fn === 'function') {
                 line_fn(turtle.px, turtle.py, turtle.x, turtle.y);
             }
@@ -118,7 +117,7 @@ export function make_turtle_graphics(...line_fns_) {
     // transform point by matrix (defaults to current matrix)
     function _transform([x, y], m = undefined) {
         const p = [ x, y ];
-        m = m ?? matrix; // use current matrix by default
+        m = m ?? _state.matrix; // use current matrix by default
         vec2.transformMat3(p, p, m); // Apply given transformation
         p[0] = _clean_zero(p[0]);
         p[1] = _clean_zero(p[1]);
@@ -131,6 +130,8 @@ export function make_turtle_graphics(...line_fns_) {
      * @function forward
      */
     function forward(units = DEFAULT_FORWARD) {
+        const turtle = _state.turtle;
+        const matrix = _state.matrix;
         // save previous position
         turtle.upx = turtle.ux;
         turtle.upy = turtle.uy;
@@ -163,6 +164,7 @@ export function make_turtle_graphics(...line_fns_) {
      * @function right
      */
     function right(angle = DEFAULT_RIGHT) {
+        const turtle = _state.turtle;
         // update untransformed angle
         turtle.ua += angle;
         turtle.ua = _clean_angle(turtle.ua);
@@ -186,7 +188,7 @@ export function make_turtle_graphics(...line_fns_) {
      * @function pendown
      */
     function pendown(down = true) {
-        turtle.d = down;
+        _state.turtle.d = down;
     }
     
     /**
@@ -195,7 +197,7 @@ export function make_turtle_graphics(...line_fns_) {
      * @function penup
      */
     function penup(up = true) {
-        turtle.d = !up;
+        _state.turtle.d = !up;
     }
     
     /**
@@ -205,7 +207,7 @@ export function make_turtle_graphics(...line_fns_) {
      */
     function translate(tx = 0, ty = 0) {
         // update transformation matrix
-        mat3.translate( matrix, matrix, [tx, ty] );
+        mat3.translate( _state.matrix, _state.matrix, [tx, ty] );
     }
     
     /**
@@ -214,8 +216,9 @@ export function make_turtle_graphics(...line_fns_) {
      * @function rotate
      */
     function rotate(ra = 0) {
+        const turtle = _state.turtle;
         // update transformation matrix
-        mat3.rotate( matrix, matrix, ra / 180 * Math.PI );
+        mat3.rotate( _state.matrix, _state.matrix, ra / 180 * Math.PI );
         // update transformed angle as well
         turtle.a += ra;
         turtle.a = _clean_angle(turtle.a);
@@ -229,7 +232,7 @@ export function make_turtle_graphics(...line_fns_) {
     function scale(sx = 1, sy = undefined) {
         if (sy === undefined) { sy = sx; }
         // update transformation matrix
-        mat3.scale( matrix, matrix, [sx, sy] );
+        mat3.scale( _state.matrix, _state.matrix, [sx, sy] );
     }
     
     /**
@@ -238,7 +241,7 @@ export function make_turtle_graphics(...line_fns_) {
      * @function push_turtle
      */
     function push_turtle() {
-        turtle_stack.push( Object.assign({}, turtle) ); // push a copy
+        _state.turtle_stack.push( Object.assign({}, _state.turtle) ); // push a copy
     }
     
     /**
@@ -247,8 +250,8 @@ export function make_turtle_graphics(...line_fns_) {
      * @function pop_turtle
      */
     function pop_turtle() {
-        if (turtle_stack.length > 0) {
-            turtle = turtle_stack.pop();
+        if (_state.turtle_stack.length > 0) {
+            _state.turtle = _state.turtle_stack.pop();
         }
     }
     
@@ -258,7 +261,7 @@ export function make_turtle_graphics(...line_fns_) {
      * @function push_matrix
      */
     function push_matrix() {
-        matrix_stack.push( mat3.clone(matrix) ); // push a copy
+        _state.matrix_stack.push( mat3.clone(_state.matrix) ); // push a copy
     }
     
     /**
@@ -267,8 +270,8 @@ export function make_turtle_graphics(...line_fns_) {
      * @function pop_matrix
      */
     function pop_matrix() {
-        if (matrix_stack.length > 0) {
-            matrix = matrix_stack.pop();
+        if (_state.matrix_stack.length > 0) {
+            _state.matrix = _state.matrix_stack.pop();
         }
     }
     
@@ -298,6 +301,7 @@ export function make_turtle_graphics(...line_fns_) {
      * @function getturtle
      */
     function getturtle() {
+        const turtle = _state.turtle;
         return { x: turtle.x, y: turtle.y, a: turtle.a, d: turtle.d };
     }
     
@@ -341,15 +345,8 @@ export function make_turtle_graphics(...line_fns_) {
      * @function state
      */
     // Note: this function exposes the actual internal objects
-    // TODO: better have whole internal state as an object and expose it directly
     function state() {
-        return {
-            turtle,
-            turtle_stack,
-            matrix,
-            matrix_stack,
-            line_fns,
-        };
+        return _state;
     }
     
     function set_line_fn(fn) {
@@ -358,11 +355,12 @@ export function make_turtle_graphics(...line_fns_) {
     
     function add_line_fn(fn) {
         if (typeof fn === 'function') {
-            line_fns.push(fn);
+            _state.line_fns.push(fn);
         }
     }
     
     function rm_line_fn(fn) {
+        const line_fns = _state.line_fns;
         const idx = line_fns.indexOf(fn);
         if (idx >= 0) {
             line_fns.splice(idx, 1);
@@ -385,8 +383,8 @@ export function make_turtle_graphics(...line_fns_) {
      * @function reset_turtle
      */
     function reset_turtle() {
-        turtle = _make_turtle_state(); // turtle state
-        turtle_stack = [];             // turtle stack
+        _state.turtle = _make_turtle_state(); // turtle state
+        _state.turtle_stack = [];             // turtle stack
     }
     
     /**
@@ -395,8 +393,8 @@ export function make_turtle_graphics(...line_fns_) {
      * @function reset_turtle
      */
     function reset_matrix() {
-        matrix = mat3.create();   // transformation matrix
-        matrix_stack = [];        // matrix stack
+        _state.matrix = mat3.create();   // transformation matrix
+        _state.matrix_stack = [];        // matrix stack
     }
     
     /**
@@ -570,6 +568,8 @@ export function make_turtle_graphics(...line_fns_) {
         ({ x, y } = _to_point(x, y));
         if ( ! _check_number(x, 'setxy', 'x', true) ) { return; }
         if ( ! _check_number(y, 'setxy', 'y', true) ) { return; }
+        const turtle = _state.turtle;
+        const matrix = _state.matrix;
         if (x === null || x === undefined) { x = turtle.x; }
         if (y === null || y === undefined) { y = turtle.y; }
         
@@ -609,6 +609,7 @@ export function make_turtle_graphics(...line_fns_) {
     // TODO: think about naming
     function setheading(angle) {
         if ( ! _check_number(angle, 'setheading', 'angle') ) { return; }
+        const turtle = _state.turtle;
         const rotation = turtle.a - turtle.ua; // get rotation applied via rotate()
         // set untransformed angle
         turtle.ua = angle;
@@ -624,7 +625,7 @@ export function make_turtle_graphics(...line_fns_) {
      * @function xcor
      */
     function xcor() {
-        return turtle.x;
+        return _state.turtle.x;
     }
     
     /**
@@ -633,7 +634,7 @@ export function make_turtle_graphics(...line_fns_) {
      * @function ycor
      */
     function ycor() {
-        return turtle.y;
+        return _state.turtle.y;
     }
     
     /**
@@ -642,7 +643,7 @@ export function make_turtle_graphics(...line_fns_) {
      * @function heading
      */
     function heading() {
-        return turtle.a;
+        return _state.turtle.a;
     }
     
     /**
@@ -651,7 +652,7 @@ export function make_turtle_graphics(...line_fns_) {
      * @function isdown
      */
     function isdown() {
-        return turtle.d;
+        return _state.turtle.d;
     }
     
     /**
@@ -660,7 +661,7 @@ export function make_turtle_graphics(...line_fns_) {
      * @function isup
      */
     function isup() {
-        return !turtle.d;
+        return !_state.turtle.d;
     }
     
     /**
@@ -672,6 +673,7 @@ export function make_turtle_graphics(...line_fns_) {
         ({ x, y } = _to_point(x, y));
         if ( ! _check_number(x, 'bearing', 'x') ) { return; }
         if ( ! _check_number(y, 'bearing', 'y') ) { return; }
+        const turtle = _state.turtle;
         // vector to point xy
         const vx = x - turtle.x;
         const vy = y - turtle.y;
@@ -704,6 +706,7 @@ export function make_turtle_graphics(...line_fns_) {
         if ( ! _check_number(x, 'distance', 'x') ) { return; }
         if ( ! _check_number(y, 'distance', 'y') ) { return; }
         [x, y] = _transform([x, y]); // apply current transformation to point
+        const turtle = _state.turtle;
         const dx = x - turtle.x;
         const dy = y - turtle.y;
         return Math.sqrt(dx*dx + dy*dy);
@@ -711,6 +714,7 @@ export function make_turtle_graphics(...line_fns_) {
     
     const self = {
         VERSION,
+        _state,
         // init, // mirror init function, in case people use t.init() instead of tg.init()
         new: new_,
         self: self_,
