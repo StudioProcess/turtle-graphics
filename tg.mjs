@@ -6,7 +6,7 @@ const DEFAULT_RIGHT = 90;
 const GLOBAL_LIB_NAME = 'tg';
 const GLOBAL_INSTANCE_NAME = 't';
 const GLOBAL_OVERWRITTEN_NAME = 'p5';
-const DONT_GLOBALIZE = [ 'VERSION', 'init' ];
+const DONT_GLOBALIZE = [ 'VERSION' ];
 const VERSION = 1;
 
 // Constructor function

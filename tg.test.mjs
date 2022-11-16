@@ -24,7 +24,8 @@ tap.test('globalize', async t => {
     const g = tg.make_turtle_graphics();
     const obj = {};
     tg.globalize(g, obj);
-    t.match(g, obj, 'global object has properties now'); // use match because obj won't have VERSION
+    delete g.VERSION; // VERSION is excepted from globalize
+    t.match(obj, g, 'global object has properties now');
 });
 
 tap.test('state', async t => {
