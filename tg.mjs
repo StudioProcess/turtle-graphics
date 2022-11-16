@@ -38,16 +38,34 @@ export function make_turtle_graphics(...line_fns_) {
     
     let line_fns = [...line_fns_];     // line drawing callbacks
     
+    
+    
+    let _aliases = {};
+    let _aliases_deprecated = {};
+    
+    function _add_aliases(orig, aliases, aliases_array = _aliases) {
+        if (!(orig in aliases_array)) { aliases_array[orig] = []; }
+        aliases_array[orig].push(...aliases);
+    }
+    
+    function _add_aliases_deprecated(orig, aliases) {
+        return _add_aliases(orig, aliases, _aliases_deprecated);
+    }
+    
+    
     /**
      * Create a new turtle instance.
      * 
-     * @function maketurtle
+     * @function new
      */
-    function maketurtle(...line_fns_) {
+    function new_(...line_fns_) {
+        // use same line_fns as the current instance, if none are explicitly provided
         return make_turtle_graphics(
             ...(line_fns_.length > 0 ? line_fns_ : line_fns)
         );
     }
+    _add_aliases('new', ['newturtle']);
+    _add_aliases_deprecated('new', ['maketurtle']);
     
     /**
      * Get turtle instance itself.
@@ -65,7 +83,7 @@ export function make_turtle_graphics(...line_fns_) {
      */
      // TODO: better have whole internal state as an object, to avoid copying mess.
     function clone() {
-        const newturtle = maketurtle(); // sets same line_fn
+        const newturtle = new_(); // sets same line_fns
         Object.assign( newturtle.state().turtle, turtle ); // set turtle state
         newturtle.state().turtle_stack.splice( 0, 0, ...turtle_stack.map(t => Object.assign({}, t)) ); // insert copies of stacked states
         mat3.copy( newturtle.state().matrix, matrix ); // copy matrix values
@@ -694,7 +712,7 @@ export function make_turtle_graphics(...line_fns_) {
     const self = {
         VERSION,
         // init, // mirror init function, in case people use t.init() instead of tg.init()
-        maketurtle,
+        new: new_,
         self: self_,
         clone,
         forward,
@@ -738,6 +756,26 @@ export function make_turtle_graphics(...line_fns_) {
         face,
         distance,
     };
+    
+    // add aliases
+    for (let [orig, aliases] of Object.entries(_aliases)) {
+        for (let alias of aliases) {
+            if (!(alias in self) && orig in self) {
+                self[alias] = self[orig];
+            }
+        }
+    }
+    // add deprecations
+    for (let [orig, aliases] of Object.entries(_aliases_deprecated)) {
+        for (let alias of aliases) {
+            if (!(alias in self) && orig in self) {
+                self[alias] = function(...args) {
+                    console.warn(`🐢 '${alias}' is deprecated. Please use '${orig}' instead.`);
+                    return self[orig](...args);
+                };
+            }
+        }
+    }
     
     return self;
 }
