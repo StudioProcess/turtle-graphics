@@ -13,6 +13,7 @@ function create_ui() {
     ink: <span class="ink">–</span><br>
     plotter queue: <span class="queue_len">–</span><br>
     your job: <span class="queue_pos">–</span><br>
+    speed: <input class="speed" placeholder="Drawing Speed (%)" type="number" value="100" min="50" max="100"></input><br>
     <button class="clear">Clear</button> <button class="plot">Plot</button> <button class="cancel">Cancel</button> <button class="savesvg">Save SVG</button>
     </div> `;
     const div = tmp.content.firstChild;
@@ -344,6 +345,7 @@ export function make_plotter_client(tg_instance) {
     const plot_button = div.querySelector('.plot');
     const status_span = div.querySelector('.status');
     const server_input = div.querySelector('.server');
+    const speed_input = div.querySelector('.speed');
     const connect_button = div.querySelector('.connect');
     const queue_pos_span = div.querySelector('.queue_pos');
     const queue_len_span = div.querySelector('.queue_len');
@@ -362,6 +364,8 @@ export function make_plotter_client(tg_instance) {
     plot_button.onmousedown = async () => {
         if (lines.length == 0) { return; }
         const { svg, timestamp, stats, hash } = await to_svg(lines, tg_instance._p5_viewbox);
+        let speed = parseInt(speed_input.value);
+        if (isNaN(speed)) { speed = 100; }
         const msg = JSON.stringify({
             type: 'plot',
             client: client_id_span.innerText,
@@ -369,7 +373,8 @@ export function make_plotter_client(tg_instance) {
             svg,
             stats,
             timestamp,
-            hash, 
+            hash,
+            speed,
         });
         console.log(msg);
         ac.send(msg);
