@@ -1,5 +1,7 @@
 // TODO: coordinate system orientation
 import { vec2, mat3 } from 'gl-matrix';
+
+const VERSION = 2;
 const EPSILON = 1e-10;
 const DEFAULT_FORWARD = 100;
 const DEFAULT_RIGHT = 90;
@@ -7,7 +9,7 @@ const GLOBAL_LIB_NAME = 'tg';
 const GLOBAL_INSTANCE_NAME = 't';
 const GLOBAL_OVERWRITTEN_NAME = 'p5';
 const DONT_GLOBALIZE = [ 'VERSION' ];
-const VERSION = 1;
+
 
 // Constructor function
 export function make_turtle_graphics(...line_fns_) {

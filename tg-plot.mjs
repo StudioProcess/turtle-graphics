@@ -1,4 +1,4 @@
-const VERSION = 1;
+const VERSION = 2;
 const TARGET_SIZE = [420, 297]; // A3 Landscape, in mm
 const SIZES = {
     'A3_LANDSCAPE': [420, 297],
@@ -416,12 +416,16 @@ export function make_plotter_client(tg_instance) {
     
     
     function update_stats() {
-        return;
         const stats = line_stats.get();
-        const scale = scale_viewbox(tg_instance._p5_viewbox, SIZES[format_select.value], MARGIN)[0]; // scaling factor
+        // scaling factor
+        // TODO: tg_instance._p5_viewbox should actually never be undefined
+        const scale = tg_instance._p5_viewbox ? 
+            scale_viewbox(tg_instance._p5_viewbox, SIZES[format_select.value], MARGIN)[0] : 
+            1.0;
+        const unit = tg_instance._p5_viewbox ? ' mm' : ' px';
         lines_span.innerText = stats.count;
-        travel_span.innerText = Math.floor(stats.travel * scale) + ' mm';
-        ink_span.innerText = Math.floor(stats.travel_ink * scale) + ' mm';
+        travel_span.innerText = Math.floor(stats.travel * scale) + unit;
+        ink_span.innerText = Math.floor(stats.travel_ink * scale) + unit;
     }
     
     format_select.onchange = () => {
@@ -483,7 +487,6 @@ export function make_plotter_client(tg_instance) {
     connect_button.onmousedown = () => {
         const starting = ac.toggle(server_input.value);
         if (starting) {
-            console.log('saving');
             set_localstorage( 'tg-plot:server_url', server_input.value );
         }
     };
