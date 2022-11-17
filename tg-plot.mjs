@@ -1,4 +1,4 @@
-const VERSION = 3;
+const VERSION = 4;
 const TARGET_SIZE = [420, 297]; // A3 Landscape, in mm
 const SIZES = {
     'A3_LANDSCAPE': [420, 297],
@@ -491,17 +491,23 @@ export function make_plotter_client(tg_instance) {
     });
     
     connect_button.onmousedown = () => {
-        const starting = ac.toggle(server_input.value);
-        if (starting) {
+        const connecting = ac.toggle(server_input.value);
+        if (connecting) {
+            // connecting
             set_localstorage( 'tg-plot:server_url', server_input.value );
+            set_localstorage( 'tg-plot:connect_on_start', 1 );
+        } else {
+            // disconnecting
+            set_localstorage( 'tg-plot:connect_on_start', 0 );
         }
     };
     
-    if (CONNECT_ON_START) { 
-        console.log('starting');
+    const connect_on_start = get_localstorage( 'tg-plot:connect_on_start', CONNECT_ON_START );
+    console.log(connect_on_start);
+    if (connect_on_start != '0') { 
         ac.start(server_input.value); 
     }
-}
+}   
 
 /*
 if (globalThis?.addEventListener !== undefined) {
