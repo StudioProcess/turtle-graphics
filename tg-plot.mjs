@@ -1,4 +1,4 @@
-const VERSION = 2;
+const VERSION = 3;
 const TARGET_SIZE = [420, 297]; // A3 Landscape, in mm
 const SIZES = {
     'A3_LANDSCAPE': [420, 297],
@@ -8,6 +8,10 @@ const SIZES = {
 };
 const MARGIN = 0.05; // scale down (scaling factor = 1-MARGIN)
 const SERVER_URL = 'wss://plotter.eu.ngrok.io';
+
+const CONNECT_ON_START = true;
+const WAIT_BEFORE_RECONNECT = 10_000; // ms
+const RETRIES = -1 // -1 for unlimited
 
 function create_ui() {
     const tmp = document.createElement('template');
@@ -204,7 +208,7 @@ function autoconnect(options = {}) {
     options = Object.assign({
         connect_timeout: 10000,
         wait_before_reconnect: 1000,
-        retries: 0, // -1 for unlimited
+        retries: 3, // -1 for unlimited
         on_connecting: undefined,
         on_waiting: undefined,
         on_connected: undefined,
@@ -439,6 +443,8 @@ export function make_plotter_client(tg_instance) {
     });
     
     const ac = autoconnect({
+        wait_before_reconnect: WAIT_BEFORE_RECONNECT,
+        retries: RETRIES,
         on_connecting: (retries) => {
             console.log('on_connecting')
             connect_button.innerText = 'Stop';
@@ -491,6 +497,10 @@ export function make_plotter_client(tg_instance) {
         }
     };
     
+    if (CONNECT_ON_START) { 
+        console.log('starting');
+        ac.start(server_input.value); 
+    }
 }
 
 /*
