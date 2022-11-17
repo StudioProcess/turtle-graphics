@@ -11,9 +11,9 @@ const MARGIN = 0.05; // scale down (scaling factor = 1-MARGIN)
 function create_ui() {
     const tmp = document.createElement('template');
     tmp.innerHTML = `<div style="font-family:system-ui; width:200px; height:100px; position:fixed; top:0; right:0;">
-    <input class="server" placeholder="Server" value="ws://plotter-server.local:4321"></input><br>
+    <input class="server" placeholder="Server" value=""></input><br>
     <button class="connect">Connect</button><span class="status">○</span><br>
-    client id: <span class="client_id">–</span><br>
+    your id: <span class="client_id">–</span><br>
     lines: <span class="lines">–</span><br>
     travel: <span class="travel">–</span><br>
     ink: <span class="ink">–</span><br>
@@ -202,8 +202,8 @@ function autoconnect(options = {}) {
     
     options = Object.assign({
         connect_timeout: 10000,
-        wait_before_reconnect: 0,
-        retries: -1,
+        wait_before_reconnect: 1000,
+        retries: 0, // -1 for unlimited
         on_connecting: undefined,
         on_waiting: undefined,
         on_connected: undefined,
@@ -311,8 +311,8 @@ function autoconnect(options = {}) {
     }
     
     function toggle(url_) {
-        if (state === STATE.disconnected) { start(url_); }
-        else { stop(); }
+        if (state === STATE.disconnected) { start(url_); return true; }
+        else { stop(); return false; }
     }
     
     function socket_() {
@@ -328,13 +328,17 @@ function autoconnect(options = {}) {
     return { start, stop, toggle, send, socket:socket_ };
 }
 
-function get_client_id() {
-    let client_id = localStorage.getItem('tg-plot:client_id');
-    if (!client_id) {
-        client_id = crypto.randomUUID().slice(0, 8); // new client id
-        localStorage.setItem('tg-plot:client_id', client_id);
+function get_localstorage(key, default_value) {
+    let value = localStorage.getItem(key);
+    if (value === null) {
+        value = default_value;
+        localStorage.setItem(key, value);
     }
-    return client_id;
+    return value;
+}
+
+function set_localstorage(key, value) {
+    localStorage.setItem(key, value);
 }
 
 
@@ -359,7 +363,8 @@ export function make_plotter_client(tg_instance) {
     const savesvg_button = div.querySelector('.savesvg');
     const format_select = div.querySelector('.format');
     
-    client_id_span.innerText = get_client_id();
+    client_id_span.innerText = get_localstorage( 'tg-plot:client_id', crypto.randomUUID().slice(0, 8) );
+    server_input.value = get_localstorage( 'tg-plot:server_url', 'wss://plotter.local' );
     
     clear_button.onmousedown = () => {
         lines = [];
@@ -410,6 +415,7 @@ export function make_plotter_client(tg_instance) {
     
     
     function update_stats() {
+        return;
         const stats = line_stats.get();
         const scale = scale_viewbox(tg_instance._p5_viewbox, SIZES[format_select.value], MARGIN)[0]; // scaling factor
         lines_span.innerText = stats.count;
@@ -474,7 +480,11 @@ export function make_plotter_client(tg_instance) {
     });
     
     connect_button.onmousedown = () => {
-        ac.toggle(server_input.value);
+        const starting = ac.toggle(server_input.value);
+        if (starting) {
+            console.log('saving');
+            set_localstorage( 'tg-plot:server_url', server_input.value );
+        }
     };
     
 }
