@@ -7,6 +7,7 @@ const SIZES = {
     'A4_PORTRAIT':  [210, 297],
 };
 const MARGIN = 0.05; // scale down (scaling factor = 1-MARGIN)
+const SERVER_URL = 'wss://plotter.eu.ngrok.io';
 
 function create_ui() {
     const tmp = document.createElement('template');
@@ -364,7 +365,7 @@ export function make_plotter_client(tg_instance) {
     const format_select = div.querySelector('.format');
     
     client_id_span.innerText = get_localstorage( 'tg-plot:client_id', crypto.randomUUID().slice(0, 8) );
-    server_input.value = get_localstorage( 'tg-plot:server_url', 'wss://plotter.local' );
+    server_input.value = get_localstorage( 'tg-plot:server_url', SERVER_URL );
     
     clear_button.onmousedown = () => {
         lines = [];
