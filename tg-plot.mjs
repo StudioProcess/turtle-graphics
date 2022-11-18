@@ -436,7 +436,7 @@ export function make_plotter_client(tg_instance) {
         update_stats();
     };
     
-    tg_instance.add_line_fn((...line) => {
+    tg_instance._add_line_fn((...line) => {
         lines.push(line);
         line_stats.add_line(...line);
         update_stats();
@@ -503,7 +503,6 @@ export function make_plotter_client(tg_instance) {
     };
     
     const connect_on_start = get_localstorage( 'tg-plot:connect_on_start', CONNECT_ON_START );
-    console.log(connect_on_start);
     if (connect_on_start != '0') { 
         ac.start(server_input.value); 
     }

@@ -54,19 +54,22 @@ export function make_turtle_graphics(...line_fns_) {
     }
     
     
+    /*********************************************************
+        Instance
+     *********************************************************/
+    
     /**
      * Create a new turtle instance.
      * 
-     * @function new
+     * @function newturtle
      */
-    function new_(...new_line_fns) {
+    function newturtle(...new_line_fns) {
         // use same line_fns as the current instance, if none are explicitly provided
         return make_turtle_graphics(
             ...(new_line_fns.length > 0 ? new_line_fns : _state.line_fns)
         );
     }
-    _add_aliases('new', ['newturtle']);
-    _add_aliases_deprecated('new', ['maketurtle']);
+    _add_aliases_deprecated('newturtle', ['maketurtle']);
     
     /**
      * Get turtle instance itself.
@@ -86,10 +89,15 @@ export function make_turtle_graphics(...line_fns_) {
         const newturtle = make_turtle_graphics(...line_fns_); // make new turtle with same line_fns
         // clone all internal state properties except for line_fns (which cannot be cloned, because it containes functions)
         for (let key of Object.keys(_state).filter(x => x !== 'line_fns')) {
-            newturtle._state[key] = structuredClone( _state[key] );
+            newturtle._state()[key] = structuredClone( _state[key] );
         }
         return newturtle;
     }
+    
+    
+    /*********************************************************
+        Basic
+     *********************************************************/
     
     function _draw() {
         const turtle = _state.turtle;
@@ -202,6 +210,11 @@ export function make_turtle_graphics(...line_fns_) {
         _state.turtle.d = !up;
     }
     
+    
+    /*********************************************************
+        Transformations
+     *********************************************************/
+    
     /**
      * Translate the coordinate system.
      * 
@@ -237,45 +250,54 @@ export function make_turtle_graphics(...line_fns_) {
         mat3.scale( _state.matrix, _state.matrix, [sx, sy] );
     }
     
+    
+    /*********************************************************
+        Stacks
+     *********************************************************/
+    
     /**
      * Push the turtles state onto the stack.
      * 
-     * @function push_turtle
+     * @function pushstate
      */
-    function push_turtle() {
+    function pushstate() {
         _state.turtle_stack.push( Object.assign({}, _state.turtle) ); // push a copy
     }
+    _add_aliases_deprecated('pushstate', ['push_turtle']);
     
     /**
      * Restore the last pushed turtle state from the stack.
      * 
-     * @function pop_turtle
+     * @function popstate
      */
-    function pop_turtle() {
+    function popstate() {
         if (_state.turtle_stack.length > 0) {
             _state.turtle = _state.turtle_stack.pop();
         }
     }
+    _add_aliases_deprecated('popstate', ['pop_turtle']);
     
     /**
      * Push the current transformation matrix onto the stack.
      * 
-     * @function push_matrix
+     * @function pushmatrix
      */
-    function push_matrix() {
+    function pushmatrix() {
         _state.matrix_stack.push( mat3.clone(_state.matrix) ); // push a copy
     }
+    _add_aliases_deprecated('pushmatrix', ['push_matrix']);
     
     /**
      * Restore the last pushed transformation matrix from the stack.
      * 
-     * @function pop_matrix
+     * @function popmatrix
      */
-    function pop_matrix() {
+    function popmatrix() {
         if (_state.matrix_stack.length > 0) {
             _state.matrix = _state.matrix_stack.pop();
         }
     }
+    _add_aliases_deprecated('popmatrix', ['pop_matrix']);
     
     /**
      * Push turtle state and transformation matrix onto the stack.
@@ -283,8 +305,8 @@ export function make_turtle_graphics(...line_fns_) {
      * @function push
      */
     function push() {
-        push_turtle();
-        push_matrix();
+        pushstate();
+        pushmatrix();
     }
     
     /**
@@ -293,236 +315,146 @@ export function make_turtle_graphics(...line_fns_) {
      * @function pop
      */
     function pop() {
-        pop_turtle();
-        pop_matrix();
+        popstate();
+        popmatrix();
+    }
+    
+    
+    /*********************************************************
+        Get state
+     *********************************************************/
+    
+    /**
+     * Get the turtles position.
+     * 
+     * @function xy
+     */
+    // TODO: test this
+    function xy() {
+        return [ _state.turtle.x, _state.turtle.y ];
     }
     
     /**
-     * Get turtle position, heading angle and pen state.
+     * Get the turtles x coordinate.
      * 
-     * @function getturtle
+     * @function x
      */
-    function getturtle() {
+    function x() {
+        return _state.turtle.x;
+    }
+    _add_aliases_deprecated('x', ['xcor']);
+    
+    /**
+     * Get the turtles y coordinate.
+     * 
+     * @function y
+     */
+    function y() {
+        return _state.turtle.y;
+    }
+    _add_aliases_deprecated('y', ['ycor']);
+    
+    /**
+     * Get the turtles heading.
+     * 
+     * @function heading
+     */
+    function heading() {
+        return _state.turtle.a;
+    }
+    
+    /**
+     * Get whether the pen is currently down.
+     * 
+     * @function isdown
+     */
+    function isdown() {
+        return _state.turtle.d;
+    }
+    
+    /**
+     * Get whether the pen is currently up.
+     * 
+     * @function isup
+     */
+    function isup() {
+        return !_state.turtle.d;
+    }
+    
+    /**
+     * Get turtle position, heading angle and pen position.
+     * 
+     * @function state
+     */
+    function state() {
         const turtle = _state.turtle;
         return { x: turtle.x, y: turtle.y, a: turtle.a, d: turtle.d };
     }
+    _add_aliases_deprecated('state', ['getturtle']);
     
-    function _to_turtle(x, y, a, d) {
-        // allow [x, y, a, d] as first parameter
+    
+    /*********************************************************
+        Get relative state
+     *********************************************************/
+    
+    /**
+     * Get the bearing from the turtle to a point x, y.
+     * 
+     * @function bearing
+     */
+    function bearing(x, y) {
+        ({ x, y } = _to_point(x, y));
+        if ( ! _check_number(x, 'bearing', 'x') ) { return; }
+        if ( ! _check_number(y, 'bearing', 'y') ) { return; }
+        const turtle = _state.turtle;
+        // vector to point xy
+        const vx = x - turtle.x;
+        const vy = y - turtle.y;
+        if (vx == 0 && vy == 0) { return 0; }
+        let b = Math.atan2(vy, vx) / Math.PI * 180; // [-180, +180] angle between positive x-axis and vector
+        b = b + 90 - turtle.a;
+        b = _clean_angle(b);
+        return b;
+    }
+    
+    /**
+     * Get the distance from the turtle to a point x, y.
+     * 
+     * @function distance
+     */
+    function distance(x, y) {
+        ({ x, y } = _to_point(x, y));
+        if ( ! _check_number(x, 'distance', 'x') ) { return; }
+        if ( ! _check_number(y, 'distance', 'y') ) { return; }
+        [x, y] = _transform([x, y]); // apply current transformation to point
+        const turtle = _state.turtle;
+        const dx = x - turtle.x;
+        const dy = y - turtle.y;
+        return Math.sqrt(dx*dx + dy*dy);
+    }
+    
+    
+    /*********************************************************
+        Set state
+     *********************************************************/
+     
+    function _to_point(x, y) {
+        // allow [x, y] as first parameter
         // needs to be tested first, cause arrays of type 'object'
         if (Array.isArray(x)) {
             const arr = x;
             x = arr.at(0);
             y = arr.at(1);
-            a = arr.at(2);
-            d = arr.at(3);
         }
-        // allow {x, y, a, d} as first parameter
-        else if (typeof x === 'object' && x !== null) {     
+        // allow {x, y} as first parameter
+        else if (typeof x === 'object' && x !== null) {
             const obj = x;
             x = obj?.x;
             y = obj?.y;
-            a = obj?.a;
-            d = obj?.d;
-        }
-        return { x, y, a, d };
+        } 
+        return { x, y };
     }
-    
-    /**
-     * Set turtle position and/or heading angle and/or pen state.
-     * 
-     * @function setturtle
-     */
-    // TOOD: check new_turtle
-    function setturtle(x, y, a, d) {
-        const new_turtle = _to_turtle(x, y, a, d);
-        setxy(new_turtle.x, new_turtle.y); // tolerates undefined
-        if ( Number.isFinite(new_turtle.a) ) { setheading(new_turtle.a); }
-        if ( typeof new_turtle.d === 'boolean' ) { pendown(new_turtle.d); }
-    }
-    
-    /**
-     * Get full internal state.
-     * 
-     * @function state
-     */
-    // Note: this function exposes the actual internal objects
-    function state() {
-        return _state;
-    }
-    
-    function set_line_fn(fn) {
-        add_line_fn(fn);
-    }
-    
-    function add_line_fn(fn) {
-        if (typeof fn === 'function') {
-            _state.line_fns.push(fn);
-        }
-    }
-    
-    function rm_line_fn(fn) {
-        const line_fns = _state.line_fns;
-        const idx = line_fns.indexOf(fn);
-        if (idx >= 0) {
-            line_fns.splice(idx, 1);
-        }
-    }
-    
-    /**
-     * Reset turtle state and transformations.
-     * 
-     * @function reset
-     */
-    function reset() {
-        reset_turtle();
-        reset_matrix();
-    }
-    
-    /**
-     * Reset turtle state.
-     * 
-     * @function reset_turtle
-     */
-    function reset_turtle() {
-        _state.turtle = _make_turtle_state(); // turtle state
-        _state.turtle_stack = [];             // turtle stack
-    }
-    
-    /**
-     * Reset transformation matrix.
-     * 
-     * @function reset_turtle
-     */
-    function reset_matrix() {
-        _state.matrix = mat3.create();   // transformation matrix
-        _state.matrix_stack = [];        // matrix stack
-    }
-    
-    /**
-     * Draw the turtle at its current position.
-     * 
-     * @function turtle
-     */
-    function turtle_() {
-        const top_angle = 36;
-        const height = 15;
-        const diamond_size = 1;
-        const center = 2/3; // 0 (top) .. 1 (bottom) (2/3 = center of gravity)
-        
-        const base_angle = (180 - top_angle) / 2;
-        const side = height / Math.cos(top_angle/2 / 360 * Math.PI * 2);
-        const base = 2 * height * Math.tan(top_angle/2 / 360 * Math.PI * 2);
-        const diamond_side = Math.sqrt(2) * diamond_size / 2;
-        
-        push_turtle();
-        
-        // center diamond
-        penup();
-        forward(diamond_size/2);
-        pendown();
-        right(135); // 180 - 45
-        forward(diamond_side);
-        right(90);
-        forward(diamond_side);
-        right(90);
-        forward(diamond_side);
-        right(90);
-        forward(diamond_side);
-        left(45);
-        
-        // turtle
-        penup();
-        forward(height * center);
-        pendown();
-        right(180 - top_angle/2);
-        forward(side);
-        right(180 - base_angle);
-        forward(base);
-        right(180 - base_angle);
-        forward(side);
-        
-        pop_turtle();
-    }
-    
-    /**
-     * Draw a small + at the turtles current position.
-     * 
-     * @function mark
-     */
-    function mark(x, y) {
-        const size = 10;
-        
-        push_turtle();
-        penup();
-        if (x !== undefined && y !== undefined) { setxy(x, y); }
-        setheading(0);
-        
-        push_turtle();
-        back(size/2);
-        pendown();
-        forward(size);
-        penup();
-        pop_turtle();
-        
-        right(90);
-        back(size/2);
-        pendown();
-        forward(size);
-        pop_turtle();
-    }
-    
-    /**
-     * Repeat a function a number of times.
-     * 
-     * @function repeat
-     */
-    function repeat(n, fn) {
-        if ( !Number.isInteger(n) ) { 
-            console.warn('repeat: number is invalid');
-            return; 
-        }
-        
-        if (typeof fn !== 'function') {
-            console.warn('repeat: function is invalid');
-            return;
-        }
-        
-        for (let i=0; i<n; i++) {
-            fn(i);
-        }
-    }
-    
-    // TODO: this can't work: cond is only evaluated once
-    // function until(cond, fn) {
-    //     if (typeof fn !== 'function') {
-    //         console.warn('until: function is invalid');
-    //         return;
-    //     }
-    //     let i=0;
-    //     do {
-    //         fn(i);
-    //         i += 1;
-    //     } while (!cond);
-    // }
-    // 
-    // function while_(cond, fn) {
-    //     if (typeof fn !== 'function') {
-    //         console.warn('until: function is invalid');
-    //         return;
-    //     }
-    //     let i=0;
-    //     while (cond) {
-    //         fn(i);
-    //         i += 1;
-    //     }
-    // }
-    
-    // function _warn(warning_domain, warning) {
-    //     if (!warning_domain || !warning) { return; }
-    //     console.warn('%s: %s', warning_domain, warning);
-    // }
-    
+     
     function _check_number(val, warning_domain, var_name, allow_null_undefined = false) {
         if (allow_null_undefined && (val === null || val === undefined)) {
             return true;
@@ -540,24 +472,6 @@ export function make_turtle_graphics(...line_fns_) {
             return false;
         }
         return true;
-    }
-    
-    function _to_point(x, y) {
-        // allow [x, y] as first parameter
-        // needs to be tested first, cause arrays of type 'object'
-        if (Array.isArray(x)) {
-            const arr = x;
-            x = arr.at(0);
-            y = arr.at(1);
-        }
-        // allow {x, y} as first parameter
-        else if (typeof x === 'object' && x !== null) {
-            const obj = x;
-            x = obj?.x;
-            y = obj?.y;
-        } 
-        
-        return { x, y };
     }
     
     /**
@@ -622,71 +536,6 @@ export function make_turtle_graphics(...line_fns_) {
     }
     
     /**
-     * Get the turtles x coordinate.
-     * 
-     * @function xcor
-     */
-    function xcor() {
-        return _state.turtle.x;
-    }
-    
-    /**
-     * Get the turtles y coordinate.
-     * 
-     * @function ycor
-     */
-    function ycor() {
-        return _state.turtle.y;
-    }
-    
-    /**
-     * Get the turtles heading.
-     * 
-     * @function heading
-     */
-    function heading() {
-        return _state.turtle.a;
-    }
-    
-    /**
-     * Get whether the pen is currently down.
-     * 
-     * @function isdown
-     */
-    function isdown() {
-        return _state.turtle.d;
-    }
-    
-    /**
-     * Get whether the pen is currently up.
-     * 
-     * @function isup
-     */
-    function isup() {
-        return !_state.turtle.d;
-    }
-    
-    /**
-     * Get the bearing from the turtle to a point x, y.
-     * 
-     * @function bearing
-     */
-    function bearing(x, y) {
-        ({ x, y } = _to_point(x, y));
-        if ( ! _check_number(x, 'bearing', 'x') ) { return; }
-        if ( ! _check_number(y, 'bearing', 'y') ) { return; }
-        const turtle = _state.turtle;
-        // vector to point xy
-        const vx = x - turtle.x;
-        const vy = y - turtle.y;
-        if (vx == 0 && vy == 0) { return 0; }
-        let b = Math.atan2(vy, vx) / Math.PI * 180; // [-180, +180] angle between positive x-axis and vector
-        b = b + 90 - turtle.a;
-        b = _clean_angle(b);
-        return b;
-    }
-    
-    /**
      * Turn the turtle to face a point x, y.
      * 
      * @function face
@@ -698,69 +547,262 @@ export function make_turtle_graphics(...line_fns_) {
         right( bearing(x, y) );
     }
     
-    /**
-     * Get the distance from the turtle to a point x, y.
-     * 
-     * @function distance
-     */
-    function distance(x, y) {
-        ({ x, y } = _to_point(x, y));
-        if ( ! _check_number(x, 'distance', 'x') ) { return; }
-        if ( ! _check_number(y, 'distance', 'y') ) { return; }
-        [x, y] = _transform([x, y]); // apply current transformation to point
-        const turtle = _state.turtle;
-        const dx = x - turtle.x;
-        const dy = y - turtle.y;
-        return Math.sqrt(dx*dx + dy*dy);
+        
+    function _to_turtle(x, y, a, d) {
+        // allow [x, y, a, d] as first parameter
+        // needs to be tested first, cause arrays of type 'object'
+        if (Array.isArray(x)) {
+            const arr = x;
+            x = arr.at(0);
+            y = arr.at(1);
+            a = arr.at(2);
+            d = arr.at(3);
+        }
+        // allow {x, y, a, d} as first parameter
+        else if (typeof x === 'object' && x !== null) {     
+            const obj = x;
+            x = obj?.x;
+            y = obj?.y;
+            a = obj?.a;
+            d = obj?.d;
+        }
+        return { x, y, a, d };
     }
+    
+    /**
+     * Set turtle position and/or heading angle and/or pen state.
+     * 
+     * @function setstate
+     */
+    // TOOD: check new_turtle
+    function setstate(x, y, a, d) {
+        const new_turtle = _to_turtle(x, y, a, d);
+        setxy(new_turtle.x, new_turtle.y); // tolerates undefined
+        if ( Number.isFinite(new_turtle.a) ) { setheading(new_turtle.a); }
+        if ( typeof new_turtle.d === 'boolean' ) { pendown(new_turtle.d); }
+    }
+    _add_aliases_deprecated('setstate', ['setturtle']);
+    
+    /**
+     * Reset turtle state.
+     * 
+     * @function resetstate
+     */
+    function resetstate() {
+        _state.turtle = _make_turtle_state(); // turtle state
+        _state.turtle_stack = [];             // turtle stack
+    }
+    _add_aliases_deprecated('resetstate', ['reset_turtle']);
+    
+    /**
+     * Reset transformation matrix.
+     * 
+     * @function resetmatrix
+     */
+    function resetmatrix() {
+        _state.matrix = mat3.create();   // transformation matrix
+        _state.matrix_stack = [];        // matrix stack
+    }
+    _add_aliases_deprecated('resetmatrix', ['reset_matrix']);
+    
+    /**
+     * Reset turtle state and transformations.
+     * 
+     * @function reset
+     */
+    function reset() {
+        resetstate();
+        resetmatrix();
+    }
+    
+    
+    /*********************************************************
+        Markings
+     *********************************************************/
+    
+    /**
+     * Draw the turtle at its current position.
+     * 
+     * @function show
+     */
+    function show() {
+        const top_angle = 36;
+        const height = 15;
+        const diamond_size = 1;
+        const center = 2/3; // 0 (top) .. 1 (bottom) (2/3 = center of gravity)
+        
+        const base_angle = (180 - top_angle) / 2;
+        const side = height / Math.cos(top_angle/2 / 360 * Math.PI * 2);
+        const base = 2 * height * Math.tan(top_angle/2 / 360 * Math.PI * 2);
+        const diamond_side = Math.sqrt(2) * diamond_size / 2;
+        
+        pushstate();
+        
+        // center diamond
+        penup();
+        forward(diamond_size/2);
+        pendown();
+        right(135); // 180 - 45
+        forward(diamond_side);
+        right(90);
+        forward(diamond_side);
+        right(90);
+        forward(diamond_side);
+        right(90);
+        forward(diamond_side);
+        left(45);
+        
+        // turtle
+        penup();
+        forward(height * center);
+        pendown();
+        right(180 - top_angle/2);
+        forward(side);
+        right(180 - base_angle);
+        forward(base);
+        right(180 - base_angle);
+        forward(side);
+        
+        popstate();
+    }
+    _add_aliases_deprecated('show', ['turtle']);
+    
+    /**
+     * Draw a small + at the turtles current position.
+     * 
+     * @function mark
+     */
+    function mark(x, y) {
+        const size = 10;
+        
+        pushstate();
+        penup();
+        if (x !== undefined && y !== undefined) { setxy(x, y); }
+        setheading(0);
+        
+        pushstate();
+        back(size/2);
+        pendown();
+        forward(size);
+        penup();
+        popstate();
+        
+        right(90);
+        back(size/2);
+        pendown();
+        forward(size);
+        popstate();
+    }
+    
+    
+    /*********************************************************
+        Util
+     *********************************************************/
+    
+    /**
+     * Repeat a function a number of times.
+     * 
+     * @function repeat
+     */
+    function repeat(n, fn) {
+        if ( !Number.isInteger(n) ) { 
+            console.warn('repeat: number is invalid');
+            return; 
+        }
+        
+        if (typeof fn !== 'function') {
+            console.warn('repeat: function is invalid');
+            return;
+        }
+        
+        for (let i=0; i<n; i++) {
+            fn(i);
+        }
+    }
+    
+    
+    /*********************************************************
+        Internal
+     *********************************************************/
+    
+    /**
+     * Get full internal state.
+     * 
+     * @function _state
+     */
+    // Note: this function exposes the actual internal objects
+    function _state_() {
+        return _state;
+    }
+    
+    function _add_line_fn(fn) {
+        if (typeof fn === 'function') {
+            _state.line_fns.push(fn);
+        }
+    }
+    
+    function _rm_line_fn(fn) {
+        const line_fns = _state.line_fns;
+        const idx = line_fns.indexOf(fn);
+        if (idx >= 0) {
+            line_fns.splice(idx, 1);
+        }
+    }
+    
     
     const self = {
         VERSION,
-        _state,
-        // init, // mirror init function, in case people use t.init() instead of tg.init()
-        new: new_,
+        // Instance
+        newturtle,
         self: self_,
         clone,
+        // Basics
         forward,
         back,
         right,
         left,
         pendown,
         penup,
+        // Transformations
         translate,
         rotate,
         scale,
+        // Stacks
+        pushstate,
+        popstate,
+        pushmatrix,
+        popmatrix,
         push,
         pop,
-        push_turtle,
-        pop_turtle,
-        push_matrix,
-        pop_matrix,
-        getturtle,
-        setturtle,
-        state,
-        set_line_fn,
-        add_line_fn,
-        rm_line_fn,
-        reset,
-        reset_turtle,
-        reset_matrix,
-        turtle: turtle_,
-        mark,
-        repeat,
-        // until,
-        // while: while_,
-        setxy,
-        jumpxy,
-        setheading,
-        xcor,
-        ycor,
+        // Get state
+        xy,
+        x,
+        y,
         heading,
         isdown,
         isup,
+        state,
+        // Get relative state
         bearing,
-        face,
         distance,
+        // Set state
+        setxy,
+        jumpxy,
+        setheading,
+        face,
+        setstate,
+        resetstate,
+        resetmatrix,
+        reset,
+        // Markings
+        show,
+        mark,
+        // Util
+        repeat,
+        // Internal
+        _state: _state_,
+        _add_line_fn,
+        _rm_line_fn,
     };
     
     // add aliases
@@ -898,7 +940,7 @@ function auto_init(do_globalize = false) {
         window.p5.prototype._registeredMethods.init.push(function() {
             // 'this' is the p5 instance
             // -> set line function
-            default_instance.set_line_fn( this.line.bind(this) );
+            default_instance._add_line_fn( this.line.bind(this) );
             
             const original__start = this._start;
             this._start = function(...args) {
@@ -922,7 +964,7 @@ function auto_init(do_globalize = false) {
         // -> reset transformations, translate to center (draw)
         window.p5.prototype._registeredMethods.pre.push(function() {
             // Warning: 'this' is either window (in p5.global mode) or the p5 instance (in instance mode)
-            default_instance.reset_matrix();
+            default_instance.resetmatrix();
             if (this === window) {
                 // global mode; instance is available via window.p5.instance
                 window.p5.instance.translate.call( window.p5.instance, window.p5.instance.width/2, window.p5.instance.height/2 );
