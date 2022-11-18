@@ -1,4 +1,4 @@
-const VERSION = 4;
+const VERSION = 5;
 const TARGET_SIZE = [420, 297]; // A3 Landscape, in mm
 const SIZES = {
     'A3_LANDSCAPE': [420, 297],
