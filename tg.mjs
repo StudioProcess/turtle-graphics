@@ -135,9 +135,13 @@ export function make_turtle_graphics(...line_fns_) {
     }
     
     /**
-     * Move turtle forward.
+     * Move the turtle forward.
+     * <br>
+     * Draws a line, if the pen is down (see {@link pendown} and {@link penup}).
      * 
      * @function forward
+     * @param [distance=100] {number} - How far to move forward, in pixels.
+     * @see {@link back} to move back.
      */
     function forward(units = DEFAULT_FORWARD) {
         const turtle = _state.turtle;
@@ -160,9 +164,13 @@ export function make_turtle_graphics(...line_fns_) {
     }
     
     /**
-     * Move turtle back.
+     * Move the turtle back.
+     * <br>
+     * Draws a line, if the pen is down (see {@link pendown} and {@link penup}).
      * 
      * @function back
+     * @param [distance=100] {number} - How far to move back, in pixels.
+     * @see {@link forward} to move forward.
      */
     function back(units = DEFAULT_FORWARD) {
         return forward(-units);
@@ -172,6 +180,8 @@ export function make_turtle_graphics(...line_fns_) {
      * Turn turtle to the right.
      * 
      * @function right
+     * @param [angle=90] {number} - How far to turn the turtle right, in degrees (0–360).
+     * @see {@link left} to turn left.
      */
     function right(angle = DEFAULT_RIGHT) {
         const turtle = _state.turtle;
@@ -184,9 +194,11 @@ export function make_turtle_graphics(...line_fns_) {
     }
     
     /**
-     * Turn turtle to the right.
+     * Turn turtle to the left.
      * 
      * @function left
+     * @param [angle=90] {number} - How far to turn the turtle left, in degrees (0–360).
+     * @see {@link right} to turn right.
      */
     function left(angle = DEFAULT_RIGHT) {
         return right(-angle);
@@ -194,8 +206,12 @@ export function make_turtle_graphics(...line_fns_) {
     
     /**
      * Lower the pen.
+     * <br>
+     * Subsequent uses of {@link forward} and {@link back} will draw lines.
+     * A new turtle starts with the pen down.
      * 
      * @function pendown
+     * @see {@link penup} to raise the pen.
      */
     function pendown(down = true) {
         _state.turtle.d = down;
@@ -203,8 +219,12 @@ export function make_turtle_graphics(...line_fns_) {
     
     /**
      * Raise the pen.
+     * <br>
+     * Subsequent uses of {@link forward} and {@link back} will NOT draw lines.
+     * A new turtle starts with the pen down.
      * 
      * @function penup
+     * @see {@link penup} to lower the pen.
      */
     function penup(up = true) {
         _state.turtle.d = !up;
