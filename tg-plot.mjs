@@ -15,7 +15,7 @@ const RETRIES = -1 // -1 for unlimited
 
 function create_ui() {
     const tmp = document.createElement('template');
-    tmp.innerHTML = `<div style="font-family:system-ui; width:200px; height:100px; position:fixed; top:0; right:0;">
+    tmp.innerHTML = `<div style="display:none; font-family:system-ui; width:200px; height:100px; position:fixed; top:0; right:0;">
     <input class="server" placeholder="Server" value=""></input><br>
     <button class="connect">Connect</button><span class="status">○</span><br>
     your id: <span class="client_id">–</span><br>
@@ -346,8 +346,25 @@ function set_localstorage(key, value) {
     localStorage.setItem(key, value);
 }
 
+function add_fns(fns, objs) {
+    for (let fn of fns) {
+        if (typeof fn.name === 'string' && fn.name !== '') {
+            for (let obj of objs) {
+                // Use defineProperty, so p5 won't detect the change and complain
+                Object.defineProperty(obj, fn.name, {
+                    configurable: true,
+                    enumerable: true,
+                    writable: true,
+                    value: fn
+                });
+            }
+        }
+    }
+}
+
 
 export function make_plotter_client(tg_instance) {
+    let recording = true;
     let lines = []; // lines as they arrive from tg module (in px)
     let line_stats = make_line_stats(); // stats based on lines
     
@@ -437,10 +454,47 @@ export function make_plotter_client(tg_instance) {
     };
     
     tg_instance._add_line_fn((...line) => {
+        if (!recording) { return; }
         lines.push(line);
         line_stats.add_line(...line);
         update_stats();
     });
+    
+    function resetplot() {
+        lines = [];
+        line_stats = make_line_stats();
+        lines_span.innerText = '–';
+        travel_span.innerText = '–';
+        ink_span.innerText = '–';
+    }
+    
+    function recordplot(recording_ = true) {
+        if (recording_) { recording = true; }
+        else { recording = false; }
+    }
+    
+    function pauseplot() {
+        recordplot(false);
+    }
+    
+    function isrecordingplot() {
+        return recording();
+    }
+    
+    function plot() {
+        recording = false; // recordplot(false)
+        show_ui();         // showplot()
+    }
+    
+    function showplotmenu() {
+        show_ui();
+    }
+    
+    function hideplotmenu() {
+        div.style.display = 'none';
+    }
+    
+    add_fns([resetplot, recordplot, pauseplot, isrecordingplot, plot, showplotmenu, hideplotmenu], [tg_instance, window]);
     
     const ac = autoconnect({
         wait_before_reconnect: WAIT_BEFORE_RECONNECT,
@@ -502,9 +556,19 @@ export function make_plotter_client(tg_instance) {
         }
     };
     
-    const connect_on_start = get_localstorage( 'tg-plot:connect_on_start', CONNECT_ON_START );
-    if (connect_on_start != '0') { 
-        ac.start(server_input.value); 
+    function show_ui() {
+        if (div.style.display !== 'none') { return; }
+        const connect_on_start = get_localstorage( 'tg-plot:connect_on_start', CONNECT_ON_START );
+        if (connect_on_start != '0') { 
+            ac.start(server_input.value); 
+        }
+        div.style.display = 'block';
+    }
+    
+    const url = new URL(import.meta.url);
+    const do_show = url.searchParams.get('show') !== null;
+    if (do_show) {
+        show_ui();
     }
 }   
 
