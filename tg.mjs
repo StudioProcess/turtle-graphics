@@ -735,12 +735,22 @@ export function make_turtle_graphics(...line_fns_) {
         return _state;
     }
     
+    /**
+     * Add function to be called when a line is drawn by the library.
+     * 
+     * @function _add_line_fn
+     */
     function _add_line_fn(fn) {
         if (typeof fn === 'function') {
             _state.line_fns.push(fn);
         }
     }
     
+    /**
+     * Remove a function previously added by {@link _add_line_fn}.
+     * 
+     * @function _rm_line_fn
+     */
     function _rm_line_fn(fn) {
         const line_fns = _state.line_fns;
         const idx = line_fns.indexOf(fn);

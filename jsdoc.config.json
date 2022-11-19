@@ -1,8 +1,10 @@
 {
   "source": {
-    "includePattern": ".+\\.(m)?js(doc|x)?$"
+    "includePattern": ".+\\.(m)?js(doc|x)?$",
+    "include": [ "package.json", "./jsdoc-template/README.md" ]
   },
   "opts": {
-    "destination": "./docs/"
+    "destination": "./docs/",
+    "template": "./jsdoc-template"
   }
 }
