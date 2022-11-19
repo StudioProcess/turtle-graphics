@@ -56,6 +56,20 @@ nav h2 {
     /* font-weight: 200; */
 }
 
+#main h3.subsection-title {
+    margin-top:80px;
+}
+
+h4.name::before {
+    content: " ";
+    background-color: dodgerblue;
+    width:20px;
+    height:20px;
+    display:inline-block;
+    margin-right:1em;
+}
+
+
 
 html
 {
@@ -108,7 +122,11 @@ tt, code, kbd, samp, pre {
 }
 
 article dl {
-    margin-bottom: 80px;
+    margin-bottom: 40px;
+}
+
+article h4.name {
+    margin-top: 80px;
 }
 
 article img {

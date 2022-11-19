@@ -137,11 +137,11 @@ export function make_turtle_graphics(...line_fns_) {
     /**
      * Move the turtle forward.
      * <br>
-     * Draws a line, if the pen is down (see {@link pendown} and {@link penup}).
+     * Draws a line, if the pen is down (see <code>{@link pendown}</code> and <code>{@link penup}</code>).
      * 
      * @function forward
      * @param [distance=100] {number} - How far to move forward, in pixels.
-     * @see {@link back} to move back.
+     * @see <code>{@link back}</code> to move back.
      */
     function forward(units = DEFAULT_FORWARD) {
         const turtle = _state.turtle;
@@ -166,11 +166,11 @@ export function make_turtle_graphics(...line_fns_) {
     /**
      * Move the turtle back.
      * <br>
-     * Draws a line, if the pen is down (see {@link pendown} and {@link penup}).
+     * Draws a line, if the pen is down (see <code>{@link pendown}</code> and <code>{@link penup}</code>).
      * 
      * @function back
      * @param [distance=100] {number} - How far to move back, in pixels.
-     * @see {@link forward} to move forward.
+     * @see <code>{@link forward}</code> to move forward.
      */
     function back(units = DEFAULT_FORWARD) {
         return forward(-units);
@@ -181,7 +181,7 @@ export function make_turtle_graphics(...line_fns_) {
      * 
      * @function right
      * @param [angle=90] {number} - How far to turn the turtle right, in degrees (0–360).
-     * @see {@link left} to turn left.
+     * @see <code>{@link left}</code> to turn left.
      */
     function right(angle = DEFAULT_RIGHT) {
         const turtle = _state.turtle;
@@ -198,7 +198,7 @@ export function make_turtle_graphics(...line_fns_) {
      * 
      * @function left
      * @param [angle=90] {number} - How far to turn the turtle left, in degrees (0–360).
-     * @see {@link right} to turn right.
+     * @see <code>{@link right}</code> to turn right.
      */
     function left(angle = DEFAULT_RIGHT) {
         return right(-angle);
@@ -207,11 +207,11 @@ export function make_turtle_graphics(...line_fns_) {
     /**
      * Lower the pen.
      * <br>
-     * Subsequent uses of {@link forward} and {@link back} will draw lines.
+     * Subsequent uses of <code>{@link forward}</code> and <code>{@link back}</code> will draw lines.
      * A new turtle starts with the pen down.
      * 
      * @function pendown
-     * @see {@link penup} to raise the pen.
+     * @see <code>{@link penup}</code> to raise the pen.
      */
     function pendown(down = true) {
         _state.turtle.d = down;
@@ -220,11 +220,11 @@ export function make_turtle_graphics(...line_fns_) {
     /**
      * Raise the pen.
      * <br>
-     * Subsequent uses of {@link forward} and {@link back} will NOT draw lines.
+     * Subsequent uses of <code>{@link forward}</code> and <code>{@link back}</code> will NOT draw lines.
      * A new turtle starts with the pen down.
      * 
      * @function penup
-     * @see {@link penup} to lower the pen.
+     * @see <code>{@link penup}</code> to lower the pen.
      */
     function penup(up = true) {
         _state.turtle.d = !up;
@@ -345,19 +345,33 @@ export function make_turtle_graphics(...line_fns_) {
      *********************************************************/
     
     /**
-     * Get the turtles position.
+     * An object describing a turtle's position.
+     * Used with {@link xy}, {@link setxy} and {@link jumpxy}.
+     * 
+     * @typedef {Object} Position
+     * @property x {number} - The x-coordinate in pixels.
+     * @property y {number} - The y-coordinate in pixels.
+     * @see <code>{@link xy}</code> to get the turtle's position.
+     * @see <code>{@link setxy}</code> to set the turtle's position.
+     * @see <code>{@link jumpxy}</code> to set the turtle's position without drawing.
+     */
+     
+    /**
+     * Get the turtle's position.
      * 
      * @function xy
+     * @returns {Position} A {@link Position} object containing <code>x</code> and <code>y</code>.
      */
     // TODO: test this
     function xy() {
-        return [ _state.turtle.x, _state.turtle.y ];
+        return { x: _state.turtle.x, y: _state.turtle.y };
     }
     
     /**
-     * Get the turtles x coordinate.
+     * Get the turtle's x-coordinate.
      * 
      * @function x
+     * @returns {number} The turtle's x-coordinate in pixels.
      */
     function x() {
         return _state.turtle.x;
@@ -365,9 +379,10 @@ export function make_turtle_graphics(...line_fns_) {
     _add_aliases_deprecated('x', ['xcor']);
     
     /**
-     * Get the turtles y coordinate.
+     * Get the turtle's y-coordinate.
      * 
      * @function y
+     * @returns {number} The turtle's y-coordinate in pixels.
      */
     function y() {
         return _state.turtle.y;
@@ -375,9 +390,10 @@ export function make_turtle_graphics(...line_fns_) {
     _add_aliases_deprecated('y', ['ycor']);
     
     /**
-     * Get the turtles heading.
+     * Get the turtle's heading.
      * 
      * @function heading
+     * @returns {number} The turtle's heading angle in degrees (0–360).
      */
     function heading() {
         return _state.turtle.a;
@@ -387,6 +403,7 @@ export function make_turtle_graphics(...line_fns_) {
      * Get whether the pen is currently down.
      * 
      * @function isdown
+     * @returns {boolean} <code>true</code> if pen is down, <code>false</code> otherwise.
      */
     function isdown() {
         return _state.turtle.d;
@@ -396,15 +413,29 @@ export function make_turtle_graphics(...line_fns_) {
      * Get whether the pen is currently up.
      * 
      * @function isup
+     * @returns {boolean} <code>true</code> if pen is up, <code>false</code> otherwise.
      */
     function isup() {
         return !_state.turtle.d;
     }
     
     /**
-     * Get turtle position, heading angle and pen position.
+     * An object describing a turtle's state. Used with <code>{@link state}</code> and <code>{@link setstate}</code>.
+     * 
+     * @typedef {Object} State
+     * @property {number} x - The x-coordinate in pixels.
+     * @property {number} y - The y-coordinate in pixels.
+     * @property {number} a - The heading angle in degreed (0–360).
+     * @property {boolean} d - `true` if the pen is down, `false` otherwise.
+     * @see {@link state} to get the turtle's state.
+     * @see {@link setstate} to set the turtles's state.
+     */
+     
+    /**
+     * Get the turtle's current position, heading angle and pen position.
      * 
      * @function state
+     * @returns {State} A {@link State} object containing <code>x</code> (the x-coordinate), <code>y</code> (the y-coordinate), <code>a</code> (the heading angle) and <code>d</code> (the pen down state).
      */
     function state() {
         const turtle = _state.turtle;
@@ -417,47 +448,6 @@ export function make_turtle_graphics(...line_fns_) {
         Get relative state
      *********************************************************/
     
-    /**
-     * Get the bearing from the turtle to a point x, y.
-     * 
-     * @function bearing
-     */
-    function bearing(x, y) {
-        ({ x, y } = _to_point(x, y));
-        if ( ! _check_number(x, 'bearing', 'x') ) { return; }
-        if ( ! _check_number(y, 'bearing', 'y') ) { return; }
-        const turtle = _state.turtle;
-        // vector to point xy
-        const vx = x - turtle.x;
-        const vy = y - turtle.y;
-        if (vx == 0 && vy == 0) { return 0; }
-        let b = Math.atan2(vy, vx) / Math.PI * 180; // [-180, +180] angle between positive x-axis and vector
-        b = b + 90 - turtle.a;
-        b = _clean_angle(b);
-        return b;
-    }
-    
-    /**
-     * Get the distance from the turtle to a point x, y.
-     * 
-     * @function distance
-     */
-    function distance(x, y) {
-        ({ x, y } = _to_point(x, y));
-        if ( ! _check_number(x, 'distance', 'x') ) { return; }
-        if ( ! _check_number(y, 'distance', 'y') ) { return; }
-        [x, y] = _transform([x, y]); // apply current transformation to point
-        const turtle = _state.turtle;
-        const dx = x - turtle.x;
-        const dy = y - turtle.y;
-        return Math.sqrt(dx*dx + dy*dy);
-    }
-    
-    
-    /*********************************************************
-        Set state
-     *********************************************************/
-     
     function _to_point(x, y) {
         // allow [x, y] as first parameter
         // needs to be tested first, cause arrays of type 'object'
@@ -495,9 +485,65 @@ export function make_turtle_graphics(...line_fns_) {
     }
     
     /**
-     * Set the turtles x and y coordinates.
+     * Get the bearing from the turtle to a given point.
+     * <br>
+     * The bearing is the angle from the turtle's tip to the given point.
+     * In other words, the bearing is the angle the turtle needs to turn <code>{@link right}</code> in order to face the given point.
+     * 
+     * @function bearing
+     * @param {number|Position} - The x-coordinate of the point to get the bearing to or a {@link Position} object. The other parameter (<code>y</code>) is ignored, if a {@link Position} object is given.
+     * @param {number} [y] - The y-coordinate of the point to get the bearing to.
+     * @returns {number} The bearing to the given point in degrees (0–360).
+     * @see <code>{@link right}</code> to turn towards the point.
+     * @see <code>{@link face}</code> for a convenience function to face a given point.
+     */
+    function bearing(x, y) {
+        ({ x, y } = _to_point(x, y));
+        if ( ! _check_number(x, 'bearing', 'x') ) { return; }
+        if ( ! _check_number(y, 'bearing', 'y') ) { return; }
+        const turtle = _state.turtle;
+        // vector to point xy
+        const vx = x - turtle.x;
+        const vy = y - turtle.y;
+        if (vx == 0 && vy == 0) { return 0; }
+        let b = Math.atan2(vy, vx) / Math.PI * 180; // [-180, +180] angle between positive x-axis and vector
+        b = b + 90 - turtle.a;
+        b = _clean_angle(b);
+        return b;
+    }
+    
+    /**
+     * Get the distance from the turtle to a given point.
+     * 
+     * @function distance
+     * @param {number|Position} - The x-coordinate of the point to get the distance to or a {@link Position} object. The other parameter (<code>y</code>) is ignored, if a {@link Position} object is given.
+     * @param {number} [y] - The y-coordinate of the point to get the distance to.
+     * @returns {number} The distance to the given point in pixels.
+     */
+    function distance(x, y) {
+        ({ x, y } = _to_point(x, y));
+        if ( ! _check_number(x, 'distance', 'x') ) { return; }
+        if ( ! _check_number(y, 'distance', 'y') ) { return; }
+        [x, y] = _transform([x, y]); // apply current transformation to point
+        const turtle = _state.turtle;
+        const dx = x - turtle.x;
+        const dy = y - turtle.y;
+        return Math.sqrt(dx*dx + dy*dy);
+    }
+    
+    
+    /*********************************************************
+        Set state
+     *********************************************************/
+    
+    /**
+     * Set the turtle's position.
+     * <br>
+     * Draws a line to the new position, if the pen is down (see <code>{@link pendown}</code> and <code>{@link penup}</code>).
      * 
      * @function setxy
+     * @param {(number|Position)} x - The x-coordinate or a {@link Position} object. The other parameter (<code>y</code>) is ignored if a {@link Position} object is given.
+     * @param {number} [y] - The y-coordinate. Ignored if <code>x</code> is given a {@link Position} object.
      */
     // TODO: think about naming (e.g. moveto, lineto)
     function setxy(x, y) {
@@ -526,9 +572,11 @@ export function make_turtle_graphics(...line_fns_) {
     }
     
     /**
-     * Set the turtles x and y coordinates, without drawing to the new position.
+     * Set the turtle's position, without drawing to the new position.
      * 
      * @function jumpxy
+     * @param {number|Position} x - The x-coordinate or a {@link Position} object. The other parameter (<code>y</code>) is ignored if a {@link Position} object is given.
+     * @param {number} [y] - The y-coordinate. 
      */
     function jumpxy(x, y) {
         const down = isdown(); // save pen down state
@@ -538,11 +586,11 @@ export function make_turtle_graphics(...line_fns_) {
     }
     
     /**
-     * Set the turtles heading.
+     * Set the turtle's heading.
      * 
      * @function setheading
+     * @param {number} angle - The heading angle (0–360).
      */
-    // TODO: think about naming
     function setheading(angle) {
         if ( ! _check_number(angle, 'setheading', 'angle') ) { return; }
         const turtle = _state.turtle;
@@ -556,9 +604,11 @@ export function make_turtle_graphics(...line_fns_) {
     }
     
     /**
-     * Turn the turtle to face a point x, y.
+     * Turn the turtle to face a given point.
      * 
      * @function face
+     * @param {number|Position} - The x-coordinate of the point to face or a {@link Position} object. The other parameter (<code>y</code>) is ignored, if a {@link Position} object is given.
+     * @param {number} [y] - The y-coordinate of the point to face.
      */
     function face(x, y) {
         ({ x, y } = _to_point(x, y));
@@ -569,6 +619,8 @@ export function make_turtle_graphics(...line_fns_) {
     
         
     function _to_turtle(x, y, a, d) {
+        // TODO: maybe allow x as pos, y as angle, a as down
+        
         // allow [x, y, a, d] as first parameter
         // needs to be tested first, cause arrays of type 'object'
         if (Array.isArray(x)) {
@@ -590,9 +642,13 @@ export function make_turtle_graphics(...line_fns_) {
     }
     
     /**
-     * Set turtle position and/or heading angle and/or pen state.
+     * Set the turtle's position, heading angle and/or pen state.
      * 
      * @function setstate
+     * @param {number|State} x - The x-coordinate in pixels or a {@link State} object. The other parameters are ignored if a {@link State} object is given.
+     * @param {number} [y] - The y-coordinate in pixels.
+     * @param {number} [h] - The heading angle in degrees (0–360).
+     * @param {number} [d] - The pen down state, <code>true</code> for down, <code>false</code> for up.
      */
     // TOOD: check new_turtle
     function setstate(x, y, a, d) {
@@ -604,29 +660,34 @@ export function make_turtle_graphics(...line_fns_) {
     _add_aliases_deprecated('setstate', ['setturtle']);
     
     /**
-     * Reset turtle state.
+     * Reset turtle's state.
+     * <br>
+     * Resets the turtle to its original state, at the center (x=0, y=0), facing up (heading 0) with the pen down.
+     * This doesn't cause a line to be drawn to the center.
      * 
      * @function resetstate
      */
     function resetstate() {
         _state.turtle = _make_turtle_state(); // turtle state
+        // TODO: should this happen?
         _state.turtle_stack = [];             // turtle stack
     }
     _add_aliases_deprecated('resetstate', ['reset_turtle']);
     
     /**
-     * Reset transformation matrix.
+     * Reset the transformation matrix.
      * 
      * @function resetmatrix
      */
     function resetmatrix() {
         _state.matrix = mat3.create();   // transformation matrix
+        // TODO: should this happen?
         _state.matrix_stack = [];        // matrix stack
     }
     _add_aliases_deprecated('resetmatrix', ['reset_matrix']);
     
     /**
-     * Reset turtle state and transformations.
+     * Reset the turtle's state and transformations.
      * 
      * @function reset
      */
