@@ -26,7 +26,7 @@ function create_ui() {
     your job: <span class="queue_pos">–</span><br>
     format: <select class="format"><option value="A3_LANDSCAPE">A3 Landscape</option><option value="A3_PORTRAIT">A3 Portrait</option></select><br>
     speed: <input class="speed" placeholder="Drawing Speed (%)" type="number" value="100" min="50" max="100"></input><br>
-    <button class="clear">Clear</button> <button class="plot">Plot</button> <button class="cancel">Cancel</button> <button class="savesvg">Save SVG</button>
+    <button class="clear">Clear</button> <button class="plot">Plot</button> <button class="cancel">Cancel</button> <button class="preview">Preview</button> <button class="savesvg">Save SVG</button>
     </div> `;
     const div = tmp.content.firstChild;
     document.body.appendChild(div);
@@ -146,6 +146,10 @@ async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date 
         + `<!-- SHA-1 (after this line): ${_hash} -->\n`
         + svg;
     return { svg, stats, timestamp: _timestamp, hash: _hash };
+}
+
+function svg_data_url(svg) {
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
 }
 
 function make_line_stats() {
@@ -382,6 +386,7 @@ export function make_plotter_client(tg_instance) {
     const connect_button = div.querySelector('.connect');
     const queue_pos_span = div.querySelector('.queue_pos');
     const queue_len_span = div.querySelector('.queue_len');
+    const preview_button = div.querySelector('.preview');
     const savesvg_button = div.querySelector('.savesvg');
     const format_select = div.querySelector('.format');
     
@@ -426,6 +431,15 @@ export function make_plotter_client(tg_instance) {
         });
         console.log(msg);
         ac.send(msg);
+    };
+    
+    preview_button.onmousedown = async () => {
+        if (lines.length == 0) { return; }
+        const size = SIZES[format_select.value]; // target size in mm
+        const { svg, timestamp, stats, hash } = await to_svg(lines, tg_instance._p5_viewbox, size);
+        const url = svg_data_url(svg);
+        const w = window.open('about:blank');
+        w.document.write(`<html><head><title>${timestamp}_${hash.slice(0,5)}.svg</title></head><body style="padding:0; margin:0; background:lightgray; display:flex; align-items:center; justify-content:center;"><img src="${url}" style="background:white; max-width:90vw; max-height:90vh; box-shadow:3px 3px 10px 1px gray;" /></body></html>`);
     };
     
     savesvg_button.onmousedown = async () => {
