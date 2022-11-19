@@ -438,8 +438,11 @@ export function make_plotter_client(tg_instance) {
         const size = SIZES[format_select.value]; // target size in mm
         const { svg, timestamp, stats, hash } = await to_svg(lines, tg_instance._p5_viewbox, size);
         const url = svg_data_url(svg);
+        const filename = `${timestamp}_${hash.slice(0,5)}.svg`;
+        const format_name = format_select.querySelector('option:checked').innerText;
         const w = window.open('about:blank');
-        w.document.write(`<html><head><title>${timestamp}_${hash.slice(0,5)}.svg</title></head><body style="padding:0; margin:0; background:lightgray; display:flex; align-items:center; justify-content:center;"><img src="${url}" style="background:white; max-width:90vw; max-height:90vh; box-shadow:3px 3px 10px 1px gray;" /></body></html>`);
+        w.document.write(`<html><head><title>${filename}</title></head><body style="padding:0; margin:0; font:10px system-ui; color:dimgray; background:lightgray; display:flex; flex-direction:column; align-items:center; justify-content:center;"><div><img src="${url}" style="background:white; max-width:90vw; max-height:80vh; box-shadow:3px 3px 10px 1px gray;" /><div style="margin-top:2em;">${filename}<br>${stats.count} lines, ${Math.floor(stats.travel_ink)}/${Math.floor(stats.travel)} mm<br>${format_name} (${size[0]} ✕ ${size[1]} mm)<br><a href="${url}" download="${filename}" style="color:dimgray;">Download</a></div></div></body></html>`);
+        
     };
     
     savesvg_button.onmousedown = async () => {
