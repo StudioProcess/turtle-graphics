@@ -4,3 +4,8 @@
         Header set Access-Control-Allow-Origin "*"
     </IfModule>
 </FilesMatch>
+
+# Redirect base URL to docs
+RewriteEngine On
+RewriteCond %{REQUEST_URI} ^/turtle-graphics/$ [NC]
+RewriteRule ^(.*)$ /turtle-graphics/docs/turtle-graphics/0.1.0/ [L,R=301]
