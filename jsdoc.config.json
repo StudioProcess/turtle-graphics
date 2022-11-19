@@ -4,7 +4,7 @@
     "include": [ "package.json", "./jsdoc-template/README.md" ]
   },
   "opts": {
-    "destination": "./docs/",
+    "destination": "./dist/docs/",
     "template": "./jsdoc-template"
   }
 }

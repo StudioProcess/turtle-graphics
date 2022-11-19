@@ -4,7 +4,7 @@
   "description": "",
   "private": true,
   "scripts": {
-    "build": "rollup -c && cp -Rf static/ dist",
+    "build": "rollup -c && cp -Rf static/ dist && npm run build-docs",
     "start": "rollup -cw & browser-sync . --port 8080 --no-notify --files '*.html,dist'",
     "test": "tap",
     "build-docs": "jsdoc -c jsdoc.config.json tg.mjs",
