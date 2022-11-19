@@ -100,5 +100,5 @@ Here is an index to all functions, grouped by type:
 ### Internal
 
 * `{@link _state}`
-* `{@add_line_fn}`
-* `{@rm_line_fn}`
+* `{@link _add_line_fn}`
+* `{@link _rm_line_fn}`
