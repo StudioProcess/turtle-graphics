@@ -21,7 +21,7 @@ function create_ui() {
     tmp.innerHTML = `<div id="plotter-ui" style="display:none; font:11px system-ui; width:200px; position:fixed; top:0; right:0; padding:8px; background:rgba(255,255,255,0.66)">
     <div style="font-weight:bold; text-align:center;">Plotter</div>
     <input class="server" placeholder="Server" value=""></input><br>
-    <button class="connect">Connect</button><span class="status">○</span><br>
+    <button class="connect" style="margin:5px 5px auto auto;">Connect</button><span class="status">○</span><br>
     <hr>
     <table>
     <style>td:first-child {text-align:right;}</style>
@@ -35,8 +35,8 @@ function create_ui() {
     <tr> <td>Your job:</td> <td><span class="queue_pos">–</span></td> </tr>
     <table>
     <hr>
-    <div style="text-align:center";><button class="preview">Preview</button> <button class="savesvg">Save SVG</button></div>
-    <div style="text-align:center";><!-- <button class="clear">Clear</button> --> <button class="plot" disabled>Plot</button> <button class="cancel" disabled>Cancel</button></div>
+    <div style="text-align:center";><button class="preview" style="width:80px; margin-right:5px; margin-bottom:0;">Preview</button><button class="savesvg" style="width:80px; margin-bottom:0;">Save SVG</button></div>
+    <div style="text-align:center";><!-- <button class="clear">Clear</button> --> <button class="plot" style="width:165px; height:28px; margin-top:5px;" disabled>Plot</button> <!-- <button class="cancel" disabled>Cancel</button></div> -->
     </div> `;
     const div = tmp.content.firstChild;
     document.body.appendChild(div);
@@ -366,6 +366,7 @@ export function make_plotter_client(tg_instance) {
     let recording = true;
     let lines = []; // lines as they arrive from tg module (in px)
     let line_stats = make_line_stats(); // stats based on lines
+    let plotting = false;
     
     const div = create_ui();
     const lines_span = div.querySelector('.lines');
@@ -373,7 +374,7 @@ export function make_plotter_client(tg_instance) {
     const ink_span = div.querySelector('.ink');
     const client_id_span = div.querySelector('.client_id');
     // const clear_button = div.querySelector('.clear');
-    const cancel_button = div.querySelector('.cancel');
+    // const cancel_button = div.querySelector('.cancel');
     const plot_button = div.querySelector('.plot');
     const status_span = div.querySelector('.status');
     const server_input = div.querySelector('.server');
@@ -397,35 +398,35 @@ export function make_plotter_client(tg_instance) {
     // };
     
     plot_button.onmousedown = async () => {
-        if (lines.length == 0) { return; }
-        const format = format_select.value;
-        const size = SIZES[format]; // target size in mm
-        const { svg, timestamp, stats, hash } = await to_svg(lines, tg_instance._p5_viewbox, size);
-        let speed = parseInt(speed_input.value);
-        if (isNaN(speed)) { speed = 100; }
-        const msg = JSON.stringify({
-            type: 'plot',
-            client: client_id_span.innerText,
-            id: crypto.randomUUID(),
-            svg,
-            stats,
-            timestamp,
-            hash,
-            speed,
-            format,
-            size,
-        });
-        console.log(msg);
-        ac.send(msg);
-    };
-    
-    cancel_button.onmousedown = () => {
-        const msg = JSON.stringify({
-            type: 'cancel',
-            client: client_id_span.innerText,
-        });
-        console.log(msg);
-        ac.send(msg);
+        if (!plotting) { // Plot
+            if (lines.length == 0) { return; }
+            const format = format_select.value;
+            const size = SIZES[format]; // target size in mm
+            const { svg, timestamp, stats, hash } = await to_svg(lines, tg_instance._p5_viewbox, size);
+            let speed = parseInt(speed_input.value);
+            if (isNaN(speed)) { speed = 100; }
+            const msg = JSON.stringify({
+                type: 'plot',
+                client: client_id_span.innerText,
+                id: crypto.randomUUID(),
+                svg,
+                stats,
+                timestamp,
+                hash,
+                speed,
+                format,
+                size,
+            });
+            console.log(msg);
+            ac.send(msg);
+        } else { // Cancel
+            const msg = JSON.stringify({
+                type: 'cancel',
+                client: client_id_span.innerText,
+            });
+            console.log(msg);
+            ac.send(msg);
+        }
     };
     
     preview_button.onmousedown = async () => {
@@ -544,14 +545,14 @@ export function make_plotter_client(tg_instance) {
             queue_len_span.innerText = '–';
             server_input.disabled = true;
             plot_button.disabled = true;
-            cancel_button.disabled = true;
+            plot_button.innerText = 'Plot';
         },
         on_waiting: (retries) => {
             console.log('on_waiting')
             status_span.innerText = `○ Waiting${retries > 0 ? ' (' + retries +')' : ''}...`;
             server_input.disabled = true;
             plot_button.disabled = true;
-            cancel_button.disabled = true;
+            plot_button.innerText = 'Plot';
         },
         on_connected: (socket) => {
             console.log('on_connected')
@@ -559,7 +560,8 @@ export function make_plotter_client(tg_instance) {
             status_span.innerText = '● Connected';
             server_input.disabled = true;
             plot_button.disabled = false;
-            cancel_button.disabled = true;
+            plot_button.innerText = 'Plot';
+            plotting = false;
         },
         on_disconnected: () => {
             console.log('on_disconnected')
@@ -569,7 +571,7 @@ export function make_plotter_client(tg_instance) {
             queue_len_span.innerText = '–';
             server_input.disabled = false;
             plot_button.disabled = true;
-            cancel_button.disabled = true;
+            plot_button.innerText = 'Plot';
         },
         on_message: (e) => {
             const msg = JSON.parse(e.data)
@@ -581,34 +583,37 @@ export function make_plotter_client(tg_instance) {
                 let pos;
                 if (msg.position === 0) {
                     pos = '🖨️📝 Ready to draw, load paper and pen! ';
-                    cancel_button.disabled = true;
+                    plot_button.disabled = true;
                 }
                 else if (msg.position === -1) {
                     pos = '🖨️ Drawing...';
-                    cancel_button.disabled = true;
+                    plot_button.disabled = false;
                 }
                 else { 
                     pos = "⌛ " + msg.position + " before you...";
-                    cancel_button.disabled = false;
+                    plot_button.disabled = false;
                 }
+                plotting = true;
                 queue_pos_span.innerText = pos;
-                plot_button.disabled = true;
                 format_select.disabled = true;
                 speed_input.disabled = true;
+                plot_button.innerText = 'Cancel';
             }
             else if (msg.type === 'job_done') {
+                plotting = false;
                 queue_pos_span.innerText = '✔️ Done';
-                plot_button.disabled = false;
-                plot_button.disabled = true;
                 format_select.disabled = false;
                 speed_input.disabled = false;
+                plot_button.innerText = 'Plot';
+                plot_button.disabled = false;
             }
             else if (msg.type === 'job_canceled') {
+                plotting = false;
                 queue_pos_span.innerText = '❌ Canceled';
-                plot_button.disabled = false;
-                cancel_button.disabled = true;
                 format_select.disabled = false;
                 speed_input.disabled = false;
+                plot_button.innerText = 'Plot';
+                plot_button.disabled = false;
             }
         },
     });
