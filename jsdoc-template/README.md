@@ -28,6 +28,20 @@ These scripts need to be included after `p5.js`, so your `index.html` should loo
 
 ```
 
+## The turtle coordinate system
+
+* The turtle always starts at the origin, with coordinates (0, 0).
+    * The origin is in the center of the p5.js canvas. Note that, this is different from p5.js, where the origin is in the top-left corner.
+    * The x-axis goes from left to right. Negative values are left of the origin, positive values right (same as p5.js).
+    * The y-axis goes from top to bottom. Negative values are above the origin, positive values below (same as p5.js).
+* The turtle always starts with heading 0, which is up (or 'north').
+    * The heading is measured in degrees, starting at the top and moving clockwise.
+    * A heading of 90 is right (or 'east').
+    * A heading of 180 is down (or 'south').
+    * A heading of 270 is left (or 'west').
+    * Note that negative values can also be used, these are measured counter-clockwise. For example: -90 is left, -180 is down, -270 is right.
+    
+
 ## Functions by type
 
 Here is an index to all functions, grouped by type:
