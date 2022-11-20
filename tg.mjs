@@ -58,6 +58,18 @@ export function make_turtle_graphics(...line_fns_) {
         Instance
      *********************************************************/
     
+    // Add keys from obj that are missing from target_obj
+    // Used to copy over properties in newturtle() and clone() that might have been added later
+    // e.g. the plotter() function from tg-plot.mjs
+    function _add_missing_props(obj, target_obj, except_startswith='_') {
+        for (let key of Object.keys(obj)) {
+            // console.log('checking', key)
+            if ( !(key in target_obj) && !key.startsWith(except_startswith) ) {
+                target_obj[key] = obj[key];
+            }
+        }
+    }
+    
     /**
      * Create a new turtle instance.
      * 
@@ -66,9 +78,11 @@ export function make_turtle_graphics(...line_fns_) {
      */
     function newturtle(...new_line_fns) {
         // use same line_fns as the current instance, if none are explicitly provided
-        return make_turtle_graphics(
+        const new_turtle = make_turtle_graphics(
             ...(new_line_fns.length > 0 ? new_line_fns : _state.line_fns)
         );
+        _add_missing_props(self, new_turtle);
+        return new_turtle;
     }
     _add_aliases_deprecated('newturtle', ['maketurtle']);
     
@@ -91,12 +105,13 @@ export function make_turtle_graphics(...line_fns_) {
      * @returns {Object} An exact clone of the turtle object returned by <code>{@link self}</code>. Has all turtle functions as properties.
      */
     function clone() {
-        const newturtle = make_turtle_graphics(...line_fns_); // make new turtle with same line_fns
+        const new_turtle = make_turtle_graphics(...line_fns_); // make new turtle with same line_fns
         // clone all internal state properties except for line_fns (which cannot be cloned, because it containes functions)
         for (let key of Object.keys(_state).filter(x => x !== 'line_fns')) {
-            newturtle._state()[key] = structuredClone( _state[key] );
+            new_turtle._state()[key] = structuredClone( _state[key] );
         }
-        return newturtle;
+        _add_missing_props(self, new_turtle);
+        return new_turtle;
     }
     
     
@@ -1018,6 +1033,8 @@ export function globalize(tg_instance = default_instance, global_object = global
     if (failed_keys.length > 0) {
         console.warn(`🐢 → Failed to overwrite global properties: ${failed_keys.join(', ')}`);
     }
+    
+    tg_instance._globalized = true; // Add a flag
     return overwritten;
 }
 

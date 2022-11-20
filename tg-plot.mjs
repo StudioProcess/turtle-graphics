@@ -1,4 +1,7 @@
 const VERSION = 5;
+const GLOBAL_INSTANCE_NAME = 'p';
+const PLOTTER_FUNCTION_NAME = 'plotter';
+
 const TARGET_SIZE = [420, 297]; // A3 Landscape, in mm
 const SIZES = {
     'A3_LANDSCAPE': [420, 297],
@@ -350,21 +353,6 @@ function set_localstorage(key, value) {
     localStorage.setItem(key, value);
 }
 
-function add_fns(fns, objs) {
-    for (let fn of fns) {
-        if (typeof fn.name === 'string' && fn.name !== '') {
-            for (let obj of objs) {
-                // Use defineProperty, so p5 won't detect the change and complain
-                Object.defineProperty(obj, fn.name, {
-                    configurable: true,
-                    enumerable: true,
-                    writable: true,
-                    value: fn
-                });
-            }
-        }
-    }
-}
 
 
 export function make_plotter_client(tg_instance) {
@@ -477,41 +465,41 @@ export function make_plotter_client(tg_instance) {
         update_stats();
     });
     
-    function resetplot() {
-        lines = [];
-        line_stats = make_line_stats();
-        lines_span.innerText = '–';
-        travel_span.innerText = '–';
-        ink_span.innerText = '–';
-    }
-    
-    function recordplot(recording_ = true) {
-        if (recording_) { recording = true; }
-        else { recording = false; }
-    }
-    
-    function pauseplot() {
-        recordplot(false);
-    }
-    
-    function isrecordingplot() {
-        return recording();
-    }
-    
-    function plot() {
-        recording = false; // recordplot(false)
-        show_ui();         // showplot()
-    }
-    
-    function showplotmenu() {
-        show_ui();
-    }
-    
-    function hideplotmenu() {
-        div.style.display = 'none';
-    }
-    
-    add_fns([resetplot, recordplot, pauseplot, isrecordingplot, plot, showplotmenu, hideplotmenu], [tg_instance, window]);
+    const public_fns = {
+        reset() {
+            lines = [];
+            line_stats = make_line_stats();
+            lines_span.innerText = '–';
+            travel_span.innerText = '–';
+            ink_span.innerText = '–';
+        },
+        
+        record(recording_ = true) {
+            if (recording_) { recording = true; }
+            else { recording = false; }
+        },
+        
+        pause()  {
+            record(false);
+        },
+            
+        isrecording() {
+            return recording;
+        },
+        
+        plot() {
+            recording = false; // recordplot(false)
+            show_ui();         // showplot()
+        },
+        
+        show() {
+            show_ui();
+        },
+        
+        hide() {
+            div.style.display = 'none';
+        },
+    };
     
     const ac = autoconnect({
         wait_before_reconnect: WAIT_BEFORE_RECONNECT,
@@ -587,6 +575,8 @@ export function make_plotter_client(tg_instance) {
     if (do_show) {
         show_ui();
     }
+    
+    return public_fns;
 }   
 
 /*
@@ -620,7 +610,24 @@ let _browser_bootstrapped = false;
     const window = globalThis;
     if (window.tg?.default_turtle) {
         console.log(`🖨️ → Plotter Module (v${VERSION})`);
-        make_plotter_client(window.tg.default_turtle);
+        
+        const plotter = make_plotter_client(window.tg.default_turtle);
+        
+        // put plotter instance into global scope
+        if (window[GLOBAL_INSTANCE_NAME] === undefined) {
+            window[GLOBAL_INSTANCE_NAME] = plotter;
+            console.log(`🖨️ → Global plotter: ${GLOBAL_INSTANCE_NAME}`);
+        }
+        
+        // put plotter function on tg default intance
+        const plotter_fn = () => plotter;
+        if (window.tg.default_turtle[PLOTTER_FUNCTION_NAME] === undefined) {
+            window.tg.default_turtle[PLOTTER_FUNCTION_NAME] = plotter_fn;
+            console.log(`🖨️ → Plotter function (added to turtles): ${PLOTTER_FUNCTION_NAME}`);
+        }
+        
+        // Note: No need to add plotter_fn to global scope.
+        // Since it's on the default instance, it will be globalized by it
     }
     _browser_bootstrapped = true;
 })();
