@@ -18,18 +18,25 @@ const RETRIES = -1 // -1 for unlimited
 
 function create_ui() {
     const tmp = document.createElement('template');
-    tmp.innerHTML = `<div style="display:none; font-family:system-ui; width:200px; height:100px; position:fixed; top:0; right:0;">
+    tmp.innerHTML = `<div id="plotter-ui" style="display:none; font:11px system-ui; width:200px; position:fixed; top:0; right:0; padding:8px; background:rgba(255,255,255,0.66)">
+    <div style="font-weight:bold; text-align:center;">Plotter</div>
     <input class="server" placeholder="Server" value=""></input><br>
     <button class="connect">Connect</button><span class="status">○</span><br>
-    your id: <span class="client_id">–</span><br>
-    lines: <span class="lines">–</span><br>
-    travel: <span class="travel">–</span><br>
-    ink: <span class="ink">–</span><br>
-    plotter queue: <span class="queue_len">–</span><br>
-    your job: <span class="queue_pos">–</span><br>
-    format: <select class="format"><option value="A3_LANDSCAPE">A3 Landscape</option><option value="A3_PORTRAIT">A3 Portrait</option></select><br>
-    speed: <input class="speed" placeholder="Drawing Speed (%)" type="number" value="100" min="50" max="100"></input><br>
-    <button class="clear">Clear</button> <button class="plot">Plot</button> <button class="cancel">Cancel</button> <button class="preview">Preview</button> <button class="savesvg">Save SVG</button>
+    <hr>
+    <table>
+    <style>td:first-child {text-align:right;}</style>
+    <tr> <td>Your ID:</td> <td><span class="client_id" style="font-weight:bold;">–</span></td> </tr>
+    <tr> <td>Lines:</td> <td><span class="lines">–</span></td> </tr>
+    <tr> <td>Travel:</td> <td><span class="travel">–</span></td> </tr>
+    <tr> <td>Ink:</td> <td><span class="ink">–</span></td> </tr>
+    <tr> <td>Format:</td> <td><select class="format"><option value="A3_LANDSCAPE">A3 Landscape</option><option value="A3_PORTRAIT">A3 Portrait</option></select></td> </tr>
+    <tr> <td>Speed:</td> <td><input class="speed" placeholder="Drawing Speed (%)" type="number" value="100" min="50" max="100"></input></td> </tr>
+    <tr> <td>Plotter queue:</td> <td><span class="queue_len">–</span></td> </tr>
+    <tr> <td>Your job:</td> <td><span class="queue_pos">–</span></td> </tr>
+    <table>
+    <hr>
+    <button class="preview">Preview</button> <button class="savesvg">Save SVG</button><br>
+    <!-- <button class="clear">Clear</button> --> <button class="plot">Plot</button> <button class="cancel">Cancel</button><br>
     </div> `;
     const div = tmp.content.firstChild;
     document.body.appendChild(div);
@@ -365,7 +372,7 @@ export function make_plotter_client(tg_instance) {
     const travel_span = div.querySelector('.travel');
     const ink_span = div.querySelector('.ink');
     const client_id_span = div.querySelector('.client_id');
-    const clear_button = div.querySelector('.clear');
+    // const clear_button = div.querySelector('.clear');
     const cancel_button = div.querySelector('.cancel');
     const plot_button = div.querySelector('.plot');
     const status_span = div.querySelector('.status');
@@ -378,16 +385,16 @@ export function make_plotter_client(tg_instance) {
     const savesvg_button = div.querySelector('.savesvg');
     const format_select = div.querySelector('.format');
     
-    client_id_span.innerText = get_localstorage( 'tg-plot:client_id', crypto.randomUUID().slice(0, 8) );
+    client_id_span.innerText = get_localstorage( 'tg-plot:client_id', crypto.randomUUID().slice(0, 5) );
     server_input.value = get_localstorage( 'tg-plot:server_url', SERVER_URL );
     
-    clear_button.onmousedown = () => {
-        lines = [];
-        line_stats = make_line_stats();
-        lines_span.innerText = '–';
-        travel_span.innerText = '–';
-        ink_span.innerText = '–';
-    };
+    // clear_button.onmousedown = () => {
+    //     lines = [];
+    //     line_stats = make_line_stats();
+    //     lines_span.innerText = '–';
+    //     travel_span.innerText = '–';
+    //     ink_span.innerText = '–';
+    // };
     
     plot_button.onmousedown = async () => {
         if (lines.length == 0) { return; }
