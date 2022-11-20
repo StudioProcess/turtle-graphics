@@ -398,11 +398,13 @@ export function make_plotter_client(tg_instance) {
     //     ink_span.innerText = '–';
     // };
     
-    close_button.onmousedown = () => {
+    close_button.onmousedown = (e) => {
+        if (e.button !== 0) { return; } // left mouse button only
         hide_ui();
     };
     
-    plot_button.onmousedown = async () => {
+    plot_button.onmousedown = async (e) => {
+        if (e.button !== 0) { return; } // left mouse button only
         if (!plotting) { // Plot
             if (lines.length == 0) { return; }
             const format = format_select.value;
@@ -434,7 +436,8 @@ export function make_plotter_client(tg_instance) {
         }
     };
     
-    preview_button.onmousedown = async () => {
+    preview_button.onmousedown = async (e) => {
+        if (e.button !== 0) { return; } // left mouse button only
         if (lines.length == 0) { return; }
         const size = SIZES[format_select.value]; // target size in mm
         const { svg, timestamp, stats, hash } = await to_svg(lines, tg_instance._p5_viewbox, size);
@@ -446,7 +449,8 @@ export function make_plotter_client(tg_instance) {
         
     };
     
-    savesvg_button.onmousedown = async () => {
+    savesvg_button.onmousedown = async (e) => {
+        if (e.button !== 0) { return; } // left mouse button only
         if (lines.length == 0) { return; }
         const size = SIZES[format_select.value]; // target size in mm
         const { svg, timestamp, stats, hash } = await to_svg(lines, tg_instance._p5_viewbox, size);
@@ -567,7 +571,7 @@ export function make_plotter_client(tg_instance) {
         on_connected: (socket) => {
             // console.log('on_connected');
             connect_button.innerText = 'Disconnect';
-            status_span.innerText = '● Connected';
+            status_span.innerHTML = '<span style="color:dodgerblue;">●</span> Connected';
             server_input.disabled = true;
             plot_button.disabled = false;
             plot_button.innerText = 'Plot';
@@ -631,7 +635,8 @@ export function make_plotter_client(tg_instance) {
         },
     });
     
-    connect_button.onmousedown = () => {
+    connect_button.onmousedown = (e) => {
+        if (e.button !== 0) { return; } // left mouse button only
         const connecting = ac.toggle(server_input.value);
         if (connecting) {
             // connecting
