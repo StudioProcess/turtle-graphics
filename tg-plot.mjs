@@ -545,7 +545,6 @@ export function make_plotter_client(tg_instance) {
             server_input.disabled = true;
             plot_button.disabled = true;
             cancel_button.disabled = true;
-            
         },
         on_waiting: (retries) => {
             console.log('on_waiting')
@@ -594,16 +593,22 @@ export function make_plotter_client(tg_instance) {
                 }
                 queue_pos_span.innerText = pos;
                 plot_button.disabled = true;
+                format_select.disabled = true;
+                speed_input.disabled = true;
             }
             else if (msg.type === 'job_done') {
                 queue_pos_span.innerText = '✔️ Done';
                 plot_button.disabled = false;
                 plot_button.disabled = true;
+                format_select.disabled = false;
+                speed_input.disabled = false;
             }
             else if (msg.type === 'job_canceled') {
                 queue_pos_span.innerText = '❌ Canceled';
                 plot_button.disabled = false;
                 cancel_button.disabled = true;
+                format_select.disabled = false;
+                speed_input.disabled = false;
             }
         },
     });
