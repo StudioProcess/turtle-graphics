@@ -417,14 +417,14 @@ export function make_plotter_client(tg_instance) {
                 format,
                 size,
             });
-            console.log(msg);
+            // console.log(msg);
             ac.send(msg);
         } else { // Cancel
             const msg = JSON.stringify({
                 type: 'cancel',
                 client: client_id_span.innerText,
             });
-            console.log(msg);
+            // console.log(msg);
             ac.send(msg);
         }
     };
@@ -538,7 +538,7 @@ export function make_plotter_client(tg_instance) {
         wait_before_reconnect: WAIT_BEFORE_RECONNECT,
         retries: RETRIES,
         on_connecting: (retries) => {
-            console.log('on_connecting')
+            // console.log('on_connecting');
             connect_button.innerText = 'Stop';
             status_span.innerText = `○ Connecting${retries > 0 ? ' (' + retries +')' : ''}...`;
             queue_pos_span.innerText = '–';
@@ -548,14 +548,14 @@ export function make_plotter_client(tg_instance) {
             plot_button.innerText = 'Plot';
         },
         on_waiting: (retries) => {
-            console.log('on_waiting')
+            // console.log('on_waiting');
             status_span.innerText = `○ Waiting${retries > 0 ? ' (' + retries +')' : ''}...`;
             server_input.disabled = true;
             plot_button.disabled = true;
             plot_button.innerText = 'Plot';
         },
         on_connected: (socket) => {
-            console.log('on_connected')
+            // console.log('on_connected');
             connect_button.innerText = 'Disconnect';
             status_span.innerText = '● Connected';
             server_input.disabled = true;
@@ -564,7 +564,7 @@ export function make_plotter_client(tg_instance) {
             plotting = false;
         },
         on_disconnected: () => {
-            console.log('on_disconnected')
+            // console.log('on_disconnected');
             connect_button.innerText = 'Connect';
             status_span.innerText = '○ Disconnected';
             queue_pos_span.innerText = '–';
@@ -575,8 +575,11 @@ export function make_plotter_client(tg_instance) {
         },
         on_message: (e) => {
             const msg = JSON.parse(e.data)
-            console.log('on_message', msg);
-            if (msg.type === 'queue_length') {
+            // console.log('on_message', msg);
+            if (msg.type === 'error') {
+                console.warn(`🖨️ Plotter says: "${msg.msg}"`);
+            }
+            else if (msg.type === 'queue_length') {
                 queue_len_span.innerText = msg.length;
             }
             else if (msg.type === 'queue_position') {
@@ -678,7 +681,7 @@ let _browser_bootstrapped = false;
     if (_browser_bootstrapped) { return; }
     const window = globalThis;
     if (window.tg?.default_turtle) {
-        console.log(`🖨️ → Plotter Module (v${VERSION})`);
+        console.log(`🖨️ Plotter Module (v${VERSION})`);
         
         const plotter = make_plotter_client(window.tg.default_turtle);
         
