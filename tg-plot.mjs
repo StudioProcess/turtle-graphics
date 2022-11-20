@@ -19,7 +19,7 @@ const RETRIES = -1 // -1 for unlimited
 function create_ui() {
     const tmp = document.createElement('template');
     tmp.innerHTML = `<div id="plotter-ui" style="display:none; font:11px system-ui; width:200px; position:fixed; top:0; right:0; padding:8px; background:rgba(255,255,255,0.66)">
-    <div style="font-weight:bold; text-align:center;">Plotter</div>
+    <div style="font-weight:bold; text-align:center; position:relative;">Plotter<span class="close-button" style="display:inline-block; position:absolute; right:0; cursor:pointer;">✕</span></div>
     <input class="server" placeholder="Server" value=""></input><br>
     <button class="connect" style="margin:5px 5px auto auto;">Connect</button><span class="status">○</span><br>
     <hr>
@@ -385,6 +385,7 @@ export function make_plotter_client(tg_instance) {
     const preview_button = div.querySelector('.preview');
     const savesvg_button = div.querySelector('.savesvg');
     const format_select = div.querySelector('.format');
+    const close_button = div.querySelector('.close-button');
     
     client_id_span.innerText = get_localstorage( 'tg-plot:client_id', crypto.randomUUID().slice(0, 5) );
     server_input.value = get_localstorage( 'tg-plot:server_url', SERVER_URL );
@@ -396,6 +397,10 @@ export function make_plotter_client(tg_instance) {
     //     travel_span.innerText = '–';
     //     ink_span.innerText = '–';
     // };
+    
+    close_button.onmousedown = () => {
+        hide_ui();
+    };
     
     plot_button.onmousedown = async () => {
         if (!plotting) { // Plot
@@ -487,6 +492,7 @@ export function make_plotter_client(tg_instance) {
       * @property {function} isrecording - Returns <code>true</code> if lines are being recorded, <code>false</code> otherwise.
       * @property {function} show - Show the plotter UI.
       * @property {function} hide - Hide the plotter UI.
+      * @property {function} isshown - Returns <code>true</code> if the plotter UI is visible, <code>false</code> otherwise.
       * @property {function} lines - (Advanced) Returns an array of all recorded lines so far.
       * @property {function} stats - (Advanced) Returns an object containing statistics for the recorded lines so far.
       */
@@ -522,7 +528,11 @@ export function make_plotter_client(tg_instance) {
         },
         
         hide() {
-            div.style.display = 'none';
+            hide_ui();
+        },
+        
+        isshown() {
+            return div.style.display !== 'none';
         },
         
         lines()  {
@@ -640,6 +650,10 @@ export function make_plotter_client(tg_instance) {
             ac.start(server_input.value); 
         }
         div.style.display = 'block';
+    }
+    
+    function hide_ui() {
+        div.style.display = 'none';
     }
     
     const url = new URL(import.meta.url);
