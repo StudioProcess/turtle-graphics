@@ -63,9 +63,9 @@ Here is an index to all functions, grouped by type:
 * `{@link setheading}`
 * `{@link face}`
 * `{@link setstate}`
+* `{@link reset}`
 * `{@link resetstate}`
 * `{@link resetmatrix}`
-* `{@link reset}`
 
 ### Markings
 
@@ -84,12 +84,12 @@ Here is an index to all functions, grouped by type:
 
 ### State Stacks
 
+* `{@link push}`
 * `{@link pushstate}`
 * `{@link pushmatrix}`
-* `{@link push}`
+* `{@link pop}`
 * `{@link popstate}`
 * `{@link popmatrix}`
-* `{@link pop}`
 
 ### Instance
 

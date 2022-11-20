@@ -62,6 +62,7 @@ export function make_turtle_graphics(...line_fns_) {
      * Create a new turtle instance.
      * 
      * @function newturtle
+     * @returns {Object} A brand new turtle object. Has all turtle functions as properties.
      */
     function newturtle(...new_line_fns) {
         // use same line_fns as the current instance, if none are explicitly provided
@@ -72,9 +73,10 @@ export function make_turtle_graphics(...line_fns_) {
     _add_aliases_deprecated('newturtle', ['maketurtle']);
     
     /**
-     * Get turtle instance itself.
+     * Get the turtle instance itself.
      * 
      * @function self
+     * @returns {Object} A turtle object. Has all turtle functions as properties.
      */
     function self_() {
         return self;
@@ -82,8 +84,11 @@ export function make_turtle_graphics(...line_fns_) {
     
     /**
      * Get a copy of the turtle instance.
+     * <br>
+     * Starts out in the same state as the original turtle, but changes to it don't affect the original one.
      * 
      * @function clone
+     * @returns {Object} An exact clone of the turtle object returned by <code>{@link self}</code>. Has all turtle functions as properties.
      */
     function clone() {
         const newturtle = make_turtle_graphics(...line_fns_); // make new turtle with same line_fns
@@ -239,6 +244,12 @@ export function make_turtle_graphics(...line_fns_) {
      * Translate the coordinate system.
      * 
      * @function translate
+     * @param {number} tx - Amount in pixels to translate in the x-direction Positive numbers move to the right, negative numbers move to the left.
+     * @param {number} ty - Amount in pixels to translate in the y-direction. Positive numbers move down, negative numbers move up.
+     * @see <code>{@link rotate}</code> and <code>{@link scale}</code>, the other transformations.
+     * @see <code>{@link resetmatrix}</code> to reset transformations.
+     * @see <code>{@link pushmatrix}</code> to save transformations.
+     * @see <code>{@link popmatrix}</code> to restore previously saved transformations.
      */
     function translate(tx = 0, ty = 0) {
         // update transformation matrix
@@ -249,6 +260,11 @@ export function make_turtle_graphics(...line_fns_) {
      * Rotate the coordinate system.
      * 
      * @function rotate
+     * @param {number} angle - The angle in degrees to rotate the coordinate system. A positive number rotates clockwise, a negative number counter-clockwise.
+     * @see <code>{@link translate}</code> and <code>{@link scale}</code>, the other transformations.
+     * @see <code>{@link resetmatrix}</code> to reset transformations.
+     * @see <code>{@link pushmatrix}</code> to save transformations.
+     * @see <code>{@link popmatrix}</code> to restore previously saved transformations.
      */
     function rotate(ra = 0) {
         const turtle = _state.turtle;
@@ -263,6 +279,12 @@ export function make_turtle_graphics(...line_fns_) {
      * Scale the coordinate system.
      * 
      * @function scale
+     * @param {number} sx - The scaling factor in x-direction.
+     * @param {number} [sy] - The scaling factor in y-direction. If ommitted, takes the same value as <code>sx</code>.
+     * @see <code>{@link translate}</code> and <code>{@link rotate}</code>, the other transformations.
+     * @see <code>{@link resetmatrix}</code> to reset transformations.
+     * @see <code>{@link pushmatrix}</code> to save transformations.
+     * @see <code>{@link popmatrix}</code> to restore previously saved transformations.
      */
     function scale(sx = 1, sy = undefined) {
         if (sy === undefined) { sy = sx; }
@@ -276,9 +298,12 @@ export function make_turtle_graphics(...line_fns_) {
      *********************************************************/
     
     /**
-     * Push the turtles state onto the stack.
+     * Push the turtle's state onto the stack.
+     * <br>
+     * Saves the current position, heading and pen state.
      * 
      * @function pushstate
+     * @see <code>{@link popstate}</code> to later restore the pushed state.
      */
     function pushstate() {
         _state.turtle_stack.push( Object.assign({}, _state.turtle) ); // push a copy
@@ -287,8 +312,11 @@ export function make_turtle_graphics(...line_fns_) {
     
     /**
      * Restore the last pushed turtle state from the stack.
+     * <br>
+     * Restores position, heading and pen state to what they were when {@link pushstate} was last called.
      * 
      * @function popstate
+     * @see <code>{@link pushstate}</code> to first save the turtle's state.
      */
     function popstate() {
         if (_state.turtle_stack.length > 0) {
@@ -299,8 +327,11 @@ export function make_turtle_graphics(...line_fns_) {
     
     /**
      * Push the current transformation matrix onto the stack.
+     * <br>
+     * The transformation matrix contains all transformations, accumulated through calls to <code>{@link translate}</code>, <code>{@link rotate}</code> and <code>{@link scale}</code>.
      * 
      * @function pushmatrix
+     * @see <code>{@link popmatrix}</code> to later restore the pushed transformation matrix.
      */
     function pushmatrix() {
         _state.matrix_stack.push( mat3.clone(_state.matrix) ); // push a copy
@@ -311,6 +342,7 @@ export function make_turtle_graphics(...line_fns_) {
      * Restore the last pushed transformation matrix from the stack.
      * 
      * @function popmatrix
+     * @see <code>{@link pushmatrix}</code> to first save the transformation matrix.
      */
     function popmatrix() {
         if (_state.matrix_stack.length > 0) {
@@ -323,6 +355,8 @@ export function make_turtle_graphics(...line_fns_) {
      * Push turtle state and transformation matrix onto the stack.
      * 
      * @function push
+     * @see <code>{@link pushstate}</code> to only save the turtle's state.
+     * @see <code>{@link pushmatrix}</code> to only save the transformation matrix.
      */
     function push() {
         pushstate();
@@ -333,6 +367,8 @@ export function make_turtle_graphics(...line_fns_) {
      * Restore the last pushed turtle state and transformation matrix from the stack.
      * 
      * @function pop
+     * @see <code>{@link popstate}</code> to only restore the turtle's state.
+     * @see <code>{@link popmatrix}</code> to only restore the transformation matrix.
      */
     function pop() {
         popstate();
@@ -426,7 +462,7 @@ export function make_turtle_graphics(...line_fns_) {
      * @property {number} x - The x-coordinate in pixels.
      * @property {number} y - The y-coordinate in pixels.
      * @property {number} a - The heading angle in degreed (0–360).
-     * @property {boolean} d - `true` if the pen is down, `false` otherwise.
+     * @property {boolean} d - <code>true</code> if the pen is down, <code>false</code> otherwise.
      * @see {@link state} to get the turtle's state.
      * @see {@link setstate} to set the turtles's state.
      */
@@ -660,12 +696,14 @@ export function make_turtle_graphics(...line_fns_) {
     _add_aliases_deprecated('setstate', ['setturtle']);
     
     /**
-     * Reset turtle's state.
+     * Reset the turtle's state.
      * <br>
-     * Resets the turtle to its original state, at the center (x=0, y=0), facing up (heading 0) with the pen down.
+     * Resets the turtles position, heading and pen position to its original state, at the center (x=0, y=0), facing up (heading 0) with the pen down.
      * This doesn't cause a line to be drawn to the center.
      * 
      * @function resetstate
+     * @see <code>{@link resetmatrix}</code> to reset transformations.
+     * @see <code>{@link reset}</code> to reset everything (both state and transformations).
      */
     function resetstate() {
         _state.turtle = _make_turtle_state(); // turtle state
@@ -675,9 +713,11 @@ export function make_turtle_graphics(...line_fns_) {
     _add_aliases_deprecated('resetstate', ['reset_turtle']);
     
     /**
-     * Reset the transformation matrix.
+     * Reset the turtle's transformation matrix.
      * 
      * @function resetmatrix
+     * @see <code>{@link resetstate}</code> to reset state.
+     * @see <code>{@link reset}</code> to reset everything (both state and transformations).
      */
     function resetmatrix() {
         _state.matrix = mat3.create();   // transformation matrix
@@ -687,9 +727,13 @@ export function make_turtle_graphics(...line_fns_) {
     _add_aliases_deprecated('resetmatrix', ['reset_matrix']);
     
     /**
-     * Reset the turtle's state and transformations.
+     * Completetly reset the turtle to its original state.
+     * <br>
+     * Resets the turtles position (to the center at x=0, y=0), heading (facing up, at heading 0) and pen (down). Also clears all transformations, that might have been applied. After this, the turtle is like new, like it was just created.
      * 
      * @function reset
+     * @see <code>{@link resetstate}</code> to reset state only.
+     * @see <code>{@link resetmatrix}</code> to reset transformation only.
      */
     function reset() {
         resetstate();
@@ -705,11 +749,12 @@ export function make_turtle_graphics(...line_fns_) {
      * Draw the turtle at its current position.
      * 
      * @function show
+     * @param {number} [size=15] Size of the drawn turtle in pixels (height from tip to base).
      */
-    function show() {
+    function show(size = 15) {
         const top_angle = 36;
-        const height = 15;
-        const diamond_size = 1;
+        const height = size;
+        const diamond_size = size / 15;
         const center = 2/3; // 0 (top) .. 1 (bottom) (2/3 = center of gravity)
         
         const base_angle = (180 - top_angle) / 2;
@@ -752,14 +797,13 @@ export function make_turtle_graphics(...line_fns_) {
      * Draw a small + at the turtles current position.
      * 
      * @function mark
+     * @param {number} [size=10] - Size of the mark in pixels.
+     * @param {number} [rotation=0] - Rotation of the mark in degrees (0–90). Set to 45 to draw an ✕.
      */
-    function mark(x, y) {
-        const size = 10;
-        
+    function mark(size = 10, rotation = 0) {
         pushstate();
         penup();
-        if (x !== undefined && y !== undefined) { setxy(x, y); }
-        setheading(0);
+        setheading(rotation);
         
         pushstate();
         back(size/2);
@@ -784,6 +828,8 @@ export function make_turtle_graphics(...line_fns_) {
      * Repeat a function a number of times.
      * 
      * @function repeat
+     * @param {number} n - Number of times to call the function.
+     * @param {function} fn - The function to be called repeatedly. It is called with a single number (0 to n-1) as an argument, containing the count of previous calls.
      */
     function repeat(n, fn) {
         if ( !Number.isInteger(n) ) { 
@@ -820,6 +866,7 @@ export function make_turtle_graphics(...line_fns_) {
      * Add function to be called when a line is drawn by the library.
      * 
      * @function _add_line_fn
+     * @see <code>{@link _rm_line_fn}</code> to remove a function.
      */
     function _add_line_fn(fn) {
         if (typeof fn === 'function') {
@@ -831,6 +878,7 @@ export function make_turtle_graphics(...line_fns_) {
      * Remove a function previously added by {@link _add_line_fn}.
      * 
      * @function _rm_line_fn
+     * @see <code>{@link _add_line_fn}</code> to add a function.
      */
     function _rm_line_fn(fn) {
         const line_fns = _state.line_fns;
