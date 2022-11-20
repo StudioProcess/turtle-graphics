@@ -35,8 +35,8 @@ function create_ui() {
     <tr> <td>Your job:</td> <td><span class="queue_pos">–</span></td> </tr>
     <table>
     <hr>
-    <button class="preview">Preview</button> <button class="savesvg">Save SVG</button><br>
-    <!-- <button class="clear">Clear</button> --> <button class="plot">Plot</button> <button class="cancel">Cancel</button><br>
+    <div style="text-align:center";><button class="preview">Preview</button> <button class="savesvg">Save SVG</button></div>
+    <div style="text-align:center";><!-- <button class="clear">Clear</button> --> <button class="plot" disabled>Plot</button> <button class="cancel" disabled>Cancel</button></div>
     </div> `;
     const div = tmp.content.firstChild;
     document.body.appendChild(div);
@@ -542,15 +542,25 @@ export function make_plotter_client(tg_instance) {
             status_span.innerText = `○ Connecting${retries > 0 ? ' (' + retries +')' : ''}...`;
             queue_pos_span.innerText = '–';
             queue_len_span.innerText = '–';
+            server_input.disabled = true;
+            plot_button.disabled = true;
+            cancel_button.disabled = true;
+            
         },
         on_waiting: (retries) => {
             console.log('on_waiting')
             status_span.innerText = `○ Waiting${retries > 0 ? ' (' + retries +')' : ''}...`;
+            server_input.disabled = true;
+            plot_button.disabled = true;
+            cancel_button.disabled = true;
         },
         on_connected: (socket) => {
             console.log('on_connected')
             connect_button.innerText = 'Disconnect';
             status_span.innerText = '● Connected';
+            server_input.disabled = true;
+            plot_button.disabled = false;
+            cancel_button.disabled = true;
         },
         on_disconnected: () => {
             console.log('on_disconnected')
@@ -558,6 +568,9 @@ export function make_plotter_client(tg_instance) {
             status_span.innerText = '○ Disconnected';
             queue_pos_span.innerText = '–';
             queue_len_span.innerText = '–';
+            server_input.disabled = false;
+            plot_button.disabled = true;
+            cancel_button.disabled = true;
         },
         on_message: (e) => {
             const msg = JSON.parse(e.data)
@@ -567,16 +580,30 @@ export function make_plotter_client(tg_instance) {
             }
             else if (msg.type === 'queue_position') {
                 let pos;
-                if (msg.position === 0) { pos = '🖨️📝 Ready to draw, load paper pen '; }
-                else if (msg.position === -1) { pos = '🖨️ Drawing...'; }
-                else { pos = "⌛ " + msg.position + " before you..."; }
+                if (msg.position === 0) {
+                    pos = '🖨️📝 Ready to draw, load paper and pen! ';
+                    cancel_button.disabled = true;
+                }
+                else if (msg.position === -1) {
+                    pos = '🖨️ Drawing...';
+                    cancel_button.disabled = true;
+                }
+                else { 
+                    pos = "⌛ " + msg.position + " before you...";
+                    cancel_button.disabled = false;
+                }
                 queue_pos_span.innerText = pos;
+                plot_button.disabled = true;
             }
             else if (msg.type === 'job_done') {
                 queue_pos_span.innerText = '✔️ Done';
+                plot_button.disabled = false;
+                plot_button.disabled = true;
             }
             else if (msg.type === 'job_canceled') {
                 queue_pos_span.innerText = '❌ Canceled';
+                plot_button.disabled = false;
+                cancel_button.disabled = true;
             }
         },
     });
