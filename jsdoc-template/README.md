@@ -90,6 +90,10 @@ Here is an index to all functions, grouped by type:
 
 * `{@link repeat}`
 
+### Plotting
+
+* `{@link plotter}`
+
 ### Transformations
 
 * `{@link translate}`
@@ -110,9 +114,3 @@ Here is an index to all functions, grouped by type:
 * `{@link newturtle}`
 * `{@link self}`
 * `{@link clone}`
-
-### Internal
-
-* `{@link _state}`
-* `{@link _add_line_fn}`
-* `{@link _rm_line_fn}`

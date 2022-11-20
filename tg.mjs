@@ -867,7 +867,7 @@ export function make_turtle_graphics(...line_fns_) {
         Internal
      *********************************************************/
     
-    /**
+    /*
      * Get full internal state.
      * 
      * @function _state
@@ -877,7 +877,7 @@ export function make_turtle_graphics(...line_fns_) {
         return _state;
     }
     
-    /**
+    /*
      * Add function to be called when a line is drawn by the library.
      * 
      * @function _add_line_fn
@@ -889,7 +889,7 @@ export function make_turtle_graphics(...line_fns_) {
         }
     }
     
-    /**
+    /*
      * Remove a function previously added by {@link _add_line_fn}.
      * 
      * @function _rm_line_fn
