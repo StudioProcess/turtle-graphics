@@ -465,8 +465,25 @@ export function make_plotter_client(tg_instance) {
         update_stats();
     });
     
+     
+     /**
+      * An object containing a bunch of functions to control plotting your turtle graphics.
+      * <br>
+      * Retrieved with {@link plotter}.
+      * 
+      * @typedef {Object} Plotter
+      * @property {function} plot - Stop recording lines and show to plotter UI.
+      * @property {function} stop - Stop recording lines. Can be used to exclude a part of your drawing from being plotted.
+      * @property {function} record - Start recording lines. Recording is enabled from the start, so this function is only useful if <code>stop</code> was used before.
+      * @property {function} clear - Clear all recorded lines. Doesn't change if recording is enabled or not.
+      * @property {function} isrecording - Returns <code>true</code> if lines are being recorded, <code>false</code> otherwise.
+      * @property {function} show - Show the plotter UI.
+      * @property {function} hide - Hide the plotter UI.
+      * @property {function} lines - (Advanced) Returns an array of all recorded lines so far.
+      * @property {function} stats - (Advanced) Returns an object containing statistics for the recorded lines so far.
+      */
     const public_fns = {
-        reset() {
+        clear() {
             lines = [];
             line_stats = make_line_stats();
             lines_span.innerText = '–';
@@ -479,8 +496,8 @@ export function make_plotter_client(tg_instance) {
             else { recording = false; }
         },
         
-        pause()  {
-            record(false);
+        stop()  {
+            recording = false;
         },
             
         isrecording() {
@@ -488,8 +505,8 @@ export function make_plotter_client(tg_instance) {
         },
         
         plot() {
-            recording = false; // recordplot(false)
-            show_ui();         // showplot()
+            recording = false;
+            show_ui();        
         },
         
         show() {
@@ -499,6 +516,14 @@ export function make_plotter_client(tg_instance) {
         hide() {
             div.style.display = 'none';
         },
+        
+        lines()  {
+            return structuredClone(lines);
+        },
+        
+        stats() {
+            return line_stats.get();
+        }
     };
     
     const ac = autoconnect({
@@ -620,6 +645,12 @@ let _browser_bootstrapped = false;
         }
         
         // put plotter function on tg default intance
+        /**
+          * Get the {@link Plotter} object, containing all the functions to control plotting your turtle graphics.
+          * 
+          * @function plotter
+          * @returns The {@link Plotter} object.
+          */
         const plotter_fn = () => plotter;
         if (window.tg.default_turtle[PLOTTER_FUNCTION_NAME] === undefined) {
             window.tg.default_turtle[PLOTTER_FUNCTION_NAME] = plotter_fn;

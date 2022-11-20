@@ -69,6 +69,11 @@ h4.name::before {
     margin-right:1em;
 }
 
+/* Font for all function and type references */
+a[href^="global.html#"] {
+    font-family: Inconsolata, Consolas, Monaco, 'Andale Mono', monospace;
+}
+
 
 
 html

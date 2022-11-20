@@ -1,7 +1,7 @@
 {
   "source": {
     "includePattern": ".+\\.(m)?js(doc|x)?$",
-    "include": [ "package.json", "./jsdoc-template/README.md" ]
+    "include": [ "package.json", "./jsdoc-template/README.md", "tg-plot.mjs" ]
   },
   "opts": {
     "destination": "./dist/docs/",
