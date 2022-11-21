@@ -1,4 +1,4 @@
-const VERSION = 6;
+const VERSION = 7;
 const GLOBAL_INSTANCE_NAME = 'p';
 const PLOTTER_FUNCTION_NAME = 'plotter';
 
@@ -661,11 +661,13 @@ export function make_plotter_client(tg_instance) {
         div.style.display = 'none';
     }
     
-    const url = new URL(import.meta.url);
-    const do_show = url.searchParams.get('show') !== null;
-    if (do_show) {
-        show_ui();
+    // immediately show UI if "show" query param is set
+    function check_boolean_attr(attr) {
+        return attr !== null && attr !== "0" && attr.toLowerCase() !== 'false' && attr.toLowerCase() !== 'no';
     }
+    const url = new URL(import.meta.url);
+    const do_show = check_boolean_attr( url.searchParams.get('show') );
+    if (do_show) { show_ui(); }
     
     return public_fns;
 }   

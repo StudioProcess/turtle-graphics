@@ -1,7 +1,7 @@
 // TODO: coordinate system orientation
 import { vec2, mat3 } from 'gl-matrix';
 
-const VERSION = 6;
+const VERSION = 7;
 const EPSILON = 1e-10;
 const DEFAULT_FORWARD = 100;
 const DEFAULT_RIGHT = 90;
@@ -1156,8 +1156,13 @@ function auto_init(do_globalize = false) {
             console.log(`🐢 → Global turtle: ${GLOBAL_INSTANCE_NAME}`);
         }
         
+        // Do not gloablize functions if "dontglobalize" queryparam is set
+        function check_boolean_attr(attr) {
+            return attr !== null && attr !== "0" && attr.toLowerCase() !== 'false' && attr.toLowerCase() !== 'no';
+        }
         const url = new URL(import.meta.url);
-        const do_globalize = url.searchParams.get('globalize') !== null;
+        const do_globalize = check_boolean_attr(url.searchParams.get('dontglobalize')) ? false : true;
+        
         auto_init(do_globalize);
         
         _browser_bootstrapped = true;

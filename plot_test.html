@@ -5,24 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tg-plot Test</title>
     <script src="./node_modules/p5/lib/p5.min.js"></script>
-    <script src="./dist/tg.mjs" type="module"></script>
-    <script src="./dist/tg-plot.mjs" type="module"></script>
+    <script src="./dist/tg.mjs?dontglobalize" type="module"></script>
+    <script src="./dist/tg-plot.mjs?show" type="module"></script>
     <script>
         let t1, t2;
         
-        function preload() {
-            
-        }
-        
         function setup() {
             createCanvas(500, 500);
-            // console.log(t);
+            
             noLoop();
             t1 = t.maketurtle();
             t2 = t.maketurtle();
-            // console.log(t1);
-
-            p.show();
+            
+            // Not needed, using "?show" query param:
+            // p.show();
+            // plotter().show();
         }
         
         function draw() {
