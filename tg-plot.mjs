@@ -1,6 +1,7 @@
 const VERSION = 7;
 const GLOBAL_INSTANCE_NAME = 'p';
 const PLOTTER_FUNCTION_NAME = 'plotter';
+const HOTKEYS = [ ['metaKey', 'p'], ['ctrlKey', 'p'] ]; // Hotkeys to open plot menu (Cmd/Ctrl + P)
 
 const TARGET_SIZE = [420, 297]; // A3 Landscape, in mm
 const SIZES = {
@@ -358,6 +359,30 @@ function get_localstorage(key, default_value) {
 
 function set_localstorage(key, value) {
     localStorage.setItem(key, value);
+}
+
+        function checkHotkey(hotkey, e) {
+    const hotkey_mods = hotkey.slice(0, -1); // all execpt last are modifiers
+    hotkey = hotkey.at(-1).toLowerCase(); // last element is the actual key
+    if (e.key !== hotkey) { return false; }
+    
+    let modifiers = { altGraphKey:false, altKey:false, ctrlKey:false, metaKey:false, shiftKey:false };
+    for (let m of hotkey_mods) { modifiers[m] = true; }
+    for (let [m, val] of Object.entries(modifiers)) {
+        if (e[m] !== val) { return false; }
+    }
+    return true;
+}
+
+function checkHotkeys(hotkeys, e) {
+    for (let h of hotkeys) { 
+        if ( checkHotkey(h, e) ) {
+            console.log('hotkey hit', h );
+            return true; 
+
+        } 
+    }
+    return false;
 }
 
 
@@ -727,6 +752,17 @@ let _browser_bootstrapped = false;
         
         // Note: No need to add plotter_fn to global scope.
         // Since it's on the default instance, it will be globalized by it
+        
+        
+        // Add hotkeys
+        window.addEventListener('keydown', (e) => {
+            if ( checkHotkeys(HOTKEYS, e) ) {
+                if (plotter.isshown()) { plotter.hide(); }
+                else { plotter.show(); }
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
     }
     _browser_bootstrapped = true;
 })();
