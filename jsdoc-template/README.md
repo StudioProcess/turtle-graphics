@@ -40,6 +40,8 @@ These scripts need to be included after `p5.js`, so your `index.html` should loo
 
 ## The turtle coordinate system
 
+<img src="./images/2022-11-21_coord_system.png" style="max-width:600px;" />
+
 * The turtle always starts at the origin, with coordinates (0, 0).
     * The origin is in the center of the p5.js canvas. Note that, this is different from p5.js, where the origin is in the top-left corner.
     * The x-axis goes from left to right. Negative values are left of the origin, positive values right (same as p5.js).
