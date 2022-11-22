@@ -1028,7 +1028,9 @@ export function make_turtle_graphics(...line_fns_) {
         show,
         mark,
         // Util
+        type,
         repeat,
+        range,
         // Internal
         _state: _state_,
         _add_line_fn,
