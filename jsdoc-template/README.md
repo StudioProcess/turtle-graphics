@@ -88,7 +88,9 @@ Here is an index to all functions, grouped by type:
 
 ### Util
 
+* `{@link type}`
 * `{@link repeat}`
+* `{@link range}`
 
 ### Plotting
 

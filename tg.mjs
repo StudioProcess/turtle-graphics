@@ -843,9 +843,11 @@ export function make_turtle_graphics(...line_fns_) {
      * Repeat a function a number of times.
      * 
      * @function repeat
-     * @param {number} n - Number of times to call the function.
+     * @param {number} n - Number of times to call the function. Needs to be greater than 0, or no calls will happen.
      * @param {function} fn - The function to be called repeatedly. It is called with a single number (0 to n-1) as an argument, containing the count of previous calls.
+     * @returns {Array|undefined} (Advanced) An array of the return values of the individual calls to <code>fn</code>, or <code>undefined</code> if none of the function calls returns anything.
      */
+     // TODO: test return value
     function repeat(n, fn) {
         if ( !Number.isInteger(n) ) { 
             console.warn('repeat: number is invalid');
@@ -857,9 +859,83 @@ export function make_turtle_graphics(...line_fns_) {
             return;
         }
         
+        let results = [];
+        let got_result = false;
+        
         for (let i=0; i<n; i++) {
-            fn(i);
+            const result = fn(i);
+            if (result !== undefined) { got_result = true; }
+            results.push(result);
         }
+        
+        if (got_result) { return results; }
+        return undefined;
+    }
+    
+    /**
+     * Get a sequence of numbers for use in a [<code>for...of</code>]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of} loop.
+     * This function can be called in two different ways:<br>
+     * <br>
+     * <code>range(stop)</code><br>
+     * Produces a sequence starting at 0, up until but not including <code>stop</code>, with </code>step</code> 1.<br>
+     * <br>
+     * <code>range(start, stop, step = 1)</code><br>
+     * Produces a sequence starting at <code>start</code>, up until but not including <code>stop</code>, with an optional <code>step</code> (default is 1).
+     * 
+     * @function range
+     * @param {number} start - Start value, if <code>range</code> is called with two or three arguments, or stop value if called with one arguement only.
+     * @param {number} [stop] - Stop value, if <code>range</code> is called with two or three arguments, ignored otherwise.
+     * @param {number} [step=1] - Step value. Can only be used if <code>range</code> is called with three arguments.
+     * @returns {Iterable} results - Iterable object that returns the sequence of numbers. Can be used with [<code>for...of</code>]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of} and (advanced usage) with the [spread (<code>...</code>) syntax]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax}.
+     */
+     // TODO: test
+    function range(start_, stop_=undefined, step=1) {
+        const start = (stop_ === undefined || stop_ == null) ? 0 : start_;
+        const stop = stop_ ?? start;
+        let i = start;
+        return {
+            * [Symbol.iterator]() {
+                if (step > 0) {
+                    while (i < stop) {
+                        yield i;
+                        i += step;
+                    }
+                } else {
+                    while (i > stop) {
+                        yield i;
+                        i += step;
+                    }
+                }
+            },
+            array() {
+                return Array.from(this);
+                // return [...this];
+            },
+        };
+    }
+    
+    /**
+     * Determine the type of any value.<br>
+     * <br>
+     * Returns one of the following strings:<br>
+     * – <code>"number"</code> if the value is any number.<br>
+     * – <code>"string"</code> if the value is a string.<br>
+     * – <code>"boolean"</code> if the value is <code>true</code> or <code>false</code>.<br>
+     * – <code>"function"</code> if the value is a function.<br>
+     * – <code>"array"</code> if the value is an array.<br>
+     * – <code>"object"</code> if the value is any other object.<br>
+     * – <code>"undefined"</code> if the value is <code>undefined</code>.<br>
+     * – <code>"null"</code> if the value is <code>null</code>.<br>
+     * 
+     * @function type
+     * @param {any} value - The value you want to get the type of, can be anything.
+     * @returns {string} - A string describing the type of <code>value</code>, see above.
+     */
+     // TODO: test
+    function type(value) {
+        if (value === null) { return 'null'; }
+        if (Array.isArray(value)) { return 'array'; }
+        return typeof value;
     }
     
     
