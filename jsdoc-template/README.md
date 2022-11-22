@@ -43,15 +43,15 @@ These scripts need to be included after `p5.js`, so your `index.html` should loo
 <img src="./images/2022-11-21_coord_system.png" style="max-width:600px;" />
 
 * The turtle always starts at the origin, with coordinates (0, 0).
-    * The origin is in the center of the p5.js canvas. Note that, this is different from p5.js, where the origin is in the top-left corner.
-    * The x-axis goes from left to right. Negative values are left of the origin, positive values right (same as p5.js).
-    * The y-axis goes from top to bottom. Negative values are above the origin, positive values below (same as p5.js).
-* The turtle always starts with heading 0, which is up (or 'north').
-    * The heading is measured in degrees, starting at the top and moving clockwise.
-    * A heading of 90 is right (or 'east').
-    * A heading of 180 is down (or 'south').
-    * A heading of 270 is left (or 'west').
-    * Note that negative values can also be used, these are measured counter-clockwise. For example: -90 is left, -180 is down, -270 is right.
+    * The **origin** is in the **center** of the p5.js canvas. This is different from p5.js, where the origin is in the top-left corner.
+    * The x-axis goes from left to right. Negative values are left of the origin, positive values right, same as p5.js.
+    * The y-axis goes from top to bottom. Negative values are **above** the origin, positive values **below**, same as p5.js.
+* The turtle always starts with **heading 0**, which is **up** (or “north”).
+    * The heading is measured in degrees, starting at the top and moving **clockwise**.
+    * A heading of 90 is right (or “east”).
+    * A heading of 180 is down (or “south”).
+    * A heading of 270 is left (or “west”).
+    * **Negative values** can also be used, these are measured **counter-clockwise**. For example: -90 is left, -180 is down, -270 is right.
     
 
 <span id="functions-overview" />
@@ -62,71 +62,71 @@ Here is an index to all functions, grouped by type:
 
 ### Basic
 
-* `{@link forward}`
-* `{@link back}`
-* `{@link left}`
-* `{@link right}`
-* `{@link penup}`
-* `{@link pendown}`
+* `{@link forward}` — Move the turtle forward
+* `{@link back}` — Move the turtle back
+* `{@link left}` — Turn turtle to the left
+* `{@link right}` — Turn turtle to the right
+* `{@link penup}` — Raise the pen
+* `{@link pendown}` — Lower the pen
 
 ### Get state
 
-* `{@link xy}`
-* `{@link x}`
-* `{@link y}`
-* `{@link heading}`
-* `{@link isdown}`
-* `{@link isup}`
-* `{@link state}`
+* `{@link xy}` — Get the turtle's position
+* `{@link x}` — Get the turtle's x-coordinate
+* `{@link y}` — Get the turtle's y-coordinate
+* `{@link heading}` — Get the turtle's heading
+* `{@link isdown}` — Get whether the pen is currently down
+* `{@link isup}` — Get whether the pen is currently up
+* `{@link state}` — Get the turtle's current position, heading angle and pen position as an object
 
 ### Get relative state
 
-* `{@link bearing}`
-* `{@link distance}`
+* `{@link bearing}` — Get the bearing from the turtle to a given point
+* `{@link distance}` — Get the distance from the turtle to a given point
 
 ### Set state
 
-* `{@link setxy}`
-* `{@link jumpxy}`
-* `{@link setheading}`
-* `{@link face}`
-* `{@link setstate}`
-* `{@link reset}`
-* `{@link resetstate}`
-* `{@link resetmatrix}`
+* `{@link setxy}` — Set the turtle's position
+* `{@link jumpxy}` — Set the turtle's position, without drawing to the new position
+* `{@link setheading}` — Set the turtle's heading
+* `{@link face}` — Turn the turtle to face a given point
+* `{@link setstate}` — Set the turtle's position, heading angle and/or pen state
+* `{@link reset}` — Completetly reset the turtle to its original state
+* `{@link resetstate}` — Reset the turtle's state
+* `{@link resetmatrix}` — Reset the turtle's transformation matrix
 
 ### Markings
 
-* `{@link show}`
-* `{@link mark}`
+* `{@link show}` — Draw the turtle at its current position
+* `{@link mark}` — Draw a small + at the turtle's current position
 
-### Util
+### Utilities
 
-* `{@link type}`
-* `{@link repeat}`
-* `{@link range}`
+* `{@link type}` — Determine the type of any value
+* `{@link repeat}` — Repeat a function a number of times
+* `{@link range}` — Get a sequence of numbers for use in a [<code>for...of</code>]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of} loop
 
 ### Plotting
 
-* `{@link plotter}`
+* `{@link plotter}` — Get the {@link Plotter} object, containing all the functions to control plotting your turtle graphics
 
 ### Transformations
 
-* `{@link translate}`
-* `{@link rotate}`
-* `{@link scale}`
+* `{@link translate}` — Translate the coordinate system
+* `{@link rotate}` — Rotate the coordinate system
+* `{@link scale}` — Scale the coordinate system
 
 ### State Stacks
 
-* `{@link push}`
-* `{@link pushstate}`
-* `{@link pushmatrix}`
-* `{@link pop}`
-* `{@link popstate}`
-* `{@link popmatrix}`
+* `{@link push}` — Push the turtle's state and transformation matrix onto the stack
+* `{@link pushstate}` — Push the turtle's state onto the stack
+* `{@link pushmatrix}` — Push the current transformation matrix onto the stack
+* `{@link pop}` — Restore the last pushed turtle state and transformation matrix from the stack
+* `{@link popstate}` — Restore the last pushed turtle state from the stack
+* `{@link popmatrix}` — Restore the last pushed transformation matrix from the stack
 
-### Instance
+### Turtle Objects
 
-* `{@link newturtle}`
-* `{@link self}`
-* `{@link clone}`
+* `{@link newturtle}` — Create a new turtle object
+* `{@link self}` — Get the turtle object itself
+* `{@link clone}` — Get a copy of the turtle object

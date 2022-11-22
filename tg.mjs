@@ -71,7 +71,7 @@ export function make_turtle_graphics(...line_fns_) {
     }
     
     /**
-     * Create a new turtle instance.
+     * Create a new turtle object.
      * 
      * @function newturtle
      * @returns {Object} A brand new turtle object. Has all turtle functions as properties.
@@ -87,7 +87,7 @@ export function make_turtle_graphics(...line_fns_) {
     _add_aliases_deprecated('newturtle', ['maketurtle']);
     
     /**
-     * Get the turtle instance itself.
+     * Get the turtle object itself.
      * 
      * @function self
      * @returns {Object} A turtle object. Has all turtle functions as properties.
@@ -97,7 +97,7 @@ export function make_turtle_graphics(...line_fns_) {
     }
     
     /**
-     * Get a copy of the turtle instance.
+     * Get a copy of the turtle object.
      * <br>
      * Starts out in the same state as the original turtle, but changes to it don't affect the original one.
      * 
@@ -367,7 +367,7 @@ export function make_turtle_graphics(...line_fns_) {
     _add_aliases_deprecated('popmatrix', ['pop_matrix']);
     
     /**
-     * Push turtle state and transformation matrix onto the stack.
+     * Push the turtle's state and transformation matrix onto the stack.
      * 
      * @function push
      * @see <code>{@link pushstate}</code> to only save the turtle's state.
@@ -483,7 +483,7 @@ export function make_turtle_graphics(...line_fns_) {
      */
      
     /**
-     * Get the turtle's current position, heading angle and pen position.
+     * Get the turtle's current position, heading angle and pen position as an object.
      * 
      * @function state
      * @returns {State} A {@link State} object containing <code>x</code> (the x-coordinate), <code>y</code> (the y-coordinate), <code>a</code> (the heading angle) and <code>d</code> (the pen down state).
@@ -538,7 +538,7 @@ export function make_turtle_graphics(...line_fns_) {
     /**
      * Get the bearing from the turtle to a given point.
      * <br>
-     * The bearing is the angle from the turtle's tip to the given point.
+     * The bearing is the angle from the turtle's heading direction to the given point.
      * In other words, the bearing is the angle the turtle needs to turn <code>{@link right}</code> in order to face the given point.
      * 
      * @function bearing
@@ -809,7 +809,7 @@ export function make_turtle_graphics(...line_fns_) {
     _add_aliases_deprecated('show', ['turtle']);
     
     /**
-     * Draw a small + at the turtles current position.
+     * Draw a small + at the turtle's current position.
      * 
      * @function mark
      * @param {number} [size=10] - Size of the mark in pixels.
