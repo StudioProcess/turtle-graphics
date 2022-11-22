@@ -1,3 +1,11 @@
+## Contents
+
+* [How to set up](#how-to-set-up)
+* [The turtle coordinate system](#the-turtle-coordinate-system)
+* [Functions overview](#functions-overview)
+
+<span id="how-to-set-up" />
+
 ## How to set up
 
 Include the following script tags in the `<head>` section of your `index.html`:
@@ -28,6 +36,8 @@ These scripts need to be included after `p5.js`, so your `index.html` should loo
 
 ```
 
+<span id="the-turtle-coordinate-system" />
+
 ## The turtle coordinate system
 
 * The turtle always starts at the origin, with coordinates (0, 0).
@@ -42,7 +52,9 @@ These scripts need to be included after `p5.js`, so your `index.html` should loo
     * Note that negative values can also be used, these are measured counter-clockwise. For example: -90 is left, -180 is down, -270 is right.
     
 
-## Functions by type
+<span id="functions-overview" />
+
+## Functions overview
 
 Here is an index to all functions, grouped by type:
 
