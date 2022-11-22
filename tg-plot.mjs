@@ -1,7 +1,7 @@
-const VERSION = 7;
+const VERSION = 8;
 const GLOBAL_INSTANCE_NAME = 'p';
 const PLOTTER_FUNCTION_NAME = 'plotter';
-const HOTKEYS = [ ['metaKey', 'p'], ['ctrlKey', 'p'] ]; // Hotkeys to open plot menu (Cmd/Ctrl + P)
+const HOTKEYS = [ ['metaKey', 'altKey', 'KeyP'], ['ctrlKey', 'altKey', 'KeyP'] ]; // Hotkeys to open plot menu (Cmd/Ctrl + Alt + P)
 
 const TARGET_SIZE = [420, 297]; // A3 Landscape, in mm
 const SIZES = {
@@ -361,10 +361,10 @@ function set_localstorage(key, value) {
     localStorage.setItem(key, value);
 }
 
-        function checkHotkey(hotkey, e) {
+function checkHotkey(hotkey, e) {
     const hotkey_mods = hotkey.slice(0, -1); // all execpt last are modifiers
-    hotkey = hotkey.at(-1).toLowerCase(); // last element is the actual key
-    if (e.key !== hotkey) { return false; }
+    hotkey = hotkey.at(-1); // last element is the actual key
+    if (e.code !== hotkey) { return false; } // comparing to event.code i.e. "KeyP"
     
     let modifiers = { altGraphKey:false, altKey:false, ctrlKey:false, metaKey:false, shiftKey:false };
     for (let m of hotkey_mods) { modifiers[m] = true; }
@@ -375,11 +375,9 @@ function set_localstorage(key, value) {
 }
 
 function checkHotkeys(hotkeys, e) {
-    for (let h of hotkeys) { 
+    for (let h of hotkeys) {
         if ( checkHotkey(h, e) ) {
-            console.log('hotkey hit', h );
-            return true; 
-
+            return true;
         } 
     }
     return false;
