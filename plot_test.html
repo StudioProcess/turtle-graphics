@@ -14,26 +14,47 @@
             createCanvas(500, 500);
             
             noLoop();
-            t1 = t.maketurtle();
-            t2 = t.maketurtle();
+            t1 = t.newturtle();
+            t2 = t.newturtle();
             
             // Not needed, using "?show" query param:
             // p.show();
-            // plotter().show();
+            // t.plotter().show();
         }
         
         function draw() {
             background(220);
             
-            t1.forward(100);
-            t1.turtle();
-            t1.jumpxy(100, 100);
-            t1.forward(25);
-            t1.turtle();
+            console.log('plotter shown (1)', t.plotter().isshown());
+            t.plotter().hide();
+            console.log('plotter shown (2)', t.plotter().isshown());
+            t.plotter().show();
+            console.log('plotter shown (3)', t.plotter().isshown());
             
-            t2.right(90);
-            t2.forward(100);
-            t2.turtle();
+            // + mark
+            t.jumpxy(0, -200);
+            t.mark();
+            t.reset();
+            t.plotter().clear();  // only plot after this line
+            console.log('plotter recording (1)', t.plotter().isrecording());
+            
+            t1.forward(100);
+            t1.show();
+            t1.reset();
+            t1.right(90);
+            t1.forward(100);
+            t1.show();
+            t.plotter().stop(); // only plot before this line
+            console.log('plotter recording (2)', t.plotter().isrecording());
+            
+            // x mark
+            t.mark(undefined, 45); // place a mark in the middle
+            t.plotter().record(); // now record again
+            console.log('plotter recording (3)', t.plotter().isrecording());
+            
+            t2.jumpxy(100, 100);
+            t2.forward(25);
+            t2.show();
         }
         
     </script>
