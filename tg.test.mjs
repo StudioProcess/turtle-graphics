@@ -461,6 +461,12 @@ tap.test('repeat', async t => {
     t.match(res, [undefined, undefined, true], 'partial return');
     res = g.repeat(3, () => undefined);
     t.equal(res, undefined, 'explicit undefined');
+    // test breaking out
+    res = g.repeat(10, (i) => {
+        if (i === 3) { g.breakout(); }
+        return i;
+    });
+    t.match(res, [0, 1, 2]);
 });
 
 tap.test('xy', async t => {
@@ -906,4 +912,30 @@ tap.test('range', async t => {
     // with negative step
     t.match(Array.from(g.range(5, 0, -1)), [5,4,3,2,1], 'negative step (1)');
     t.match(Array.from(g.range(10, 5, -2)), [10, 8, 6], 'negative step (2)');
+});
+
+tap.test('foreach', async t => {
+    let g = tg.make_turtle_graphics();
+    let calls = [];
+    function fn(...args) { calls.push(args); }
+    
+    let res = g.foreach( ['a','b','c'], fn );
+    t.equal(res, undefined);
+    t.equal(calls.length, 3);
+    t.match(calls, [ ['a',0,['a','b','c']], ['b',1,['a','b','c']], ['c',2,['a','b','c']] ] );
+    
+    // test breaking
+    calls = [];
+    g.foreach( [0,1,2], function(el, i) {
+        if (i === 2) { g.breakout(); }
+        calls.push([el, i]);
+    });
+    t.equal(calls.length, 2);
+    t.match(calls, [[0,0], [1,1]] );
+    
+    // test return value
+    res = g.foreach( [1,2,3], function(el, i) {
+        return [el, i];
+    });
+    t.match(res, [ [1,0], [2,1], [3,2] ]);
 });

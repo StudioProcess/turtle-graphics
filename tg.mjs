@@ -860,7 +860,7 @@ export function make_turtle_graphics(...line_fns_) {
      *********************************************************/
     
     function breakout() { 
-        throw 'BREAK_LOOP';
+        throw 'BREAKOUT';
     }
     
     /**
@@ -890,7 +890,7 @@ export function make_turtle_graphics(...line_fns_) {
             try {
                 result = fn(i);
             } catch (e) {
-                if (e === 'BREAK_LOOP') {
+                if (e === 'BREAKOUT') {
                     break; // break out of loop
                 } else {
                     throw e;
@@ -904,14 +904,48 @@ export function make_turtle_graphics(...line_fns_) {
         return undefined;
     }
     
-    // forof
+    function _is_iterable(x) {
+        if (x === null || x === undefined) { return false; }
+        return typeof x[Symbol.iterator] === 'function';
+    }
+    
+    //
     function foreach(x, fn) {
+        // const iterable = _is_iterable(x);
+        // if (! (iterable || type(x) === 'object')) {
+            if (! _is_iterable(x) ) {
+            console.warn('foreach: you need to provide in iterable');
+            return;
+        }
+        
         if (typeof fn !== 'function') {
             console.warn('foreach: function is invalid');
             return;
         }
         
+        let results = [];
+        let got_result = false;
         
+        let idx = 0;
+        // for (let el of (iterable ? x : Object.entries(x))) {
+        for (let el of x) {
+            let result;
+            try {
+                result = fn(el, idx, x); // call with the current element the index and the full object
+            } catch (e) {
+                if (e === 'BREAKOUT') {
+                    break; // break out of loop
+                } else {
+                    throw e;
+                }
+            }
+            if (result !== undefined) { got_result = true; }
+            results.push(result);
+            idx += 1;
+        }
+        
+        if (got_result) { return results; }
+        return undefined;
     }
     
     // forin
@@ -1075,6 +1109,8 @@ export function make_turtle_graphics(...line_fns_) {
         // Util
         type,
         repeat,
+        foreach,
+        breakout,
         range,
         // Internal
         _state: _state_,
