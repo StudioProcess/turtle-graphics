@@ -9,6 +9,7 @@ const GLOBAL_LIB_NAME = 'tg';
 const GLOBAL_INSTANCE_NAME = 't';
 const GLOBAL_OVERWRITTEN_NAME = 'p5';
 const DONT_GLOBALIZE = [ 'VERSION' ];
+const DONT_WARN_GLOBALIZING = [ 'self' ];
 
 
 // Constructor function
@@ -1080,7 +1081,7 @@ export function globalize(tg_instance = default_instance, global_object = global
                 writable: true,
                 value: val
             });
-            if (saved_value !== undefined) {
+            if (saved_value !== undefined && ! DONT_WARN_GLOBALIZING.includes(key) ) {
                 overwritten[key] = saved_value;
             }
         } catch {
