@@ -1,7 +1,7 @@
 // TODO: coordinate system orientation
 import { vec2, mat3 } from 'gl-matrix';
 
-const VERSION = 8;
+const VERSION = 9;
 const EPSILON = 1e-10;
 const DEFAULT_FORWARD = 100;
 const DEFAULT_RIGHT = 90;
