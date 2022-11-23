@@ -9,7 +9,6 @@ import * as tg from './tg.mjs';
 // * _rm_line_fn
 // * repeat: return value
 // * range
-// * type
 
 // Copy everythig from g._state() except line_fns
 function copy_state(g) {
@@ -430,7 +429,7 @@ tap.test('repeat', async t => {
     t.same(calls, args, 'calls with iteration index');
 });
 
-tap.only('xy', async t => {
+tap.test('xy', async t => {
     let g = tg.make_turtle_graphics();
     t.match(g.xy(), {x:0, y:0});
     g.forward(100);
@@ -824,4 +823,24 @@ tap.test('distance', async t => {
     t.equal(g.distance(50, 100), 50, 'translate test 1');
     t.equal(g.distance(150, 100), 150, 'translate test 2');
     t.equal(g.distance(0, 100), 0, 'translate test 3');
+});
+
+tap.test('type', async t => {
+    let g = tg.make_turtle_graphics();
+    t.equal(g.type(10), 'number');
+    t.equal(g.type(NaN), 'number');
+    t.equal(g.type(Infinity), 'number');
+    t.equal(g.type('10'), 'string');
+    t.equal(g.type(true), 'boolean');
+    t.equal(g.type(false), 'boolean');
+    t.equal(g.type(1 === 1), 'boolean');
+    t.equal(g.type(1 !== 1), 'boolean');
+    t.equal(g.type(function() {}), 'function');
+    t.equal(g.type(() => {}), 'function');
+    t.equal(g.type([]), 'array');
+    t.equal(g.type({}), 'object');
+    t.equal(g.type(globalThis), 'object');
+    t.equal(g.type(undefined), 'undefined');
+    t.equal(g.type(), 'undefined');
+    t.equal(g.type(null), 'null');
 });
