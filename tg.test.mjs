@@ -7,7 +7,6 @@ import * as tg from './tg.mjs';
 // TODO:
 // * _add_line_fn
 // * _rm_line_fn
-// * repeat: return value
 // * range
 
 // Copy everythig from g._state() except line_fns
@@ -427,6 +426,15 @@ tap.test('repeat', async t => {
     t.equal(calls.length, 8, 'calls 8 times');
     const args = [...Array(8).keys()].map( (e, i) => { return [i]; } );
     t.same(calls, args, 'calls with iteration index');
+    // Test return value
+    let res = g.repeat(3, () => {});
+    t.equal(res, undefined, 'return value when fn doesn\'t return anything');
+    res = g.repeat(3, i => i);
+    t.match(res, [0,1,2], 'return interation index');
+    res = g.repeat(3, i => i === 2 ? true : undefined);
+    t.match(res, [undefined, undefined, true], 'partial return');
+    res = g.repeat(3, () => undefined);
+    t.equal(res, undefined, 'explicit undefined');
 });
 
 tap.test('xy', async t => {
