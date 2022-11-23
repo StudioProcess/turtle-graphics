@@ -858,9 +858,14 @@ export function make_turtle_graphics(...line_fns_) {
     /*********************************************************
         Util
      *********************************************************/
-    
-    function breakout() { 
-        throw 'BREAKOUT';
+    // TODO: docs
+    let _loop_count = 0; // count of loop callbacks (from repeat or foreach) that are currently in progress
+    function breakout() {
+        if (_loop_count > 0) {
+            throw 'BREAKOUT';
+        } else {
+            console.warn('Looks like you used `breakout` outside of a loop. breakout can only be used inside a `repeat` or `foreach` function.');
+        }
     }
     
     /**
@@ -887,15 +892,18 @@ export function make_turtle_graphics(...line_fns_) {
         
         for (let i=0; i<n; i++) {
             let result;
+            _loop_count += 1; // enter loop
             try {
                 result = fn(i);
             } catch (e) {
+                _loop_count -= 1; // exit loop (break or exception)
                 if (e === 'BREAKOUT') {
                     break; // break out of loop
                 } else {
                     throw e;
                 }
             }
+            _loop_count -= 1; // exit loop (normally)
             if (result !== undefined) { got_result = true; }
             results.push(result);
         }
@@ -909,12 +917,12 @@ export function make_turtle_graphics(...line_fns_) {
         return typeof x[Symbol.iterator] === 'function';
     }
     
-    //
+    // TODO: docs
     function foreach(x, fn) {
         // const iterable = _is_iterable(x);
         // if (! (iterable || type(x) === 'object')) {
-            if (! _is_iterable(x) ) {
-            console.warn('foreach: you need to provide in iterable');
+        if (! _is_iterable(x) ) {
+            console.warn('foreach: you need to provide an iterable');
             return;
         }
         
@@ -930,15 +938,18 @@ export function make_turtle_graphics(...line_fns_) {
         // for (let el of (iterable ? x : Object.entries(x))) {
         for (let el of x) {
             let result;
+            _loop_count += 1; // enter loop
             try {
                 result = fn(el, idx, x); // call with the current element the index and the full object
             } catch (e) {
+                _loop_count -= 1; // exit loop (break or exception)
                 if (e === 'BREAKOUT') {
                     break; // break out of loop
                 } else {
                     throw e;
                 }
             }
+            _loop_count -= 1; // exit loop (normally)
             if (result !== undefined) { got_result = true; }
             results.push(result);
             idx += 1;
