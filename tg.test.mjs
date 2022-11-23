@@ -852,3 +852,32 @@ tap.test('type', async t => {
     t.equal(g.type(), 'undefined');
     t.equal(g.type(null), 'null');
 });
+
+tap.test('range', async t => {
+    let g = tg.make_turtle_graphics();
+    
+    t.match(g.range(3).array(), [0, 1, 2], 'array() method');
+    t.match([...g.range(3)], [0, 1, 2], 'spread into array');
+    
+    let count = 0;
+    for (let i of g.range(10)) {
+        t.match(i, count, 'for..of ' + count);
+        count += 1;
+    }
+    
+    let r = g.range(3);
+    t.match(r.array(), [0,1,2], 'reuse range object 0');
+    t.match(r.array(), [0,1,2], 'reuse range object 1');
+    t.match([...r], [0,1,2], 'reuse range object 2');
+    t.match([...r], [0,1,2], 'reuse range object 3');
+    
+    // with start
+    t.match(Array.from(g.range(5, 10)), [5, 6, 7, 8, 9], 'start and stop');
+    
+    // with step
+    t.match(Array.from(g.range(0, 10, 2)), [0, 2, 4, 6, 8], 'start, stop and step');
+    
+    // with negative step
+    t.match(Array.from(g.range(5, 0, -1)), [5,4,3,2,1], 'negative step (1)');
+    t.match(Array.from(g.range(10, 5, -2)), [10, 8, 6], 'negative step (2)');
+});

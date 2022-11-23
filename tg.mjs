@@ -890,12 +890,12 @@ export function make_turtle_graphics(...line_fns_) {
      * @returns {Iterable} results - Iterable object that returns the sequence of numbers. Can be used with [<code>for...of</code>]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of} and (advanced usage) with the [spread (<code>...</code>) syntax]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax}.
      */
      // TODO: test
-    function range(start_, stop_=undefined, step=1) {
+    function range(start_, stop_ = undefined, step = 1) {
         const start = (stop_ === undefined || stop_ == null) ? 0 : start_;
-        const stop = stop_ ?? start;
-        let i = start;
+        const stop = (stop_ === undefined || stop_ == null) ? start_ : stop_;
         return {
             * [Symbol.iterator]() {
+                let i = start; // always use a new counter for each iterator
                 if (step > 0) {
                     while (i < stop) {
                         yield i;
