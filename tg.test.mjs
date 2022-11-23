@@ -4,9 +4,6 @@ import * as tg from './tg.mjs';
 // console.log(tap);
 // console.log(tg);
 
-// TODO:
-// * _rm_line_fn
-
 // Copy everythig from g._state() except line_fns
 function copy_state(g) {
     return JSON.parse( JSON.stringify(g._state(), (k, v) => k !== 'line_fns' ? v : undefined) );
@@ -291,6 +288,26 @@ tap.test('_add_line_fn', async t => {
     t.equal(calls2.length, 1, '2nd line_fn is called');
     t.match(calls.pop(), calls2.pop(), 'both line_fns called with same args');  
 });
+
+tap.test('_rm_line_fn', async t => {
+    const g = tg.make_turtle_graphics();
+    let calls = [];
+    function line_fn(...args) { calls.push(args); }
+    let calls2 = [];
+    function line_fn2(...args) { calls2.push(args); }
+    
+    g._add_line_fn(line_fn);
+    g._add_line_fn(line_fn2);
+    t.ok( g._state().line_fns.includes(line_fn), 'line_fn was added to internal list' );
+    t.ok( g._state().line_fns.includes(line_fn2), 'line_fn2 was added to internal list' );
+    g._rm_line_fn(line_fn);
+    t.notOk( g._state().line_fns.includes(line_fn), 'line_fn not in internal list anymore' );
+    t.ok( g._state().line_fns.includes(line_fn2), 'line_fn2 still in internal list' );
+    g.forward(50);
+    t.equal(calls.length, 0, 'no calls to removed line_fn');
+    t.equal(calls2.length, 1, 'call to remaining line_fn2');
+});
+
 
 tap.test('reset', async t => {
     const g = tg.make_turtle_graphics();
