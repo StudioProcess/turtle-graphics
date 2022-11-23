@@ -4,9 +4,12 @@ import * as tg from './tg.mjs';
 // console.log(tap);
 // console.log(tg);
 
-// TODO: 
-// * add_line_fn
-// * rm_line_fn
+// TODO:
+// * _add_line_fn
+// * _rm_line_fn
+// * repeat: return value
+// * range
+// * type
 
 // Copy everythig from g._state() except line_fns
 function copy_state(g) {
@@ -425,6 +428,22 @@ tap.test('repeat', async t => {
     t.equal(calls.length, 8, 'calls 8 times');
     const args = [...Array(8).keys()].map( (e, i) => { return [i]; } );
     t.same(calls, args, 'calls with iteration index');
+});
+
+tap.only('xy', async t => {
+    let g = tg.make_turtle_graphics();
+    t.match(g.xy(), {x:0, y:0});
+    g.forward(100);
+    t.match(g.xy(), {x:0, y:-100});
+    g.right(90);
+    t.match(g.xy(), {x:0, y:-100});
+    g.forward(50);
+    t.match(g.xy(), {x:50, y:-100});
+    g.setxy(123, 456);
+    t.match(g.xy(), {x:123, y:456});
+    g.jumpxy(789, 12);
+    t.match(g.xy(), {x:789, y:12});    
+    t.match(g.xy(), {x: g._state().turtle.x, y: g._state().turtle.y});
 });
 
 tap.test('setxy', async t => {
