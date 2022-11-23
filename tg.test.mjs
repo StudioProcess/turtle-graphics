@@ -25,7 +25,10 @@ tap.test('globalize', async t => {
     const obj = {};
     tg.globalize(g, obj);
     delete g.VERSION; // VERSION is excepted from globalize
-    t.match(obj, g, 'global object has properties now');
+    for (let key of Object.keys(g)) { // System properties like _globalized are excepted as well
+        if ( key.startsWith('_') ) { delete g[key]; }
+    }
+    t.match(obj, g, 'global object has turtle properties now');
 });
 
 tap.test('_state', async t => {
