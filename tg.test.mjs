@@ -5,9 +5,7 @@ import * as tg from './tg.mjs';
 // console.log(tg);
 
 // TODO:
-// * _add_line_fn
 // * _rm_line_fn
-// * range
 
 // Copy everythig from g._state() except line_fns
 function copy_state(g) {
@@ -282,6 +280,16 @@ tap.test('_add_line_fn', async t => {
     g.back(50);
     t.equal(calls.length, 1, 'back calls line_fn once');
     t.match(calls.pop(), [0,-50,-50,-50], 'correct call');
+    
+    // add another line_fn
+    let calls2 = [];
+    function line_fn2(...args) { calls2.push(args); }
+    g._add_line_fn(line_fn2);
+    g.right(45);
+    g.forward(100);
+    t.equal(calls.length, 1, '1st line_fn is called');
+    t.equal(calls2.length, 1, '2nd line_fn is called');
+    t.match(calls.pop(), calls2.pop(), 'both line_fns called with same args');  
 });
 
 tap.test('reset', async t => {
