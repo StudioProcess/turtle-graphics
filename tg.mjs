@@ -859,6 +859,10 @@ export function make_turtle_graphics(...line_fns_) {
         Util
      *********************************************************/
     
+    function breakout() { 
+        throw 'BREAK_LOOP';
+    }
+    
     /**
      * Repeat a function a number of times.
      * 
@@ -867,7 +871,6 @@ export function make_turtle_graphics(...line_fns_) {
      * @param {function} fn - The function to be called repeatedly. It is called with a single number (0 to n-1) as an argument, containing the count of previous calls.
      * @returns {Array|undefined} (Advanced) An array of the return values of the individual calls to <code>fn</code>, or <code>undefined</code> if none of the function calls returns anything.
      */
-     // TODO: test return value
     function repeat(n, fn) {
         if ( !Number.isInteger(n) ) { 
             console.warn('repeat: number is invalid');
@@ -883,7 +886,16 @@ export function make_turtle_graphics(...line_fns_) {
         let got_result = false;
         
         for (let i=0; i<n; i++) {
-            const result = fn(i);
+            let result;
+            try {
+                result = fn(i);
+            } catch (e) {
+                if (e === 'BREAK_LOOP') {
+                    break; // break out of loop
+                } else {
+                    throw e;
+                }
+            }
             if (result !== undefined) { got_result = true; }
             results.push(result);
         }
@@ -891,6 +903,18 @@ export function make_turtle_graphics(...line_fns_) {
         if (got_result) { return results; }
         return undefined;
     }
+    
+    // forof
+    function foreach(x, fn) {
+        if (typeof fn !== 'function') {
+            console.warn('foreach: function is invalid');
+            return;
+        }
+        
+        
+    }
+    
+    // forin
     
     /**
      * Get a sequence of numbers for use in a [<code>for...of</code>]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of} loop.
