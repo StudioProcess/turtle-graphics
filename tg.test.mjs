@@ -21,6 +21,7 @@ tap.test('globalize', async t => {
     const obj = {};
     tg.globalize(g, obj);
     delete g.VERSION; // VERSION is excepted from globalize
+    delete g.TYPE; // TYPE is excepted from globalize
     for (let key of Object.keys(g)) { // System properties like _globalized are excepted as well
         if ( key.startsWith('_') ) { delete g[key]; }
     }

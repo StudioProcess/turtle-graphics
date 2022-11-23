@@ -2,13 +2,14 @@
 import { vec2, mat3 } from 'gl-matrix';
 
 const VERSION = 9;
+const TYPE = Symbol.for('Turtle Graphics');
 const EPSILON = 1e-10;
 const DEFAULT_FORWARD = 100;
 const DEFAULT_RIGHT = 90;
 const GLOBAL_LIB_NAME = 'tg';
 const GLOBAL_INSTANCE_NAME = 't';
 const GLOBAL_OVERWRITTEN_NAME = 'p5';
-const DONT_GLOBALIZE = [ 'VERSION' ];
+const DONT_GLOBALIZE = [ 'VERSION', 'TYPE' ];
 const DONT_WARN_GLOBALIZING = [ 'self' ];
 
 
@@ -500,6 +501,10 @@ export function make_turtle_graphics(...line_fns_) {
         Get relative state
      *********************************************************/
     
+    function _check_turtle_obj(obj) {
+        return obj !== null && typeof obj === 'object' && 'TYPE' in obj && obj['TYPE'] === TYPE;
+    }
+    
     function _to_point(x, y) {
         // allow [x, y] as first parameter
         // needs to be tested first, cause arrays of type 'object'
@@ -507,6 +512,12 @@ export function make_turtle_graphics(...line_fns_) {
             const arr = x;
             x = arr.at(0);
             y = arr.at(1);
+        }
+        // allow turtle object as first parameter
+        else if (_check_turtle_obj(x)) {
+            const obj = x;
+            x = obj.x();
+            y = obj.y();
         }
         // allow {x, y} as first parameter
         else if (typeof x === 'object' && x !== null) {
@@ -674,13 +685,21 @@ export function make_turtle_graphics(...line_fns_) {
         // TODO: maybe allow x as pos, y as angle, a as down
         
         // allow [x, y, a, d] as first parameter
-        // needs to be tested first, cause arrays of type 'object'
+        // needs to be tested first, cause arrays are of type 'object'
         if (Array.isArray(x)) {
             const arr = x;
             x = arr.at(0);
             y = arr.at(1);
             a = arr.at(2);
             d = arr.at(3);
+        }
+        // allow turtle object as first parameter
+        else if (_check_turtle_obj(x)) {
+            const obj = x;
+            x = obj.x();
+            y = obj.y();
+            a = obj.heading();
+            d = obj.isdown();
         }
         // allow {x, y, a, d} as first parameter
         else if (typeof x === 'object' && x !== null) {     
@@ -982,6 +1001,7 @@ export function make_turtle_graphics(...line_fns_) {
     
     
     const self = {
+        TYPE,
         VERSION,
         // Instance
         newturtle,
