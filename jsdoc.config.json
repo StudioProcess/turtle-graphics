@@ -4,7 +4,7 @@
     "include": [ "package.json", "./jsdoc-template/README.md", "tg-plot.mjs" ]
   },
   "opts": {
-    "destination": "./dist/docs/",
+    "destination": "./dist/latest/docs/",
     "template": "./jsdoc-template"
   }
 }

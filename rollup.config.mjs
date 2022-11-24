@@ -4,14 +4,14 @@ export default [
   {
     input: 'tg.mjs',
     output: {
-      file: 'dist/tg.mjs',
+      file: 'dist/latest/tg.mjs',
       format: 'es',
     },
     plugins: [nodeResolve()]
   }, {
     input: 'tg-plot.mjs',
     output: {
-      file: 'dist/tg-plot.mjs',
+      file: 'dist/latest/tg-plot.mjs',
       format: 'es',
     },
     plugins: [nodeResolve()]
