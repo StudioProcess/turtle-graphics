@@ -123,7 +123,7 @@ export function make_turtle_graphics(...line_fns_) {
      * @param {any} obj - The objcet to check. Can be anything.
      * @returns {boolean} <code>true</code> if <code>obj</code> is a Turtle Object, <code>false</code> otherwise.
      */
-    function isturtle(thing) {
+    function isturtle(obj) {
         return obj !== null && typeof obj === 'object' && 'TYPE' in obj && obj['TYPE'] === TYPE;
     }
     
