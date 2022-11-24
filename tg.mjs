@@ -2,7 +2,7 @@
 import { vec2, mat3 } from 'gl-matrix';
 
 const VERSION = 9;
-const TYPE = Symbol.for('Turtle Graphics');
+const TYPE = Symbol('Turtle Graphics Object');
 const EPSILON = 1e-10;
 const DEFAULT_FORWARD = 100;
 const DEFAULT_RIGHT = 90;
@@ -114,6 +114,11 @@ export function make_turtle_graphics(...line_fns_) {
         }
         _add_missing_props(self, new_turtle);
         return new_turtle;
+    }
+    
+    // TODO: docs
+    function isturtle(obj) {
+        return obj !== null && typeof obj === 'object' && 'TYPE' in obj && obj['TYPE'] === TYPE;
     }
     
     
@@ -501,10 +506,6 @@ export function make_turtle_graphics(...line_fns_) {
         Get relative state
      *********************************************************/
     
-    function _check_turtle_obj(obj) {
-        return obj !== null && typeof obj === 'object' && 'TYPE' in obj && obj['TYPE'] === TYPE;
-    }
-    
     function _to_point(x, y) {
         // allow [x, y] as first parameter
         // needs to be tested first, cause arrays of type 'object'
@@ -514,7 +515,7 @@ export function make_turtle_graphics(...line_fns_) {
             y = arr.at(1);
         }
         // allow turtle object as first parameter
-        else if (_check_turtle_obj(x)) {
+        else if (isturtle(x)) {
             const obj = x;
             x = obj.x();
             y = obj.y();
@@ -694,7 +695,7 @@ export function make_turtle_graphics(...line_fns_) {
             d = arr.at(3);
         }
         // allow turtle object as first parameter
-        else if (_check_turtle_obj(x)) {
+        else if (isturtle(x)) {
             const obj = x;
             x = obj.x();
             y = obj.y();
@@ -860,9 +861,10 @@ export function make_turtle_graphics(...line_fns_) {
      *********************************************************/
     // TODO: docs
     let _loop_count = 0; // count of loop callbacks (from repeat or foreach) that are currently in progress
+    const _break_exception = Symbol('Breakout Exception');
     function breakout() {
         if (_loop_count > 0) {
-            throw 'BREAKOUT';
+            throw _break_exception;
         } else {
             console.warn('Looks like you used `breakout` outside of a loop. breakout can only be used inside a `repeat` or `foreach` function.');
         }
@@ -897,7 +899,7 @@ export function make_turtle_graphics(...line_fns_) {
                 result = fn(i);
             } catch (e) {
                 _loop_count -= 1; // exit loop (break or exception)
-                if (e === 'BREAKOUT') {
+                if (e === _break_exception) {
                     break; // break out of loop
                 } else {
                     throw e;
@@ -943,7 +945,7 @@ export function make_turtle_graphics(...line_fns_) {
                 result = fn(el, idx, x); // call with the current element the index and the full object
             } catch (e) {
                 _loop_count -= 1; // exit loop (break or exception)
-                if (e === 'BREAKOUT') {
+                if (e === _break_exception) {
                     break; // break out of loop
                 } else {
                     throw e;
@@ -1074,6 +1076,7 @@ export function make_turtle_graphics(...line_fns_) {
         VERSION,
         // Instance
         newturtle,
+        isturtle,
         self: self_,
         clone,
         // Basics
