@@ -28,6 +28,7 @@ function create_ui() {
     <style>td:first-child {text-align:right;}</style>
     <tr> <td>Your ID:</td> <td><span class="client_id" style="font-weight:bold;">–</span></td> </tr>
     <tr> <td>Lines:</td> <td><span class="lines">–</span></td> </tr>
+    <tr> <td>Out of bounds:</td> <td><span class="oob">–</span></td> </tr>
     <tr> <td>Travel:</td> <td><span class="travel">–</span></td> </tr>
     <tr> <td>Ink:</td> <td><span class="ink">–</span></td> </tr>
     <tr> <td>Format:</td> <td><select class="format"><option value="A3_LANDSCAPE">A3 Landscape</option><option value="A3_PORTRAIT">A3 Portrait</option></select></td> </tr>
@@ -137,7 +138,10 @@ async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date 
         lines = scale_lines_viewbox(lines, lines_viewbox, target_size);
     }
     
-    const stats = line_stats(lines);
+    // TODO: Note these stats contain the out of bounds information versus the target_size, not versus the scaled lines_viewbox
+    const target_viewbox = [ -target_size[0]/2*(1-MARGIN), -target_size[1]/2*(1-MARGIN), target_size[0]*(1-MARGIN), target_size[1]*(1-MARGIN) ];
+    const stats = line_stats(lines, target_viewbox);
+
     const d = to_path(lines);
     
     const _timestamp = timestamp(date);
@@ -163,9 +167,11 @@ function svg_data_url(svg) {
     return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
 }
 
-function make_line_stats() {
+// viewbox: optional for out-of-bounds counting
+function make_line_stats(viewbox = undefined) {
     const stats = {
         count: 0,
+        oob_count: 0, // out of bounds lines
         travel: 0,
         travel_ink: 0,
         travel_blank: 0
@@ -177,6 +183,11 @@ function make_line_stats() {
         return Math.sqrt( (x1-x0)**2 + (y1-y0)**2 );
     }
     
+    function point_out_of_bounds(x, y) {
+        const left = viewbox[0], top = viewbox[1], right = left + viewbox[2], bottom = top + viewbox[3];
+        return x < left || x > right || y < top || y > bottom;
+    }
+    
     function add_line(x0, y0, x1, y1) {
         const blank = px !== undefined ? dist(px, py, x0, y0) : 0; // blank travel to line start
         const ink = dist(x0, y0, x1, y1); // line
@@ -186,6 +197,9 @@ function make_line_stats() {
         stats.travel += blank + ink;
         px = x1;
         py = y1;
+        if (viewbox !== undefined) {
+            if (point_out_of_bounds(x0, y0) || point_out_of_bounds(x1, y1)) { stats.oob_count += 1; }
+        }
     }
     
     function get() {
@@ -195,8 +209,9 @@ function make_line_stats() {
     return { add_line, get };
 }
 
-function line_stats(lines) {
-    const stats = make_line_stats();
+function line_stats(lines, viewbox = undefined) {
+    console.log(viewbox);
+    const stats = make_line_stats(viewbox);
     for (let line of lines) { stats.add_line(...line); }
     return stats.get();
 }
@@ -388,11 +403,12 @@ function checkHotkeys(hotkeys, e) {
 export function make_plotter_client(tg_instance) {
     let recording = true;
     let lines = []; // lines as they arrive from tg module (in px)
-    let line_stats = make_line_stats(); // stats based on lines
+    let line_stats = make_line_stats(tg_instance?._p5_viewbox); // stats based on lines
     let plotting = false;
     
     const div = create_ui();
     const lines_span = div.querySelector('.lines');
+    const oob_span = div.querySelector('.oob');
     const travel_span = div.querySelector('.travel');
     const ink_span = div.querySelector('.ink');
     const client_id_span = div.querySelector('.client_id');
@@ -412,15 +428,7 @@ export function make_plotter_client(tg_instance) {
     
     client_id_span.innerText = get_localstorage( 'tg-plot:client_id', crypto.randomUUID().slice(0, 5) );
     server_input.value = get_localstorage( 'tg-plot:server_url', SERVER_URL );
-    
-    // clear_button.onmousedown = () => {
-    //     lines = [];
-    //     line_stats = make_line_stats();
-    //     lines_span.innerText = '–';
-    //     travel_span.innerText = '–';
-    //     ink_span.innerText = '–';
-    // };
-    
+        
     close_button.onmousedown = (e) => {
         if (e.button !== 0) { return; } // left mouse button only
         hide_ui();
@@ -494,6 +502,8 @@ export function make_plotter_client(tg_instance) {
             1.0;
         const unit = tg_instance._p5_viewbox ? ' mm' : ' px';
         lines_span.innerText = stats.count;
+        oob_span.innerText = stats.oob_count;
+        oob_span.style.color = stats.oob_count > 0 ? 'red' : '';
         travel_span.innerText = Math.floor(stats.travel * scale) + unit;
         ink_span.innerText = Math.floor(stats.travel_ink * scale) + unit;
     }
@@ -530,7 +540,7 @@ export function make_plotter_client(tg_instance) {
     const public_fns = {
         clear() {
             lines = [];
-            line_stats = make_line_stats();
+            line_stats = make_line_stats(tg_instance?._p5_viewbox);
             lines_span.innerText = '–';
             travel_span.innerText = '–';
             ink_span.innerText = '–';

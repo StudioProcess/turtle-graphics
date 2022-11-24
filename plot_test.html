@@ -55,6 +55,20 @@
             t2.jumpxy(100, 100);
             t2.forward(25);
             t2.show();
+            
+            // out of bounds
+            // t.plotter().stop();
+            t.jumpxy(width/2-50, 0);
+            t.pendown();
+            t.setheading(90);
+            t.forward(100);
+            t.forward(10);
+            
+            t.jumpxy(0, height/2-50);
+            t.pendown();
+            t.setheading(180);
+            t.forward(100);
+            t.forward(10);
         }
         
     </script>
