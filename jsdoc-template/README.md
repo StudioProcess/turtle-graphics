@@ -104,7 +104,9 @@ Here is an index to all functions, grouped by type:
 
 * `{@link type}` — Determine the type of any value
 * `{@link repeat}` — Repeat a function a number of times
-* `{@link range}` — Get a sequence of numbers for use in a [<code>for...of</code>]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of} loop
+* `{@link foreach}` — Call a function for each element of an array
+* `{@link breakout}` — Break out of a {@link repeat} or {@link foreach} loop
+* `{@link range}` — Get a sequence of numbers for use in loops (like {@link foreach} and [<code>for...of</code>]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of})
 
 ### Plotting
 
@@ -130,3 +132,4 @@ Here is an index to all functions, grouped by type:
 * `{@link newturtle}` — Create a new turtle object
 * `{@link self}` — Get the turtle object itself
 * `{@link clone}` — Get a copy of the turtle object
+* `{@link isturtle}` — Check whether an object is a turtle or not

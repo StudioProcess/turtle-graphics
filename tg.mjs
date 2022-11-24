@@ -116,8 +116,14 @@ export function make_turtle_graphics(...line_fns_) {
         return new_turtle;
     }
     
-    // TODO: docs
-    function isturtle(obj) {
+    /**
+     * Check whether an object is a turtle or not.
+     * 
+     * @function isturtle
+     * @param {any} obj - The objcet to check. Can be anything.
+     * @returns {boolean} <code>true</code> if <code>obj</code> is a Turtle Object, <code>false</code> otherwise.
+     */
+    function isturtle(thing) {
         return obj !== null && typeof obj === 'object' && 'TYPE' in obj && obj['TYPE'] === TYPE;
     }
     
@@ -420,7 +426,6 @@ export function make_turtle_graphics(...line_fns_) {
      * @function xy
      * @returns {Position} A {@link Position} object containing <code>x</code> and <code>y</code>.
      */
-    // TODO: test this
     function xy() {
         return { x: _state.turtle.x, y: _state.turtle.y };
     }
@@ -859,7 +864,15 @@ export function make_turtle_graphics(...line_fns_) {
     /*********************************************************
         Util
      *********************************************************/
-    // TODO: docs
+    /**
+     * Break out of a {@link repeat} or {@link foreach} loop.
+     * <br>
+     * Can only be used within a function given to {@link repeat} or {@link foreach}. Will immediately terminate the function and cause the loop to stop.
+     * 
+     * @function breakout
+     * @see {@link repeat}
+     * @see {@link foreach}
+     */
     let _loop_count = 0; // count of loop callbacks (from repeat or foreach) that are currently in progress
     const _break_exception = Symbol('Breakout Exception');
     function breakout() {
@@ -872,11 +885,14 @@ export function make_turtle_graphics(...line_fns_) {
     
     /**
      * Repeat a function a number of times.
+     * <br>
+     * (Advanced) The loop can be stopped with {@link breakout}.
      * 
      * @function repeat
      * @param {number} n - Number of times to call the function. Needs to be greater than 0, or no calls will happen.
      * @param {function} fn - The function to be called repeatedly. It is called with a single number (0 to n-1) as an argument, containing the count of previous calls.
      * @returns {Array|undefined} (Advanced) An array of the return values of the individual calls to <code>fn</code>, or <code>undefined</code> if none of the function calls returns anything.
+     * @see {@link breakout} for stopping the loop.
      */
     function repeat(n, fn) {
         if ( !Number.isInteger(n) ) { 
@@ -919,7 +935,17 @@ export function make_turtle_graphics(...line_fns_) {
         return typeof x[Symbol.iterator] === 'function';
     }
     
-    // TODO: docs
+    /**
+     * Call a function for each element of an array.
+     * <br>
+     * (Advanced) The loop can be stopped with {@link breakout}.
+     * 
+     * @function foreach
+     * @param {Iterable} a - An array or (advanced use) any other Iterable, like the return value of a {@link range} call.
+     * @param {function} fn - The function to be called for each element. It is called with three arguments <code>el</code>, <code>i</code> and <code>a</code>. <code>el</code> is the current element from the array, <code>i</code> is a running index starting at 0, and <code>a</code> is the array itself.
+     * @returns {Array|undefined} (Advanced) An array of the return values of the individual calls to <code>fn</code>, or <code>undefined</code> if none of the function calls returns anything.
+     * @see {@link breakout} for stopping the loop.
+     */
     function foreach(x, fn) {
         // const iterable = _is_iterable(x);
         // if (! (iterable || type(x) === 'object')) {
@@ -961,10 +987,8 @@ export function make_turtle_graphics(...line_fns_) {
         return undefined;
     }
     
-    // forin
-    
     /**
-     * Get a sequence of numbers for use in a [<code>for...of</code>]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of} loop.
+     * Get a sequence of numbers for use in loops (like {@link foreach} and [<code>for...of</code>]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of}).
      * This function can be called in two different ways:<br>
      * <br>
      * <code>range(stop)</code><br>
@@ -977,9 +1001,8 @@ export function make_turtle_graphics(...line_fns_) {
      * @param {number} start - Start value, if <code>range</code> is called with two or three arguments, or stop value if called with one arguement only.
      * @param {number} [stop] - Stop value, if <code>range</code> is called with two or three arguments, ignored otherwise.
      * @param {number} [step=1] - Step value. Can only be used if <code>range</code> is called with three arguments.
-     * @returns {Iterable} results - Iterable object that returns the sequence of numbers. Can be used with [<code>for...of</code>]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of} and (advanced usage) with the [spread (<code>...</code>) syntax]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax}.
+     * @returns {Iterable} An Iterable object that returns the sequence of numbers. Can be used with [<code>for...of</code>]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of} and (advanced usage) with the [spread (<code>...</code>) syntax]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax}.
      */
-     // TODO: test
     function range(start_, stop_ = undefined, step = 1) {
         const start = (stop_ === undefined || stop_ == null) ? 0 : start_;
         const stop = (stop_ === undefined || stop_ == null) ? start_ : stop_;
@@ -1022,7 +1045,6 @@ export function make_turtle_graphics(...line_fns_) {
      * @param {any} value - The value you want to get the type of, can be anything.
      * @returns {string} - A string describing the type of <code>value</code>, see above.
      */
-     // TODO: test
     function type(value) {
         if (value === null) { return 'null'; }
         if (Array.isArray(value)) { return 'array'; }
