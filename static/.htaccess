@@ -4,20 +4,7 @@ RewriteEngine On
 # RewriteBase needs to start with /, but trailing / seems to be optional
 RewriteBase /turtle-graphics
 
-# / and /index.html (even if present) -> /latest/docs/index.html
-RewriteRule ^(index\.html)?$ latest/docs/$1 [L,R=301]
-
-# Stop the rewrite process, in order not to produce an infinite regress
-RewriteRule ^latest/docs/ - [L]
-
-## Disabled: Doesn't work anyway since CORS can't easily be set on these rewritten files
-#RewriteRule ^latest/ - [L]
-## .mjs files that aren't present  $1 -> latest/$1
-#RewriteCond %{REQUEST_FILENAME} !-f
-#RewriteCond %{REQUEST_FILENAME} !-d
-#RewriteRule ^(.*)\.mjs$ latest/$1.mjs [L,R=301]
-
-# Everything else isn't present  $1 -> latest/docs/$1
+# Everything that isn't present  $1 -> latest/docs/$1
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ latest/docs/$1 [L,R=301]
