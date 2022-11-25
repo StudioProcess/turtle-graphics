@@ -10,9 +10,10 @@
 
 Include the following script tags in the `<head>` section of your `index.html`:
 
+<!--- Note: the VERSION tag below is replaced with the version string from package.json --->
 ```html
-<script src="https://sketch.process.studio/turtle-graphics/1/tg.mjs" type="module"></script>
-<script src="https://sketch.process.studio/turtle-graphics/1/tg-plot.mjs" type="module"></script>
+<script src="https://sketch.process.studio/turtle-graphics/___VERSION___/tg.mjs" type="module"></script>
+<script src="https://sketch.process.studio/turtle-graphics/___VERSION___/tg-plot.mjs" type="module"></script>
 ```
 
 These scripts need to be included after `p5.js`, so your `index.html` should look something like this:
@@ -24,8 +25,8 @@ These scripts need to be included after `p5.js`, so your `index.html` should loo
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/p5.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
     <meta charset="utf-8" />
-    <script src="https://sketch.process.studio/turtle-graphics/1/tg.mjs" type="module"></script>
-    <script src="https://sketch.process.studio/turtle-graphics/1/tg-plot.mjs" type="module"></script>
+    <script src="https://sketch.process.studio/turtle-graphics/___VERSION___/tg.mjs" type="module"></script>
+    <script src="https://sketch.process.studio/turtle-graphics/___VERSION___/tg-plot.mjs" type="module"></script>
   </head>
   <body>
     <main>

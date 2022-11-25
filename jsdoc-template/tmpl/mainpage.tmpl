@@ -1,6 +1,9 @@
 <?js
 var data = obj;
 var self = this;
+if (data.kind === 'package') {
+    VERSION = data.version;
+}
 ?>
 
 <?js if (data.kind === 'package') { ?>
@@ -9,6 +12,7 @@ var self = this;
 <?js } ?>
 
 <?js if (data.readme) { ?>
+    <?js if (VERSION) { data.readme = data.readme.replaceAll("___VERSION___", VERSION); } ?>
     <section>
         <article><?js= data.readme ?></article>
     </section>
