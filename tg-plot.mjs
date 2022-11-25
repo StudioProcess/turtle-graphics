@@ -3,6 +3,7 @@ const GLOBAL_INSTANCE_NAME = 'p';
 const PLOTTER_FUNCTION_NAME = 'plotter';
 const HOTKEYS = [ ['metaKey', 'altKey', 'KeyP'], ['ctrlKey', 'altKey', 'KeyP'] ]; // Hotkeys to open plot menu (Cmd/Ctrl + Alt + P)
 
+const SVG_PRECISION = 3; // Number of decimal places (Avoid precision errors, that produce discontinuities in the SVG) (-1 to deactivate limiting)
 const TARGET_SIZE = [420, 297]; // A3 Landscape, in mm
 const SIZES = {
     'A3_LANDSCAPE': [420, 297],
@@ -122,6 +123,16 @@ function timestamp(date = undefined) {
     return `${date.getFullYear()}${pad(date.getMonth())}${pad(date.getDate())}_${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)}_UTC${tz_offset()}`;
 }
 
+function round(num, precision) {
+    const n = 10 ** precision;
+    return Math.round((num + Number.EPSILON) * n) / n;
+}
+
+function limit_precision(x) {
+    if (SVG_PRECISION < 0 || Number.isInteger(x)) { return x; }
+    return round(x, SVG_PRECISION);
+}
+
 // Returns a promise
 async function hash(str) {
     const buffer = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(str));
@@ -137,6 +148,8 @@ async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date 
     } else if (Array.isArray(lines_viewbox)) { // viewbox given [x, y, w, h]
         lines = scale_lines_viewbox(lines, lines_viewbox, target_size);
     }
+    
+    lines = lines.map(line => line.map(limit_precision));
     
     // TODO: Note these stats contain the out of bounds information versus the target_size, not versus the scaled lines_viewbox
     const target_viewbox = [ -target_size[0]/2*(1-MARGIN), -target_size[1]/2*(1-MARGIN), target_size[0]*(1-MARGIN), target_size[1]*(1-MARGIN) ];
@@ -513,6 +526,7 @@ export function make_plotter_client(tg_instance) {
     
     tg_instance._add_line_fn((...line) => {
         if (!recording) { return; }
+        line = line.map(limit_precision);
         lines.push(line);
         line_stats.add_line(...line);
         update_stats();
