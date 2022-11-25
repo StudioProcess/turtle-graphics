@@ -1,2 +1,9 @@
+# Allow access to *.mjs from all domains
+<FilesMatch "\.mjs$">
+    <IfModule mod_headers.c>
+        Header set Access-Control-Allow-Origin "*"
+    </IfModule>
+</FilesMatch>
+
 # Allow directory listing
 Options +Indexes

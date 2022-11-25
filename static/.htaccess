@@ -1,11 +1,3 @@
-# Allow access to *.mjs from all domains
-<FilesMatch "\.(mjs)$">
-    <IfModule mod_headers.c>
-        Header set Access-Control-Allow-Origin "*"
-    </IfModule>
-</FilesMatch>
-
-
 # Redirect base folder hits to ./latest/docs/ folder
 
 RewriteEngine On
@@ -16,12 +8,14 @@ RewriteBase /turtle-graphics
 RewriteRule ^(index\.html)?$ latest/docs/$1 [L,R=301]
 
 # Stop the rewrite process, in order not to produce an infinite regress
-RewriteRule ^latest/ - [L]
+RewriteRule ^latest/docs/ - [L]
 
-# .mjs files that aren't present  $1 -> latest/$1
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)\.mjs$ latest/$1.mjs [L,R=301]
+## Disabled: Doesn't work anyway since CORS can't easily be set on these rewritten files
+#RewriteRule ^latest/ - [L]
+## .mjs files that aren't present  $1 -> latest/$1
+#RewriteCond %{REQUEST_FILENAME} !-f
+#RewriteCond %{REQUEST_FILENAME} !-d
+#RewriteRule ^(.*)\.mjs$ latest/$1.mjs [L,R=301]
 
 # Everything else isn't present  $1 -> latest/docs/$1
 RewriteCond %{REQUEST_FILENAME} !-f
