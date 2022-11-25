@@ -560,7 +560,7 @@ export function make_turtle_graphics(...line_fns_) {
      * In other words, the bearing is the angle the turtle needs to turn <code>{@link right}</code> in order to face the given point.
      * 
      * @function bearing
-     * @param {number|Position} - The x-coordinate of the point to get the bearing to or a {@link Position} object. The other parameter (<code>y</code>) is ignored, if a {@link Position} object is given.
+     * @param {number|Position} x - The x-coordinate of the point to get the bearing to or a {@link Position} object. The other parameter (<code>y</code>) is ignored, if a {@link Position} object is given.
      * @param {number} [y] - The y-coordinate of the point to get the bearing to.
      * @returns {number} The bearing to the given point in degrees (0–360).
      * @see <code>{@link right}</code> to turn towards the point.
