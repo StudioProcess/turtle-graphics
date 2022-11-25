@@ -1,7 +1,7 @@
 // TODO: coordinate system orientation
 import { vec2, mat3 } from 'gl-matrix';
 
-const VERSION = 9;
+const VERSION = '___VERSION___';
 const TYPE = Symbol('Turtle Graphics Object');
 const EPSILON = 1e-10;
 const DEFAULT_FORWARD = 100;

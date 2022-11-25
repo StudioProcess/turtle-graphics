@@ -1,4 +1,4 @@
-const VERSION = 9;
+const VERSION = '___VERSION___';
 const GLOBAL_INSTANCE_NAME = 'p';
 const PLOTTER_FUNCTION_NAME = 'plotter';
 const HOTKEYS = [ ['metaKey', 'altKey', 'KeyP'], ['ctrlKey', 'altKey', 'KeyP'] ]; // Hotkeys to open plot menu (Cmd/Ctrl + Alt + P)
