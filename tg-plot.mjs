@@ -210,7 +210,6 @@ function make_line_stats(viewbox = undefined) {
 }
 
 function line_stats(lines, viewbox = undefined) {
-    console.log(viewbox);
     const stats = make_line_stats(viewbox);
     for (let line of lines) { stats.add_line(...line); }
     return stats.get();
