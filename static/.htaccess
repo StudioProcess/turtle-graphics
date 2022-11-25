@@ -4,6 +4,9 @@ RewriteEngine On
 # RewriteBase needs to start with /, but trailing / seems to be optional
 RewriteBase /turtle-graphics
 
+# Redirect root
+RewriteRule ^$ latest/docs/ [L,R=301]
+
 # Everything that isn't present  $1 -> latest/docs/$1
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
