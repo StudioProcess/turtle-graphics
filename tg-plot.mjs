@@ -4,6 +4,7 @@ const PLOTTER_FUNCTION_NAME = 'plotter';
 const HOTKEYS = [ ['metaKey', 'altKey', 'KeyP'], ['ctrlKey', 'altKey', 'KeyP'] ]; // Hotkeys to open plot menu (Cmd/Ctrl + Alt + P)
 
 const SVG_PRECISION = 3; // Number of decimal places (Avoid precision errors, that produce discontinuities in the SVG) (-1 to deactivate limiting)
+const SVG_CLIPPING = true; // Perform clipping to scaled viewbox (NOT target viewbox)
 const TARGET_SIZE = [420, 297]; // A3 Landscape, in mm
 const SIZES = {
     'A3_LANDSCAPE': [420, 297],
@@ -239,8 +240,10 @@ async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date 
     
     lines = lines.map(line => line.map(limit_precision));
     
-    const scaled_viewbox = scale_viewbox(lines_viewbox, target_size, MARGIN); // original viewbox scaled up to target size
-    lines = clip_lines(lines, scaled_viewbox);
+    if (SVG_CLIPPING) {
+        const scaled_viewbox = scale_viewbox(lines_viewbox, target_size, MARGIN); // original viewbox scaled up to target size
+        lines = clip_lines(lines, scaled_viewbox);
+    }
     
     const stats = line_stats(lines);
     const _timestamp = timestamp(date);
