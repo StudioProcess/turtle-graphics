@@ -71,7 +71,7 @@ function to_path(lines, num_decimals = -1) {
 
 // Fit viewbox into a target size, with margin
 // Returns [sx, sy, cx, cy]
-function scale_viewbox(viewbox, target_size = [420, 297], margin = 0.05) {
+function scale_args_viewbox(viewbox, target_size = [420, 297], margin = 0.05) {
     const center = [ viewbox[0] + viewbox[2]/2, viewbox[1] + viewbox[3]/2 ];
     const scale_w = target_size[0] / viewbox[2];
     const scale_h = target_size[1] / viewbox[3];
@@ -88,9 +88,18 @@ function scale_lines(lines, sx = 1, sy = 1, cx = 0, cy = 0) {
         sy * (y1 - cy) ] );
 }
 
-function scale_lines_viewbox(lines, viewbox, target_size = [420, 297]) {
-    const scale_args = scale_viewbox(viewbox, target_size, MARGIN);
+// scale lines from viewbox to target size, with margin
+function scale_lines_viewbox(lines, viewbox, target_size, margin) {
+    const scale_args = scale_args_viewbox(viewbox, target_size, MARGIN);
     return scale_lines(lines, ...scale_args);
+}
+
+// scale viewbox to target size, with margin
+// uses scale_lines_viewbox, by treating the viewbox as a line [xmin, ymin, xmax, ymax]
+function scale_viewbox(viewbox, target_size, margin) {
+    let line = [viewbox[0], viewbox[1], viewbox[0] + viewbox[2], viewbox[1] + viewbox[3]]; // viewbox to line (diagonal)
+    line = scale_lines_viewbox([line], viewbox, target_size, margin)[0]; // scaled line
+    return [ line[0], line[1], line[2]-line[0], line[3]-line[1] ]; // back to viewbox [x, y, w, h]
 }
 
 function get_bbox(lines) {
@@ -140,24 +149,102 @@ async function hash(str) {
     return array.map( (b) => b.toString(16).padStart(2, '0') ).join('');
 }
 
+// https://en.wikipedia.org/wiki/Cohen–Sutherland_algorithm
+// Returns clipped line or false if line was completely removed
+function clip_line([x0, y0, x1, y1], clipbox) {
+    const INSIDE = 0; // 0000
+    const LEFT = 1;   // 0001
+    const RIGHT = 2;  // 0010
+    const BOTTOM = 4; // 0100
+    const TOP = 8;    // 1000
+    
+    const xmin = clipbox[0];
+    const xmax = xmin + clipbox[2];
+    const ymin = clipbox[1];
+    const ymax = ymin + clipbox[3];
+    
+    function out_code(x, y) {
+        let code = INSIDE;  // initialised as being inside of clip window
+        if (x < xmin) { code |= LEFT; }          // to the left of clip window
+        else if (x > xmax) { code |= RIGHT; }     // to the right of clip window
+        if (y < ymin) { code |= BOTTOM; }          // below the clip window
+        else if (y > ymax) { code |= TOP; }     // above the clip window
+        return code;
+    }
+    
+    let outcode0 = out_code(x0, y0);
+    let outcode1 = out_code(x1, y1);
+    let accept = false; // Note: unused
+    
+    while (true) {
+        if (!(outcode0 | outcode1)) {
+            // bitwise OR is 0: both points inside window; trivially accept and exit loop
+            accept = true;
+            break;
+        } else if (outcode0 & outcode1) {
+            // bitwise AND is not 0: both points share an outside zone (LEFT, RIGHT, TOP,
+            // or BOTTOM), so both must be outside window; exit loop (accept is false)
+            break;
+        } else {
+            // failed both tests, so calculate the line segment to clip
+            // from an outside point to an intersection with clip edge
+            let x, y;
+            // At least one endpoint is outside the clip rectangle; pick it.
+            let outcodeOut = outcode1 > outcode0 ? outcode1 : outcode0;
+            // Now find the intersection point;
+            if (outcodeOut & TOP) {           // point is above the clip window
+                x = x0 + (x1 - x0) * (ymax - y0) / (y1 - y0);
+                y = ymax;
+            } else if (outcodeOut & BOTTOM) { // point is below the clip window
+                x = x0 + (x1 - x0) * (ymin - y0) / (y1 - y0);
+                y = ymin;
+            } else if (outcodeOut & RIGHT) {  // point is to the right of clip window
+                y = y0 + (y1 - y0) * (xmax - x0) / (x1 - x0);
+                x = xmax;
+            } else if (outcodeOut & LEFT) {   // point is to the left of clip window
+                y = y0 + (y1 - y0) * (xmin - x0) / (x1 - x0);
+                x = xmin;
+            }
+            // Now we move outside point to intersection point to clip
+            // and get ready for next pass.
+            if (outcodeOut == outcode0) {
+                x0 = x;
+                y0 = y;
+                outcode0 = out_code(x0, y0);
+            } else {
+                x1 = x;
+                y1 = y;
+                outcode1 = out_code(x1, y1);
+            }
+        }
+    }
+    return accept ? [x0, y0, x1, y1] : false;
+}
+
+function clip_lines(lines, clipbox) {
+    lines = lines.map(line => clip_line(line, clipbox));
+    // filter out removed lines
+    lines = lines.filter(line => line !== false);
+    return lines;
+}
+
 // TODO: stroke width
 async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date = undefined) {
     if (lines_viewbox === 'bbox') { // calculate bounding box
         lines_viewbox = geb_bbox(lines);
-        lines = scale_lines_viewbox(lines, lines_viewbox, target_size);
+        lines = scale_lines_viewbox(lines, lines_viewbox, target_size, MARGIN);
     } else if (Array.isArray(lines_viewbox)) { // viewbox given [x, y, w, h]
-        lines = scale_lines_viewbox(lines, lines_viewbox, target_size);
+        lines = scale_lines_viewbox(lines, lines_viewbox, target_size, MARGIN);
     }
     
     lines = lines.map(line => line.map(limit_precision));
     
-    // TODO: Note these stats contain the out of bounds information versus the target_size, not versus the scaled lines_viewbox
-    const target_viewbox = [ -target_size[0]/2*(1-MARGIN), -target_size[1]/2*(1-MARGIN), target_size[0]*(1-MARGIN), target_size[1]*(1-MARGIN) ];
-    const stats = line_stats(lines, target_viewbox);
-
-    const d = to_path(lines);
+    const scaled_viewbox = scale_viewbox(lines_viewbox, target_size, MARGIN); // original viewbox scaled up to target size
+    lines = clip_lines(lines, scaled_viewbox);
     
+    const stats = line_stats(lines);
     const _timestamp = timestamp(date);
+    const d = to_path(lines);
     
     let svg =`<svg xmlns="http://www.w3.org/2000/svg" 
      xmlns:tg="https://sketch.process.studio/turtle-graphics"
@@ -510,7 +597,7 @@ export function make_plotter_client(tg_instance) {
         // scaling factor
         // TODO: tg_instance._p5_viewbox should actually never be undefined
         const scale = tg_instance._p5_viewbox ? 
-            scale_viewbox(tg_instance._p5_viewbox, SIZES[format_select.value], MARGIN)[0] : 
+            scale_args_viewbox(tg_instance._p5_viewbox, SIZES[format_select.value], MARGIN)[0] : 
             1.0;
         const unit = tg_instance._p5_viewbox ? ' mm' : ' px';
         lines_span.innerText = stats.count;
