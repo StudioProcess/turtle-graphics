@@ -1324,6 +1324,19 @@ function auto_init(do_globalize = false) {
                 this.translate(this.width/2, this.height/2);
             }
         });
+        
+        // Adjust mouseX and mouseY so they are measured from the center
+        const original__updateNextMouseCoords = window.p5.prototype._updateNextMouseCoords;
+        window.p5.prototype._updateNextMouseCoords = function(...args) {
+            const hasMouseInteracted = this._hasMouseInteracted; // save this before calling _updateNextMouseCoords
+            original__updateNextMouseCoords.call(this, ...args);
+            this._setProperty('mouseX', this.mouseX - this.width/2);
+            this._setProperty('mouseY', this.mouseY - this.height/2);
+            if (!hasMouseInteracted) { // on the first interaction fix pmouseX/Y as well
+                this._setProperty('pmouseX', this.pmouseX - this.width/2);
+                this._setProperty('pmouseY', this.pmouseY - this.height/2);
+            }
+        }
     } else {
         console.warn('🐢 → Init: No p5.js detected');
     }
