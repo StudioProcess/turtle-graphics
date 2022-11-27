@@ -562,7 +562,7 @@ export function make_turtle_graphics(...line_fns_) {
      * @function bearing
      * @param {number|Position} x - The x-coordinate of the point to get the bearing to or a {@link Position} object. The other parameter (<code>y</code>) is ignored, if a {@link Position} object is given.
      * @param {number} [y] - The y-coordinate of the point to get the bearing to.
-     * @returns {number} The bearing to the given point in degrees (0–360).
+     * @returns {number} The bearing to the given point in degrees (-180 to +180).
      * @see <code>{@link right}</code> to turn towards the point.
      * @see <code>{@link face}</code> for a convenience function to face a given point.
      */
@@ -578,6 +578,7 @@ export function make_turtle_graphics(...line_fns_) {
         let b = Math.atan2(vy, vx) / Math.PI * 180; // [-180, +180] angle between positive x-axis and vector
         b = b + 90 - turtle.a;
         b = _clean_angle(b);
+        if (b > 180) { b -= 360; } // make output [-180, 180]
         return b;
     }
     

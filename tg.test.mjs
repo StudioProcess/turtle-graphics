@@ -624,71 +624,71 @@ tap.test('bearing', async t => {
     t.equal(g.bearing(0, -100), 0, 'bearing (2)');
     t.equal(g.bearing(100, 0), 90, 'bearing (3)');
     t.equal(g.bearing(0, 100), 180, 'bearing (4)');
-    t.equal(g.bearing(-100, 0), 270, 'bearing (5)');
+    t.equal(g.bearing(-100, 0), 270-360, 'bearing (5)');
     
     g.left(45);
     t.equal(g.bearing(0, 0), 0, 'bearing (6)');
     t.equal(g.bearing(0, -100), 0+45, 'bearing (7)');
     t.equal(g.bearing(100, 0), 90+45, 'bearing (8)');
-    t.equal(g.bearing(0, 100), 180+45, 'bearing (9)');
-    t.equal(g.bearing(-100, 0), 270+45, 'bearing (10)');
+    t.equal(g.bearing(0, 100), 180+45-360, 'bearing (9)');
+    t.equal(g.bearing(-100, 0), 270+45-360, 'bearing (10)');
     
     g.left(45);
     t.equal(g.bearing(0, 0), 0, 'bearing (11)');
     t.equal(g.bearing(0, -100), 0+90, 'bearing (12)');
     t.equal(g.bearing(100, 0), 90+90, 'bearing (13)');
-    t.equal(g.bearing(0, 100), 180+90, 'bearing (14)');
+    t.equal(g.bearing(0, 100), 180+90-360, 'bearing (14)');
     t.equal(g.bearing(-100, 0), (270+90)%360, 'bearing (15)');
     
     g.left(45);
     t.equal(g.bearing(0, 0), 0, 'bearing (11)');
     t.equal(g.bearing(0, -100), 0+135, 'bearing (12)');
-    t.equal(g.bearing(100, 0), 90+135, 'bearing (13)');
-    t.equal(g.bearing(0, 100), 180+135, 'bearing (14)');
+    t.equal(g.bearing(100, 0), 90+135-360, 'bearing (13)');
+    t.equal(g.bearing(0, 100), 180+135-360, 'bearing (14)');
     t.equal(g.bearing(-100, 0), (270+135)%360, 'bearing (15)');
     
     g.left(45);
     t.equal(g.bearing(0, 0), 0, 'bearing (16)');
     t.equal(g.bearing(0, -100), 0+180, 'bearing (17)');
-    t.equal(g.bearing(100, 0), 90+180, 'bearing (18)');
+    t.equal(g.bearing(100, 0), 90+180-360, 'bearing (18)');
     t.equal(g.bearing(0, 100), (180+180)%360, 'bearing (19)');
     t.equal(g.bearing(-100, 0), (270+180)%360, 'bearing (20)');
     
     g.left(45);
     t.equal(g.bearing(0, 0), 0, 'bearing (21)');
-    t.equal(g.bearing(0, -100), 0+225, 'bearing (22)');
-    t.equal(g.bearing(100, 0), 90+225, 'bearing (23)');
+    t.equal(g.bearing(0, -100), 0+225-360, 'bearing (22)');
+    t.equal(g.bearing(100, 0), 90+225-360, 'bearing (23)');
     t.equal(g.bearing(0, 100), (180+225)%360, 'bearing (24)');
     t.equal(g.bearing(-100, 0), (270+225)%360, 'bearing (25)');
     
     g.left(45);
     t.equal(g.bearing(0, 0), 0, 'bearing (26)');
-    t.equal(g.bearing(0, -100), 0+270, 'bearing (27)');
+    t.equal(g.bearing(0, -100), 0+270-360, 'bearing (27)');
     t.equal(g.bearing(100, 0), (90+270)%360, 'bearing (28)');
     t.equal(g.bearing(0, 100), (180+270)%360, 'bearing (29)');
     t.equal(g.bearing(-100, 0), (270+270)%360, 'bearing (30)');
     
     g.left(45);
     t.equal(g.bearing(0, 0), 0, 'bearing (31)');
-    t.equal(g.bearing(0, -100), 0+315, 'bearing (32)');
+    t.equal(g.bearing(0, -100), 0+315-360, 'bearing (32)');
     t.equal(g.bearing(100, 0), (90+315)%360, 'bearing (33)');
     t.equal(g.bearing(0, 100), (180+315)%360, 'bearing (34)');
-    t.equal(g.bearing(-100, 0), (270+315)%360, 'bearing (35)');
+    t.equal(g.bearing(-100, 0), (270+315)%360-360, 'bearing (35)');
     
     g.left(45);
-    t.equal(g.bearing(0, 0), 0, 'bearing (31)');
-    t.equal(g.bearing(0, -100), (0+360)%360, 'bearing (32)');
-    t.equal(g.bearing(100, 0), (90+360)%360, 'bearing (33)');
-    t.equal(g.bearing(0, 100), (180+360)%360, 'bearing (34)');
-    t.equal(g.bearing(-100, 0), (270+360)%360, 'bearing (35)');
+    t.equal(g.bearing(0, 0), 0, 'bearing (36)');
+    t.equal(g.bearing(0, -100), (0+360)%360, 'bearing (37)');
+    t.equal(g.bearing(100, 0), (90+360)%360, 'bearing (38)');
+    t.equal(g.bearing(0, 100), (180+360)%360, 'bearing (39)');
+    t.equal(g.bearing(-100, 0), (270+360)%360-360, 'bearing (40)');
     
     // facing up again
     g.forward(100);
-    t.equal(g.bearing(0, 0), 180, 'bearing (36)');
-    t.equal(g.bearing(0, -100), 0, 'bearing (37)');
-    t.equal(g.bearing(100, 0), 135, 'bearing (38)');
-    t.equal(g.bearing(0, 100), 180, 'bearing (39)');
-    t.equal(g.bearing(-100, 0), 225, 'bearing (40)');
+    t.equal(g.bearing(0, 0), 180, 'bearing (41)');
+    t.equal(g.bearing(0, -100), 0, 'bearing (42)');
+    t.equal(g.bearing(100, 0), 135, 'bearing (43)');
+    t.equal(g.bearing(0, 100), 180, 'bearing (44)');
+    t.equal(g.bearing(-100, 0), 225-360, 'bearing (45)');
 });
 
 tap.test('face', async t => {
