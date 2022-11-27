@@ -1,30 +1,4 @@
 @font-face {
-    font-family: 'Open Sans';
-    font-weight: normal;
-    font-style: normal;
-    src: url('../fonts/OpenSans-Regular-webfont.eot');
-    src:
-        local('Open Sans'),
-        local('OpenSans'),
-        url('../fonts/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
-        url('../fonts/OpenSans-Regular-webfont.woff') format('woff'),
-        url('../fonts/OpenSans-Regular-webfont.svg#open_sansregular') format('svg');
-}
-
-@font-face {
-    font-family: 'Open Sans Light';
-    font-weight: normal;
-    font-style: normal;
-    src: url('../fonts/OpenSans-Light-webfont.eot');
-    src:
-        local('Open Sans Light'),
-        local('OpenSans Light'),
-        url('../fonts/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
-        url('../fonts/OpenSans-Light-webfont.woff') format('woff'),
-        url('../fonts/OpenSans-Light-webfont.svg#open_sanslight') format('svg');
-}
-
-@font-face {
     font-family: 'Inconsolata';
     font-weight: normal;
     font-style: normal;
@@ -45,10 +19,17 @@
     src: url('../fonts/Inconsolata/Inconsolata-Light.ttf');
 } */
 
+body {
+    font-size: 150%;
+}
 
 /* Bring version declaration in line */
 #main h3 {
     margin-left: 24px;
+}
+
+article h2 {
+    margin-top: 2em;
 }
 
 /* Font weight of nav header */
@@ -58,6 +39,10 @@ nav h2 {
 
 #main h3.subsection-title {
     margin-top:80px;
+}
+
+article h4.name {
+    font-size: 150%;
 }
 
 h4.name::before {
@@ -73,6 +58,7 @@ h4.name::before {
 a[href^="global.html#"] {
     font-family: Inconsolata, Consolas, Monaco, 'Andale Mono', monospace;
 }
+
 
 
 
@@ -123,7 +109,7 @@ tt, code, kbd, samp, pre {
 
 #main {
     float: left;
-    width: 70%;
+    width: 80%;
 }
 
 article dl {
@@ -162,7 +148,7 @@ nav
     display: block;
     float: right;
     margin-top: 28px;
-    width: 30%;
+    width: 20%;
     box-sizing: border-box;
     border-left: 1px solid #ccc;
     padding-left: 16px;
