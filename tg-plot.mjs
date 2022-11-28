@@ -542,14 +542,15 @@ export function make_plotter_client(tg_instance) {
     const format_select = div.querySelector('.format');
     const close_button = div.querySelector('.close-button');
     
-    client_id_input.value = get_localstorage( 'tg-plot:client_id', random_id(4, 26, 10).toUpperCase() );
     server_input.value = get_localstorage( 'tg-plot:server_url', SERVER_URL );
+    client_id_input.value = get_localstorage( 'tg-plot:client_id', random_id(4, 26, 10).toUpperCase() );
+    format_select.value = get_localstorage( 'tg-plot:format', 'A3_LANDSCAPE' );
+    speed_input.value = get_localstorage( 'tg-plot:speed', 100 );
     
     close_button.onmousedown = (e) => {
         if (e.button !== 0) { return; } // left mouse button only
         hide_ui();
     };
-    
     
     client_id_input.onkeydown = (e) => {
         if (e.key == 'Enter') { e.target.blur(); }
@@ -639,8 +640,15 @@ export function make_plotter_client(tg_instance) {
         ink_span.innerText = Math.floor(stats.travel_ink * scale) + unit;
     }
     
-    format_select.onchange = () => {
+    format_select.onchange = (e) => {
         update_stats();
+        set_localstorage( 'tg-plot:format', e.target.value );
+    };
+    
+    speed_input.onchange = (e) => {
+        if (e.target.checkValidity()) {
+            set_localstorage( 'tg-plot:speed', e.target.value );
+        }
     };
     
     tg_instance._add_line_fn((...line) => {
