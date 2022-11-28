@@ -36,7 +36,7 @@ function create_ui() {
     <tr> <td>Travel:</td> <td><span class="travel">–</span></td> </tr>
     <tr> <td>Ink:</td> <td><span class="ink">–</span></td> </tr>
     <tr> <td>Format:</td> <td><select class="format"><option value="A3_LANDSCAPE">A3 Landscape</option><option value="A3_PORTRAIT">A3 Portrait</option></select></td> </tr>
-    <tr> <td>Speed:</td> <td><input class="speed" placeholder="Drawing Speed (%)" type="number" value="100" min="20" max="100"></input></td> </tr>
+    <tr> <td>Speed:</td> <td><input class="speed" placeholder="Drawing Speed (%)" type="number" value="100" min="10" max="100"></input></td> </tr>
     <tr> <td>Plotter queue:</td> <td><span class="queue_len">–</span></td> </tr>
     <tr> <td>Your job:</td> <td><span class="queue_pos">–</span></td> </tr>
     <table>
