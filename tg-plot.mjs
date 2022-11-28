@@ -48,6 +48,14 @@ function create_ui() {
     return div;
 }
 
+function random_id(len = 10, base = 16, offset = 10) {
+    let id = '';
+    for (let i=0; i<len; i++) {
+        id += (offset + Math.floor(Math.random() * base)).toString(offset+base);
+    }
+    return id;
+}
+
 function to_path(lines, num_decimals = -1) {
     function dec(n) {
         if (num_decimals < 0) { return n; }
@@ -529,7 +537,7 @@ export function make_plotter_client(tg_instance) {
     const format_select = div.querySelector('.format');
     const close_button = div.querySelector('.close-button');
     
-    client_id_span.innerText = get_localstorage( 'tg-plot:client_id', crypto.randomUUID().slice(0, 5) );
+    client_id_span.innerText = get_localstorage( 'tg-plot:client_id', random_id(4, 26, 10).toUpperCase() );
     server_input.value = get_localstorage( 'tg-plot:server_url', SERVER_URL );
         
     close_button.onmousedown = (e) => {
