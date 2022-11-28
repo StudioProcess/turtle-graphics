@@ -13,7 +13,8 @@ const SIZES = {
     'A4_PORTRAIT':  [210, 297],
 };
 const MARGIN = 0.05; // scale down (scaling factor = 1-MARGIN)
-const SERVER_URL = 'wss://plotter.eu.ngrok.io';
+const SERVER_URL = 'wss://plotter.process.tools';
+// const SERVER_URL = 'wss://plotter.eu.ngrok.io';
 
 const CONNECT_ON_START = true;
 const WAIT_BEFORE_RECONNECT = 10_000; // ms
