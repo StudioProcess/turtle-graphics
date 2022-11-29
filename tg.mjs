@@ -896,16 +896,17 @@ export function make_turtle_graphics(...line_fns_) {
      * @see {@link breakout} for stopping the loop.
      */
     function repeat(n, fn) {
-        if ( !Number.isInteger(n) ) { 
-            console.warn('repeat: number is invalid');
-            return; 
-        }
-        
-        if (typeof fn !== 'function') {
-            console.warn('repeat: function is invalid');
+        if ( typeof n !== 'number' ) { 
+            console.warn('repeat: the number you provided is invalid');
             return;
         }
         
+        if (typeof fn !== 'function') {
+            console.warn('repeat: the function you provided is invalid');
+            return;
+        }
+        
+        n = Math.floor(n); // Allow floats
         let results = [];
         let got_result = false;
         

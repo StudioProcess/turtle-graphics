@@ -467,6 +467,11 @@ tap.test('repeat', async t => {
         return i;
     });
     t.match(res, [0, 1, 2]);
+    // test floats
+    calls = [];
+    g.repeat(3.999, fn);
+    t.equal(calls.length, 3, 'float as repeat number is truncated');
+    t.match(calls, [[0], [1], [2]], 'float as repeat number is truncated');
 });
 
 tap.test('xy', async t => {
