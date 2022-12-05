@@ -356,6 +356,7 @@ function autoconnect(options = {}) {
         on_connected: undefined,
         on_disconnected: undefined,
         on_message: undefined,
+        on_error: undefined,
     }, options);
     
     let url;
@@ -405,10 +406,13 @@ function autoconnect(options = {}) {
         
         if (should_stop) { // intentional abort
             state = STATE.disconnected;
-            callback(options.on_disconnected);
+            callback(options.on_disconnected, e);
         } else {
             if (state === STATE.connected) { retries = 0; }
             state = STATE.disconnected;
+            if ( e?.code && ![1000, 1001].includes(e.code) ) {
+                callback(options.on_error, e);
+            }
             setTimeout(retry, 0);
         }
     }
@@ -763,7 +767,7 @@ export function make_plotter_client(tg_instance) {
             plot_button.innerText = 'Plot';
             plotting = false;
         },
-        on_disconnected: () => {
+        on_disconnected: (e) => {
             // console.log('on_disconnected');
             connect_button.innerText = 'Connect';
             status_span.innerText = '○ Disconnected';
@@ -824,6 +828,9 @@ export function make_plotter_client(tg_instance) {
                 plot_button.innerText = 'Plot';
                 plot_button.disabled = false;
             }
+        },
+        on_error: (e) => {
+            console.error(`🖨️ Plotter says: "(${e.code}) ${e.reason || 'No reason'} (${e.type ?? 'No type'})"`);
         },
     });
     
