@@ -342,6 +342,7 @@ function make_line_stats(viewbox = undefined) {
     const stats = {
         count: 0,
         oob_count: 0, // out of bounds lines
+        short_count: 0, // lines shorter than SVG_MIN_LINE_LENGTH
         travel: 0,
         travel_ink: 0,
         travel_blank: 0
@@ -369,6 +370,7 @@ function make_line_stats(viewbox = undefined) {
         py = y1;
         if (viewbox !== undefined) {
             if (point_out_of_bounds(x0, y0) || point_out_of_bounds(x1, y1)) { stats.oob_count += 1; }
+            if (ink < SVG_MIN_LINE_LENGTH) { stats.short_count += 1; }
         }
     }
     
