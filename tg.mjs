@@ -107,9 +107,9 @@ export function make_turtle_graphics(...line_fns_) {
      * @returns {Object} An exact clone of the turtle object returned by <code>{@link self}</code>. Has all turtle functions as properties.
      */
     function clone() {
-        const new_turtle = make_turtle_graphics(...line_fns_); // make new turtle with same line_fns
         // clone all internal state properties except for line_fns (which cannot be cloned, because it containes functions)
         for (let key of Object.keys(_state).filter(x => x !== 'line_fns')) {
+        const new_turtle = make_turtle_graphics(..._state.line_fns); // make new turtle with same line_fns
             new_turtle._state()[key] = structuredClone( _state[key] );
         }
         _add_missing_props(self, new_turtle);
@@ -805,38 +805,53 @@ export function make_turtle_graphics(...line_fns_) {
         const diamond_side = Math.sqrt(2) * diamond_size / 2;
         
         pushstate();
-        
-        // center diamond
-        penup();
-        forward(diamond_size/2);
         pendown();
-        right(135); // 180 - 45
-        forward(diamond_side);
-        right(90);
-        forward(diamond_side);
-        right(90);
-        forward(diamond_side);
-        right(90);
-        forward(diamond_side);
-        left(45);
         
-        // turtle
-        penup();
-        forward(height * center);
-        pendown();
-        right(180 - top_angle/2);
-        forward(side);
-        right(180 - base_angle);
-        forward(base);
-        right(180 - base_angle);
-        forward(side);
+        if (typeof _state.turtle_fn === 'function') {
+            _state.turtle_fn.call(undefined, size);
+        } else {
+            // center diamond
+            penup();
+            forward(diamond_size/2);
+            pendown();
+            right(135); // 180 - 45
+            forward(diamond_side);
+            right(90);
+            forward(diamond_side);
+            right(90);
+            forward(diamond_side);
+            right(90);
+            forward(diamond_side);
+            left(45);
+            
+            // turtle
+            penup();
+            forward(height * center);
+            pendown();
+            right(180 - top_angle/2);
+            forward(side);
+            right(180 - base_angle);
+            forward(base);
+            right(180 - base_angle);
+            forward(side);
+        }
         
         popstate();
     }
     _add_aliases_deprecated('show', ['turtle']);
     
+    function setturtlefunction(fn) {
+        if (typeof fn === 'function') {
+            _state.turtle_fn = fn;
+        } else {
+            _state.turtle_fn = undefined;
+        }
+    }
+    
     /**
      * Draw a small + at the turtle's current position.
+     * <br>
+     * The orientation of the mark is independent of the turtle's current heading.
      * 
      * @function mark
      * @param {number} [size=10] - Size of the mark in pixels.
@@ -844,23 +859,36 @@ export function make_turtle_graphics(...line_fns_) {
      */
     function mark(size = 10, rotation = 0) {
         pushstate();
-        penup();
         setheading(rotation);
-        
-        pushstate();
-        back(size/2);
         pendown();
-        forward(size);
-        penup();
-        popstate();
         
-        right(90);
-        back(size/2);
-        pendown();
-        forward(size);
+        if (typeof _state.mark_fn === 'function') {
+            _state.mark_fn.call(undefined, size, rotation);
+        } else {
+            penup();
+            pushstate();
+            back(size/2);
+            pendown();
+            forward(size);
+            penup();
+            popstate();
+            
+            right(90);
+            back(size/2);
+            pendown();
+            forward(size);
+        }
+        
         popstate();
     }
     
+    function setmarkfunction(fn) {
+        if (typeof fn === 'function') {
+            _state.mark_fn = fn;
+        } else {
+            _state.mark_fn = undefined;
+        }
+    }
     
     /*********************************************************
         Util
@@ -1144,6 +1172,8 @@ export function make_turtle_graphics(...line_fns_) {
         // Markings
         show,
         mark,
+        setturtlefunction,
+        setmarkfunction,
         // Util
         type,
         repeat,

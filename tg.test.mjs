@@ -819,6 +819,7 @@ tap.test('clone', async t => {
     const g = tg.make_turtle_graphics();
     // modify state
     g._add_line_fn(x => {});
+    g._add_line_fn(x => {});
     g.forward(100);
     g.right(90);
     g.push();
@@ -847,7 +848,8 @@ tap.test('clone', async t => {
         t.not(c._state().matrix_stack[i], g._state().matrix_stack[i], `matrix stack objects different (${i})`);
         t.same(c._state().matrix_stack[i], g._state().matrix_stack[i], `matrix stack contents same (${i})`);
     }
-    t.equal(c._state().line_fn, g._state().line_fn, 'line_fn equal')
+    t.equal(c._state().line_fns.length, g._state().line_fns.length, 'line_fns lengths equal');
+    t.match(c._state().line_fns, g._state().line_fns, 'line_fns match');
 });
 
 tap.test('distance', async t => {
