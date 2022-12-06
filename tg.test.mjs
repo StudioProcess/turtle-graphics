@@ -827,6 +827,8 @@ tap.test('clone', async t => {
     g.right(45);
     g.penup();
     g.push();
+    g.setturtlefunction(() => {});
+    g.setmarkfunction(() => {});
     const c = g.clone();
     t.not(c, g, 'clone is another object');
     // state objects are different
@@ -850,6 +852,9 @@ tap.test('clone', async t => {
     }
     t.equal(c._state().line_fns.length, g._state().line_fns.length, 'line_fns lengths equal');
     t.match(c._state().line_fns, g._state().line_fns, 'line_fns match');
+    
+    t.equal(c._state().turtle_fn, g._state().turtle_fn, 'turtle_fn equal');
+    t.equal(c._state().mark_fn, g._state().mark_fn, 'mark_fn equal');
 });
 
 tap.test('distance', async t => {
@@ -945,4 +950,42 @@ tap.test('foreach', async t => {
         return [el, i];
     });
     t.match(res, [ [1,0], [2,1], [3,2] ]);
+});
+
+tap.test('setturtlefunction', async t => {
+    let g = tg.make_turtle_graphics();
+    
+    let line_calls = [];
+    function line_fn(...args) { calls.push(args); }
+    g._add_line_fn(line_fn);
+    
+    let calls = [];
+    function fn(...args) { calls.push(args); }
+    
+    g.setturtlefunction(fn);
+    g.show(10);
+    g.show(20);
+    g.show(30);
+    
+    t.equal(line_calls.length, 0, 'line_fn not called');
+    t.match(calls, [[10], [20], [30]], 'turtle_fn called');
+});
+
+tap.test('setmarkfunction', async t => {
+    let g = tg.make_turtle_graphics();
+    
+    let line_calls = [];
+    function line_fn(...args) { calls.push(args); }
+    g._add_line_fn(line_fn);
+    
+    let calls = [];
+    function fn(...args) { calls.push(args); }
+    
+    g.setmarkfunction(fn);
+    g.mark(10, 20);
+    g.mark(30, 40);
+    g.mark(40, 50);
+    
+    t.equal(line_calls.length, 0, 'line_fn not called');
+    t.match(calls, [[10,20], [30,40], [40,50]], 'mark_fn called');
 });

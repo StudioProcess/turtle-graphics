@@ -41,6 +41,8 @@ export function make_turtle_graphics(...line_fns_) {
         matrix:       mat3.create(),        // transformation matrix
         matrix_stack: [],                   // matrix stack
         line_fns:     [...line_fns_],       // line drawing callbacks
+        turtle_fn:    undefined,            // function called to draw the turtle
+        mark_fn:      undefined,            // functino called to draw a mark
     };
     
     
@@ -107,11 +109,13 @@ export function make_turtle_graphics(...line_fns_) {
      * @returns {Object} An exact clone of the turtle object returned by <code>{@link self}</code>. Has all turtle functions as properties.
      */
     function clone() {
-        // clone all internal state properties except for line_fns (which cannot be cloned, because it containes functions)
-        for (let key of Object.keys(_state).filter(x => x !== 'line_fns')) {
         const new_turtle = make_turtle_graphics(..._state.line_fns); // make new turtle with same line_fns
+        // clone all internal state properties except for functions (which cannot be cloned, because it containes functions)
+        for (let key of Object.keys(_state).filter(x => !['line_fns', 'turtle_fn', 'mark_fn'].includes(x))) {
             new_turtle._state()[key] = structuredClone( _state[key] );
         }
+        new_turtle._state().turtle_fn = _state.turtle_fn;
+        new_turtle._state().mark_fn = _state.mark_fn;
         _add_missing_props(self, new_turtle);
         return new_turtle;
     }
