@@ -46,7 +46,7 @@
         pendown();
          
         // draw sinus function
-        repeat(7, function(){
+        repeat(4, function(){ // original: 7
            
             for (let x = 0; x < p; x++) {
                 setxy(x+xTransform, yscale*sin(x/xscale)+yTransform);
@@ -74,7 +74,7 @@
     function draw() {
         //Sinusoid (1, 20, -350); 
         multiSinusoid(10, 25, -350, 100);
-        show();
+        // show();
         plotter().plot();
     }
         

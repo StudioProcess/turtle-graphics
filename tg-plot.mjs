@@ -332,7 +332,11 @@ function make_line_stats(viewbox = undefined) {
         return Object.assign({}, stats);
     }
     
-    return { add_line, get };
+    function set_viewbox(new_viewbox) {
+        viewbox = new_viewbox;
+    }
+    
+    return { add_line, get, set_viewbox };
 }
 
 function line_stats(lines, viewbox = undefined) {
@@ -536,7 +540,8 @@ function checkHotkeys(hotkeys, e) {
 export function make_plotter_client(tg_instance) {
     let recording = true;
     let lines = []; // lines as they arrive from tg module (in px)
-    let line_stats = make_line_stats(tg_instance?._p5_viewbox); // stats based on lines
+    let line_stats = make_line_stats(); // Can't immediately initialize with tg_instance._p5_viewbox (not yet available) -> Init via line_fn callbacks 
+    let line_stats_viewbox_initialized = false;
     let plotting = false;
     
     const div = create_ui();
@@ -670,6 +675,10 @@ export function make_plotter_client(tg_instance) {
     };
     
     tg_instance._add_line_fn((...line) => {
+        if (! line_stats_viewbox_initialized) {
+            line_stats.set_viewbox(tg_instance?._p5_viewbox);
+            line_stats_viewbox_initialized = true;
+        }
         if (!recording) { return; }
         line = line.map(limit_precision);
         lines.push(line);
