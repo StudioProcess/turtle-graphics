@@ -792,10 +792,11 @@ export function make_turtle_graphics(...line_fns_) {
      *********************************************************/
     
     /**
-     * Draw the turtle at its current position.
+     * Draw the turtle at its current position and heading.
      * 
      * @function show
      * @param {number} [size=15] Size of the drawn turtle in pixels (height from tip to base).
+     * @see {@link setturtlefunction} to customize drawing of the turtle.
      */
     function show(size = 15) {
         const top_angle = 36;
@@ -844,6 +845,16 @@ export function make_turtle_graphics(...line_fns_) {
     }
     _add_aliases_deprecated('show', ['turtle']);
     
+    
+    /**
+     * Set a custom function that draws the turtle when using {@link show}.
+     * <br>
+     * To revert to the default turtle use omit the parameter: <code>setturtlefunction();</code>
+     * 
+     * @function setturtlefunction
+     * @param {function} [fn] - Function that will be called to draw the turtle when using {@link show}. Omit to revert to the default turtle. The function will be called with a single parameter <code>size</code>, which contains the size used in the call to {@link show}. Before the function is called, the state of the turtle is saved and the pen is lowered. After the function is called, the turtle is returned to the saved state.
+     * @see {@link show}
+     */
     function setturtlefunction(fn) {
         if (typeof fn === 'function') {
             _state.turtle_fn = fn;
@@ -853,13 +864,14 @@ export function make_turtle_graphics(...line_fns_) {
     }
     
     /**
-     * Draw a small + at the turtle's current position.
+     * Draw a small + at the turtle's current position independent of heading.
      * <br>
-     * The orientation of the mark is independent of the turtle's current heading.
+     * The orientation of the mark is independent of the turtle's current heading and can be specified with the <code>rotation</code> parameter.
      * 
      * @function mark
      * @param {number} [size=10] - Size of the mark in pixels.
      * @param {number} [rotation=0] - Rotation of the mark in degrees (0–90). Set to 45 to draw an ✕.
+     * @see {@link setmarkfunction} to customize drawing of the mark.
      */
     function mark(size = 10, rotation = 0) {
         pushstate();
@@ -886,6 +898,15 @@ export function make_turtle_graphics(...line_fns_) {
         popstate();
     }
     
+    /**
+     * Set a custom function that draws the mark when using {@link mark}.
+     * <br>
+     * To revert to the default mark omit the parameter: <code>setmarkfunction();</code>
+     * 
+     * @function setmarkfunction
+     * @param {function} [fn] - Function that will be called to draw the mark when using {@link mark}. Omit to revert to the default mark. The function will be called with two parameters <code>size</code> and <code>rotation</code>, which contain the size and rotation used in the call to {@link mark}. Before the function is called the state of the turtle is saved, the heading is set to <code>rotation</code> and the pen is lowered. After the function is called, the turtle is returned to the saved state.
+     * @see {@link mark}
+     */
     function setmarkfunction(fn) {
         if (typeof fn === 'function') {
             _state.mark_fn = fn;

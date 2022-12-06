@@ -98,16 +98,18 @@ Here is an index to all functions, grouped by type:
 
 ### Markings
 
-* `{@link show}` — Draw the turtle at its current position
-* `{@link mark}` — Draw a small + at the turtle's current position
+* `{@link show}` — Draw the turtle at its current position and heading
+* `{@link mark}` — Draw a small + at the turtle's current position independent of heading
+* `{@link setturtlefunction}` — Set a custom function that draws the turtle when using `{@link show}`
+* `{@link setmarkfunction}` — Set a custom function that draws the mark when using `{@link mark}`
 
 ### Utilities
 
-* `{@link type}` — Determine the type of any value
 * `{@link repeat}` — Repeat a function a number of times
 * `{@link foreach}` — Call a function for each element of an array
 * `{@link breakout}` — Break out of a {@link repeat} or {@link foreach} loop
 * `{@link range}` — Get a sequence of numbers for use in loops (like {@link foreach} and [<code>for...of</code>]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of})
+* `{@link type}` — Determine the type of any value
 
 ### Plotting
 
