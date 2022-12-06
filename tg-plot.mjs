@@ -179,17 +179,12 @@ function format_num(number) {
 
 // https://en.wikipedia.org/wiki/Cohen–Sutherland_algorithm
 // Returns clipped line or false if line was completely removed
-function clip_line([x0, y0, x1, y1], clipbox) {
+function clip_line( [x0, y0, x1, y1], [xmin, ymin, xmax, ymax] ) {
     const INSIDE = 0; // 0000
     const LEFT = 1;   // 0001
     const RIGHT = 2;  // 0010
     const BOTTOM = 4; // 0100
     const TOP = 8;    // 1000
-    
-    const xmin = clipbox[0];
-    const xmax = xmin + clipbox[2];
-    const ymin = clipbox[1];
-    const ymax = ymin + clipbox[3];
     
     function out_code(x, y) {
         let code = INSIDE;  // initialised as being inside of clip window
@@ -249,8 +244,8 @@ function clip_line([x0, y0, x1, y1], clipbox) {
     return accept ? [x0, y0, x1, y1] : false;
 }
 
-function clip_lines(lines, clipbox) {
-    lines = lines.map(line => clip_line(line, clipbox));
+function clip_lines(lines, bounds) {
+    lines = lines.map(line => clip_line(line, bounds));
     // filter out removed lines
     lines = lines.filter(line => line !== false);
     return lines;
@@ -268,8 +263,10 @@ async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date 
     lines = lines.map(line => line.map(limit_precision));
     
     if (SVG_CLIPPING) {
-        const scaled_viewbox = scale_viewbox(lines_viewbox, target_size, MARGIN); // original viewbox scaled up to target size
-        lines = clip_lines(lines, scaled_viewbox);
+        const scaled_vb = scale_viewbox(lines_viewbox, target_size, MARGIN); // original viewbox scaled up to target size
+        let bounds = [ scaled_vb[0], scaled_vb[1], scaled_vb[0] + scaled_vb[2], scaled_vb[1] + scaled_vb[3] ];
+        bounds = bounds.map(limit_precision);
+        lines = clip_lines(lines, bounds);
     }
     
     const stats = line_stats(lines);
