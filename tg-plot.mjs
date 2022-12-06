@@ -34,6 +34,7 @@ function create_ui() {
     12" maxlength="10" min="3" pattern="\\w{3,10}"></input></td> </tr>
     <tr> <td>Lines:</td> <td><span class="lines">–</span></td> </tr>
     <tr> <td>Out of bounds:</td> <td><span class="oob">–</span></td> </tr>
+    <tr> <td>Short:</td> <td><span class="short">–</span></td> </tr>
     <tr> <td>Travel:</td> <td><span class="travel">–</span></td> </tr>
     <tr> <td>Ink:</td> <td><span class="ink">–</span></td> </tr>
     <tr> <td>Format:</td> <td><select class="format"><option value="A3_LANDSCAPE">A3 Landscape</option><option value="A3_PORTRAIT">A3 Portrait</option></select></td> </tr>
@@ -593,6 +594,7 @@ export function make_plotter_client(tg_instance) {
     const div = create_ui();
     const lines_span = div.querySelector('.lines');
     const oob_span = div.querySelector('.oob');
+    const short_span = div.querySelector('.short');
     const travel_span = div.querySelector('.travel');
     const ink_span = div.querySelector('.ink');
     const client_id_input = div.querySelector('.client_id');
@@ -704,6 +706,8 @@ export function make_plotter_client(tg_instance) {
         lines_span.innerText = format_num(stats.count);
         oob_span.innerText = format_num(stats.oob_count);
         oob_span.style.color = stats.oob_count > 0 ? 'red' : '';
+        short_span.innerText = format_num(stats.short_count);
+        short_span.style.color = stats.short_count > 0 ? 'red' : '';
         travel_span.innerText = format_num(Math.floor(stats.travel * scale)) + unit;
         ink_span.innerText = format_num(Math.floor(stats.travel_ink * scale)) + unit;
     }
