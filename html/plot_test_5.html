@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plot Test 5 (Small steps filter)</title>
+    <script src="../node_modules/p5/lib/p5.min.js"></script>
+    <script src="../dist/latest/tg.mjs" type="module"></script>
+    <script src="../dist/latest/tg-plot.mjs" type="module"></script>
+    <script>
+        let STEPS = 4000;
+        
+        function setup() {
+            createCanvas(500, 500);
+            
+            noLoop();
+        }
+        
+        function draw() {
+            jumpxy( -250, 0 );
+            for (let i=0; i<STEPS; i++) {
+                const t = i/STEPS;
+                setxy( t*width - width/2, sin( t * TWO_PI ) * 100 );
+            }
+            plotter().plot();
+        }
+    </script>
+</head>
+<body>
+
+</body>
+</html>

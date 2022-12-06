@@ -5,6 +5,7 @@ const HOTKEYS = [ ['metaKey', 'altKey', 'KeyP'], ['ctrlKey', 'altKey', 'KeyP'] ]
 
 const SVG_PRECISION = 3; // Number of decimal places (Avoid precision errors, that produce discontinuities in the SVG) (-1 to deactivate limiting)
 const SVG_CLIPPING = true; // Perform clipping to scaled viewbox (NOT target viewbox)
+const SVG_MIN_LINE_LENGTH = 0.1; // in mm (0 to deactivate filtering short lines)
 const TARGET_SIZE = [420, 297]; // A3 Landscape, in mm
 const SIZES = {
     'A3_LANDSCAPE': [420, 297],
@@ -251,6 +252,44 @@ function clip_lines(lines, bounds) {
     return lines;
 }
 
+function filter_short_lines(lines, min_len) {
+    function len(x0, y0, x1, y1) {
+        return Math.sqrt( (y1-y0)**2 + (x1-x0)**2 );
+    }
+    
+    let out = [];   // output lines
+    let sx, sy;     // start: start of next line for output
+    let ex, ey;     //   end: always end of last encountered line
+    let cumlen = 0; // cumulative length, starting from (sx,sy)
+    let skipped_segments = 0; // counter for stats (unused)
+    
+    for (let line of lines) {
+        const l = len(...line); // length of current segment
+        const [x0, y0, x1, y1] = line;
+        
+        if (x0 !== ex || y0 !== ey) { // staring point is different from last ending point
+            // start of new linestrip
+            sx = x0; // set start point for next output
+            sy = y0;
+            cumlen = 0; // reset length
+        }
+        
+        cumlen += l; // add curent segment length
+        ex = x1; // always set end point
+        ey = y1;
+        
+        if (cumlen >= min_len) {
+            out.push([ sx, sy, ex, ey ]);
+            sx = x1;
+            sy = y1;
+            cumlen = 0;
+        } else {
+            skipped_segments += 1;
+        }
+    }
+    return out;
+}
+
 // TODO: stroke width
 async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date = undefined) {
     if (lines_viewbox === 'bbox') { // calculate bounding box
@@ -267,6 +306,10 @@ async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date 
         let bounds = [ scaled_vb[0], scaled_vb[1], scaled_vb[0] + scaled_vb[2], scaled_vb[1] + scaled_vb[3] ];
         bounds = bounds.map(limit_precision);
         lines = clip_lines(lines, bounds);
+    }
+    
+    if (SVG_MIN_LINE_LENGTH > 0) {
+        lines = filter_short_lines(lines, SVG_MIN_LINE_LENGTH);
     }
     
     const stats = line_stats(lines);
