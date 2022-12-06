@@ -173,6 +173,10 @@ function debounce(fn, delay=1000) {
     };
 }
 
+function format_num(number) {
+    return new Intl.NumberFormat('en-US').format(number);
+}
+
 // https://en.wikipedia.org/wiki/Cohen–Sutherland_algorithm
 // Returns clipped line or false if line was completely removed
 function clip_line([x0, y0, x1, y1], clipbox) {
@@ -655,11 +659,11 @@ export function make_plotter_client(tg_instance) {
             scale_args_viewbox(tg_instance._p5_viewbox, SIZES[format_select.value], MARGIN)[0] : 
             1.0;
         const unit = tg_instance._p5_viewbox ? ' mm' : ' px';
-        lines_span.innerText = stats.count;
-        oob_span.innerText = stats.oob_count;
+        lines_span.innerText = format_num(stats.count);
+        oob_span.innerText = format_num(stats.oob_count);
         oob_span.style.color = stats.oob_count > 0 ? 'red' : '';
-        travel_span.innerText = Math.floor(stats.travel * scale) + unit;
-        ink_span.innerText = Math.floor(stats.travel_ink * scale) + unit;
+        travel_span.innerText = format_num(Math.floor(stats.travel * scale)) + unit;
+        ink_span.innerText = format_num(Math.floor(stats.travel_ink * scale)) + unit;
     }
     const update_stats_debounced = debounce(update_stats, 1000);
     
