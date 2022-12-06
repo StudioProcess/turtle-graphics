@@ -8,94 +8,75 @@
     <script src="../dist/latest/tg.mjs" type="module"></script>
     <script src="../dist/latest/tg-plot.mjs" type="module"></script>
     <script>
-     let img;
      
-     function preload() {
-       //img = loadImage("o.png");
-     }
+    function setup() {
+        createCanvas(800, 800);
+        //image(img, -400, -400);
+        noLoop();
+    }
+       
+    function sinWave(xscale, yscale, yTransform) {
+        // start point
+        penup();
+        stroke(0, 0, 0);
+        let xTransform = -400;
+        setxy(xTransform, yTransform); 
+        pendown();
+         
+        // draw sinus function
+        for (let x = 0; x < 800; x++) { // Anzahl der Punkte bzw. Länge
+           
+            setxy(x+xTransform, yscale*sin(x/xscale)+yTransform);
+           
+        }
+    }
      
-     function setup() {
-       createCanvas(800, 800);
-       //image(img, -400, -400);
-       noLoop();
-     }
-       
-     function sinWave(xscale, yscale, yTransform) {
-         
-         // start point
-         penup();
-         stroke(0, 0, 0);
-         let xTransform = -400;
-         setxy(xTransform, yTransform); 
-         pendown();
-         
-         // draw sinus function
-       for (let x = 0; x < 800; x++) { // Anzahl der Punkte bzw. Länge
-           
-         setxy(x+xTransform, yscale*sin(x/xscale)+yTransform);
-           
-       }
-         
-     }
+    function mysin(x, w, f, a) {
+        return -sin(x / w * TWO_PI * f ) * a;
+    }
      
-     function mysin(x, w, f, a) {
-       
-       return -sin(x / w * TWO_PI * f ) * a;
-       
-     }
-     
-     function sinusoid(xscale, yscale, yTransform) {
+    function sinusoid(xscale, yscale, yTransform) {
+        // start point
+        penup();
+        stroke(0, 0, 0);
+        let pi = PI;
+        let p = (2*pi) / (1/xscale); // periode
+        let xTransform = -400;
+        setxy(xTransform, yTransform); 
+        pendown();
          
-         // start point
-         penup();
-         stroke(0, 0, 0);
-         let pi = PI;
-         let p = (2*pi) / (1/xscale); // periode
-         let xTransform = -400;
-         setxy(xTransform, yTransform); 
-         pendown();
-         
-         // draw sinus function
-         repeat(7, function(){
+        // draw sinus function
+        repeat(7, function(){
            
-           for (let x = 0; x < p; x++) {
+            for (let x = 0; x < p; x++) {
+                setxy(x+xTransform, yscale*sin(x/xscale)+yTransform);
            
-           setxy(x+xTransform, yscale*sin(x/xscale)+yTransform);
+                //if(x >= p) { // if x-pos. is at/over periode, increase xscale
+                //xscale = xscale*2;
+                //p = (2*pi) / (1/xscale);
+                //}
+            }
+            
+            xTransform = xTransform+p;
+            p = p*2;
+            xscale = xscale*2;
            
-           //if(x >= p) { // if x-pos. is at/over periode, increase xscale
-           //xscale = xscale*2;
-           //p = (2*pi) / (1/xscale);
-           //}
-           }
-           
-           xTransform = xTransform+p;
-           p = p*2;
-           xscale = xscale*2;
-           
-         });
-           
-         
-     }
+        });
+    }
      
-     function multiSinusoid(xscale, yscale, yTransform, repeat) {
-       
-       for (let i=0; i < repeat; i++) {
-       
-         sinusoid(xscale, yscale, yTransform);
-         yTransform = yTransform + 7;
-         
-       }
-       
-     }
+    function multiSinusoid(xscale, yscale, yTransform, repeat) {
+        for (let i=0; i < repeat; i++) {
+            sinusoid(xscale, yscale, yTransform);
+            yTransform = yTransform + 7;
+        }
+    }
      
-     function draw() {
-     
-     //Sinusoid (1, 20, -350); 
-     multiSinusoid(10, 25, -350, 100);
-     show();
-     plotter().plot();
-       
-     }
+    function draw() {
+        //Sinusoid (1, 20, -350); 
+        multiSinusoid(10, 25, -350, 100);
+        show();
+        plotter().plot();
+    }
         
     </script>
 </head>

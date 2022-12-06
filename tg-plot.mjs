@@ -160,6 +160,19 @@ async function hash(str) {
     return array.map( (b) => b.toString(16).padStart(2, '0') ).join('');
 }
 
+function debounce(fn, delay=1000) {
+    let blocked = false;
+    return function(...args) {
+        if (!blocked) {
+            blocked = true;
+            setTimeout(() => {
+                fn(...args);
+                blocked = false;
+            }, delay);
+        }
+    };
+}
+
 // https://en.wikipedia.org/wiki/Cohen–Sutherland_algorithm
 // Returns clipped line or false if line was completely removed
 function clip_line([x0, y0, x1, y1], clipbox) {
@@ -643,6 +656,7 @@ export function make_plotter_client(tg_instance) {
         travel_span.innerText = Math.floor(stats.travel * scale) + unit;
         ink_span.innerText = Math.floor(stats.travel_ink * scale) + unit;
     }
+    const update_stats_debounced = debounce(update_stats, 1000);
     
     format_select.onchange = (e) => {
         update_stats();
@@ -660,7 +674,7 @@ export function make_plotter_client(tg_instance) {
         line = line.map(limit_precision);
         lines.push(line);
         line_stats.add_line(...line);
-        update_stats();
+        update_stats_debounced();
     });
     
      
