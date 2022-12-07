@@ -5,7 +5,7 @@ const HOTKEYS = [ ['metaKey', 'altKey', 'KeyP'], ['ctrlKey', 'altKey', 'KeyP'] ]
 
 const SVG_PRECISION = 3; // Number of decimal places (Avoid precision errors, that produce discontinuities in the SVG) (-1 to deactivate limiting)
 const SVG_CLIPPING = true; // Perform clipping to scaled viewbox (NOT target viewbox)
-const SVG_MIN_LINE_LENGTH = 0.1; // in mm (0 to deactivate filtering short lines)
+const SVG_MIN_LINE_LENGTH = 1/10; // Minimum length of a line in mm (Hopefully avoids belt slipping) (0 to deactivate filtering)
 const TARGET_SIZE = [420, 297]; // A3 Landscape, in mm
 const SIZES = {
     'A3_LANDSCAPE': [420, 297],
@@ -253,9 +253,9 @@ function clip_lines(lines, bounds) {
     return lines;
 }
 
-function filter_short_lines(lines, min_len) {
+function filter_short_lines(lines, min_len) {    
     function len(x0, y0, x1, y1) {
-        return Math.sqrt( (y1-y0)**2 + (x1-x0)**2 );
+        return Math.sqrt( (x1-x0)**2 + (y1-y0)**2 );
     }
     
     let out = [];   // output lines
@@ -313,7 +313,7 @@ async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date 
         lines = filter_short_lines(lines, SVG_MIN_LINE_LENGTH);
     }
     
-    const stats = line_stats(lines);
+    const stats = line_stats(lines); // No need to provide viewbox (out of bounds were clipped already) or scale (lines are already scaled, short lines removed)
     const _timestamp = timestamp(date);
     const d = to_path(lines);
     
@@ -338,9 +338,10 @@ function svg_data_url(svg) {
     return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
 }
 
-// viewbox: optional for out-of-bounds counting
-function make_line_stats(viewbox = undefined) {
-    const stats = {
+// viewbox: (Optional) For out-of-bounds counting
+// scale:   (Optional) For scaled travels and short_count
+function make_line_stats(viewbox = undefined, scale = undefined) {
+    const empty = {
         count: 0,
         oob_count: 0, // out of bounds lines
         short_count: 0, // lines shorter than SVG_MIN_LINE_LENGTH
@@ -348,8 +349,10 @@ function make_line_stats(viewbox = undefined) {
         travel_ink: 0,
         travel_blank: 0
     };
+    const stats = Object.assign({}, empty);
     let px;
     let py;
+    const lines = [];
     
     function dist(x0, y0, x1, y1) {
         return Math.sqrt( (x1-x0)**2 + (y1-y0)**2 );
@@ -360,9 +363,16 @@ function make_line_stats(viewbox = undefined) {
         return x < left || x > right || y < top || y > bottom;
     }
     
-    function add_line(x0, y0, x1, y1) {
-        const blank = px !== undefined ? dist(px, py, x0, y0) : 0; // blank travel to line start
-        const ink = dist(x0, y0, x1, y1); // line
+    function add_line(x0, y0, x1, y1, save = true) {
+        if (save) { 
+            lines.push([x0, y0, x1, y1]); // Save lines for possible recomputation when viewbox or scale change
+        }
+        let blank = px !== undefined ? dist(px, py, x0, y0) : 0; // blank travel to line start
+        let ink = dist(x0, y0, x1, y1); // line
+        if (scale !== undefined) {
+            blank *= scale;
+            ink *= scale;
+        }
         stats.count += 1;
         stats.travel_blank += blank;
         stats.travel_ink += ink;
@@ -371,6 +381,8 @@ function make_line_stats(viewbox = undefined) {
         py = y1;
         if (viewbox !== undefined) {
             if (point_out_of_bounds(x0, y0) || point_out_of_bounds(x1, y1)) { stats.oob_count += 1; }
+        }
+        if (scale !== undefined) {
             if (ink < SVG_MIN_LINE_LENGTH) { stats.short_count += 1; }
         }
     }
@@ -379,15 +391,40 @@ function make_line_stats(viewbox = undefined) {
         return Object.assign({}, stats);
     }
     
+    let viewbox_changed = false;
     function set_viewbox(new_viewbox) {
+        viewbox_changed = true;
+        if (JSON.stringify(new_viewbox) === JSON.stringify(viewbox)) {
+            viewbox_changed = false; 
+        }
         viewbox = new_viewbox;
     }
     
-    return { add_line, get, set_viewbox };
+    let scale_changed = false;
+    function set_scale(new_scale) {
+        scale_changed = true;
+        if (scale === new_scale || (scale === undefined && new_scale === 1)) {
+            scale_changed = false;
+        }
+        scale = new_scale;
+    }
+    
+    // Recompute stats, only if viewbox or scale were changed
+    function update() {
+        if (viewbox_changed || scale_changed) {
+            Object.assign(stats, empty);
+            for (let line of lines) { add_line(...line, false); } // Don't save those lines again!
+            viewbox_changed = false;
+            scale_changed = false;
+        }
+        return get();
+    }
+    
+    return { add_line, get, update, set_viewbox, set_scale };
 }
 
-function line_stats(lines, viewbox = undefined) {
-    const stats = make_line_stats(viewbox);
+function line_stats(lines, viewbox = undefined, scale = undefined) {
+    const stats = make_line_stats(viewbox, scale);
     for (let line of lines) { stats.add_line(...line); }
     return stats.get();
 }
@@ -694,22 +731,26 @@ export function make_plotter_client(tg_instance) {
         save_text(svg, `${timestamp}_${hash.slice(0,5)}.svg`);
     };
     
+    // Scale factor to proportionally scale the viewbox to the selected format, with margin
+    function scale_factor() {
+        return tg_instance._p5_viewbox ? 
+        scale_args_viewbox(tg_instance._p5_viewbox, SIZES[format_select.value], MARGIN)[0] : 
+        1.0;
+    }
     
     function update_stats() {
-        const stats = line_stats.get();
-        // scaling factor
-        // TODO: tg_instance._p5_viewbox should actually never be undefined
-        const scale = tg_instance._p5_viewbox ? 
-            scale_args_viewbox(tg_instance._p5_viewbox, SIZES[format_select.value], MARGIN)[0] : 
-            1.0;
+        line_stats.set_viewbox(tg_instance._p5_viewbox);
+        line_stats.set_scale(scale_factor());
+        const stats = line_stats.update(); // update stats, if viewbox or scale is different
         const unit = tg_instance._p5_viewbox ? ' mm' : ' px';
+        
         lines_span.innerText = format_num(stats.count);
         oob_span.innerText = format_num(stats.oob_count);
         oob_span.style.color = stats.oob_count > 0 ? 'red' : '';
         short_span.innerText = format_num(stats.short_count);
         short_span.style.color = stats.short_count > 0 ? 'red' : '';
-        travel_span.innerText = format_num(Math.floor(stats.travel * scale)) + unit;
-        ink_span.innerText = format_num(Math.floor(stats.travel_ink * scale)) + unit;
+        travel_span.innerText = format_num(Math.floor(stats.travel)) + unit;
+        ink_span.innerText = format_num(Math.floor(stats.travel_ink)) + unit;
     }
     const update_stats_debounced = debounce(update_stats, 1000);
     
@@ -727,6 +768,7 @@ export function make_plotter_client(tg_instance) {
     tg_instance._add_line_fn((...line) => {
         if (! line_stats_viewbox_initialized) {
             line_stats.set_viewbox(tg_instance?._p5_viewbox);
+            line_stats.set_scale(scale_factor());
             line_stats_viewbox_initialized = true;
         }
         if (!recording) { return; }
@@ -757,7 +799,7 @@ export function make_plotter_client(tg_instance) {
     const public_fns = {
         clear() {
             lines = [];
-            line_stats = make_line_stats(tg_instance?._p5_viewbox);
+            line_stats = make_line_stats(tg_instance?._p5_viewbox, scale_factor());
             lines_span.innerText = '–';
             travel_span.innerText = '–';
             ink_span.innerText = '–';
