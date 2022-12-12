@@ -927,7 +927,7 @@ export function make_plotter_client(tg_instance) {
             }
             else if (msg.type === 'job_done') {
                 plotting = false;
-                queue_pos_span.innerText = '✔️ Done';
+                queue_pos_span.innerText = '✅ Done';
                 client_id_input.disabled = false;
                 format_select.disabled = false;
                 speed_input.disabled = false;
