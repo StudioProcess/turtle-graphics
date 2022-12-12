@@ -685,7 +685,7 @@ export function make_plotter_client(tg_instance) {
             const msg = JSON.stringify({
                 type: 'plot',
                 client: client_id_input.value,
-                id: crypto.randomUUID(),
+                id: random_id(),
                 svg,
                 stats,
                 timestamp,
