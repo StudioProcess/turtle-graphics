@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transform Test</title>
+    <script src="../node_modules/p5/lib/p5.min.js"></script>
+    <script src="../dist/latest/tg.mjs" type="module"></script>
+    <script>
+        
+        function setup() {
+            createCanvas(500, 500);
+            noLoop();
+            background(220);
+        }
+        
+        function myturtle() {
+            push();
+            scale(3);
+            mark();
+            // arrow
+            forward(20);
+            right(45);
+            penup();
+            back(10);
+            pendown();
+            forward(10);
+            right();
+            forward(10);
+            pop();
+        }
+        
+        function testturtle() {
+            myturtle();
+            forward(100);
+            right(45);
+            myturtle();
+        }
+        
+        function draw() {
+            push();
+            translate(-100);
+            forward(100);
+            rotate(45);
+            scale(2);
+            show();
+            forward(50);
+            show();
+            pop();
+            
+            translate(100);
+            testturtle();
+        }
+        
+    </script>
+</head>
+<body>
+
+</body>
+</html>

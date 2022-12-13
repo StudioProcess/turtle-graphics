@@ -11,6 +11,7 @@ const GLOBAL_INSTANCE_NAME = 't';
 const GLOBAL_OVERWRITTEN_NAME = 'p5';
 const DONT_GLOBALIZE = [ 'VERSION', 'TYPE' ];
 const DONT_WARN_GLOBALIZING = [ 'self' ];
+const TRANSFORM_WRT_TURTLE = true; // Scale and rotate with respect to the turtle's current position, instead of the origin
 
 
 // Constructor function
@@ -289,7 +290,7 @@ export function make_turtle_graphics(...line_fns_) {
     }
     
     /**
-     * Rotate the coordinate system.
+     * Rotate the coordinate system around the current position of the turtle.
      * 
      * @function rotate
      * @param {number} angle - The angle in degrees to rotate the coordinate system. A positive number rotates clockwise, a negative number counter-clockwise.
@@ -301,14 +302,16 @@ export function make_turtle_graphics(...line_fns_) {
     function rotate(ra = 0) {
         const turtle = _state.turtle;
         // update transformation matrix
+        if (TRANSFORM_WRT_TURTLE) { translate(turtle.ux, turtle.uy); } // TODO: why untransformed? 
         mat3.rotate( _state.matrix, _state.matrix, ra / 180 * Math.PI );
+        if (TRANSFORM_WRT_TURTLE) { translate(-turtle.ux, -turtle.uy); }
         // update transformed angle as well
         turtle.a += ra;
         turtle.a = _clean_angle(turtle.a);
     }
     
     /**
-     * Scale the coordinate system.
+     * Scale the coordinate system from the current position of the turtle.
      * 
      * @function scale
      * @param {number} sx - The scaling factor in x-direction.
@@ -321,7 +324,9 @@ export function make_turtle_graphics(...line_fns_) {
     function scale(sx = 1, sy = undefined) {
         if (sy === undefined) { sy = sx; }
         // update transformation matrix
+        if (TRANSFORM_WRT_TURTLE) { translate(_state.turtle.ux, _state.turtle.uy); } // TODO: why untransformed? 
         mat3.scale( _state.matrix, _state.matrix, [sx, sy] );
+        if (TRANSFORM_WRT_TURTLE) { translate(-_state.turtle.ux, -_state.turtle.uy); }
     }
     
     
