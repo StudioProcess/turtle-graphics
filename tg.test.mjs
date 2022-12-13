@@ -1,6 +1,8 @@
 import tap from 'tap';
 import * as tg from './tg.mjs';
 
+const TRANSFORM_WRT_TURTLE = true; // Scale and rotate with respect to the turtle's current position, instead of the origin
+
 // console.log(tap);
 // console.log(tg);
 
@@ -161,20 +163,51 @@ tap.test('translate', async t => {
 });
 
 tap.test('rotate', async t => {
-    const g = tg.make_turtle_graphics();
-    g.rotate(90);
-    g.forward(100);
-    t.match(g._state().turtle, { x:100, y:0, a:90 });
-    g.right(90);
-    t.match(g._state().turtle, { x:100, y:0, a:180 });
-    g.forward(100);
-    t.match(g._state().turtle, { x:100, y:100, a:180 });
-    g.rotate(-90);
-    g.forward(0);
-    t.match(g._state().turtle, { x:100, y:-100, a:90 });
-    g.rotate();
-    g.forward(0);
-    t.match(g._state().turtle, { x:100, y:-100, a:90 }, 'no argument');
+    if (TRANSFORM_WRT_TURTLE) {
+        let g = tg.make_turtle_graphics();
+        g.rotate(90);
+        g.forward(100);
+        t.match(g._state().turtle, { x:100, y:0, a:90 });
+        g.right(90);
+        t.match(g._state().turtle, { x:100, y:0, a:180 });
+        g.forward(100);
+        t.match(g._state().turtle, { x:100, y:100, a:180 });
+        g.rotate(-90);
+        g.forward(0); // this updates the position according to transformations
+        t.match(g._state().turtle, { x:100, y:100, a:90 });
+        g.rotate();
+        g.forward(0);
+        t.match(g._state().turtle, { x:100, y:100, a:90 }, 'no argument');
+        
+        g = tg.make_turtle_graphics();
+        g.rotate(90);
+        g.forward(100);
+        t.match(g._state().turtle, { x:100, y:0, a:90 });
+        g.rotate(90);
+        g.forward(100);
+        t.match(g._state().turtle, { x:100, y:100, a:180 });
+        g.rotate(90);
+        g.forward(100);
+        t.match(g._state().turtle, { x:0, y:100, a:270 });
+        g.rotate(90);
+        g.forward(100);
+        t.match(g._state().turtle, { x:0, y:0, a:0 });
+    } else {
+        const g = tg.make_turtle_graphics();
+        g.rotate(90);
+        g.forward(100);
+        t.match(g._state().turtle, { x:100, y:0, a:90 });
+        g.right(90);
+        t.match(g._state().turtle, { x:100, y:0, a:180 });
+        g.forward(100);
+        t.match(g._state().turtle, { x:100, y:100, a:180 });
+        g.rotate(-90);
+        g.forward(0); // this updates the position according to transformations
+        t.match(g._state().turtle, { x:100, y:-100, a:90 });
+        g.rotate();
+        g.forward(0);
+        t.match(g._state().turtle, { x:100, y:-100, a:90 }, 'no argument');
+    }
 });
 
 tap.test('scale', async t => {
@@ -193,7 +226,12 @@ tap.test('scale', async t => {
     t.match(g._state().turtle, { x:200, y:-200, a:90 });
     g.scale(0.5, 0.5);
     g.forward(0);
-    t.match(g._state().turtle, { x:100, y:-100, a:90 });
+    if (TRANSFORM_WRT_TURTLE) {
+        t.match(g._state().turtle, { x:200, y:-200, a:90 }); // unchanged (wrt turtle)
+    } else {
+        t.match(g._state().turtle, { x:100, y:-100, a:90 }); // changed (wrt origin)
+    }
+    
     g = tg.make_turtle_graphics();
     g.scale(2, 0.5);
     g.forward(100);
@@ -865,9 +903,15 @@ tap.test('distance', async t => {
     t.equal(g.distance(150, 100), 100, 'distance test 2');
     t.equal(g.distance(50, 199), 99, 'distance test 3');
     g.scale(2, 1);
-    t.equal(g.distance(50, 100), 50, 'scale test 1');
-    t.equal(g.distance(150, 100), 250, 'scale test 2');
-    t.equal(g.distance(25, 199), 99, 'scale test 3');
+    if (TRANSFORM_WRT_TURTLE) {
+        t.equal(g.distance(50, 100), 0, 'scale test 1');
+        t.equal(g.distance(150, 100), 200, 'scale test 2'); // double scaling in x direction
+        t.equal(g.distance(50, 199), 99, 'scale test 3'); // same scaling in y direction
+    } else {
+        t.equal(g.distance(50, 100), 50, 'scale test 1');
+        t.equal(g.distance(150, 100), 250, 'scale test 2');
+        t.equal(g.distance(25, 199), 99, 'scale test 3');
+    }
     
     g = tg.make_turtle_graphics();
     g.setxy(50, 100);
