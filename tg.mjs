@@ -194,6 +194,8 @@ export function make_turtle_graphics(...line_fns_) {
         const angle_rad = ( turtle.ua - 90 ) / 180 * Math.PI;
         turtle.ux += units * Math.cos(angle_rad);
         turtle.uy += units * Math.sin(angle_rad);
+        turtle.ux = _clean_zero(turtle.ux);
+        turtle.uy = _clean_zero(turtle.uy);
         
         // transformed position
         [ turtle.x, turtle.y ] = _transform( [turtle.ux, turtle.uy], matrix );
@@ -435,7 +437,17 @@ export function make_turtle_graphics(...line_fns_) {
      * @function xy
      * @returns {Position} A {@link Position} object containing <code>x</code> and <code>y</code>.
      */
+     
+     // TODO: what is the intended behaviour?
+     // either xy returns untransfored and setxy transforms
+     // or xy returns transformed (absolute) and setxy doesn't transform
+     // but: if everything is done in absolyte coordinates, we can't use relative movements with setxy
     function xy() {
+        // return untransformed position
+        return { x: _state.turtle.ux, y: _state.turtle.uy };
+    }
+    
+    function absxy() {
         return { x: _state.turtle.x, y: _state.turtle.y };
     }
     
@@ -446,9 +458,13 @@ export function make_turtle_graphics(...line_fns_) {
      * @returns {number} The turtle's x-coordinate in pixels.
      */
     function x() {
-        return _state.turtle.x;
+        return _state.turtle.ux;
     }
     _add_aliases_deprecated('x', ['xcor']);
+    
+    function absx() {
+        return _state.turtle.x;
+    }
     
     /**
      * Get the turtle's y-coordinate.
@@ -457,9 +473,13 @@ export function make_turtle_graphics(...line_fns_) {
      * @returns {number} The turtle's y-coordinate in pixels.
      */
     function y() {
-        return _state.turtle.y;
+        return _state.turtle.uy;
     }
     _add_aliases_deprecated('y', ['ycor']);
+    
+    function absy() {
+        return _state.turtle.y;
+    }
     
     /**
      * Get the turtle's heading.
@@ -467,7 +487,12 @@ export function make_turtle_graphics(...line_fns_) {
      * @function heading
      * @returns {number} The turtle's heading angle in degrees (0–360).
      */
+     // TODO: should heading return untransformed? probably, because setheading applies the rotation
     function heading() {
+        return _state.turtle.ua;
+    }
+    
+    function absheading() {
         return _state.turtle.a;
     }
     
@@ -631,7 +656,7 @@ export function make_turtle_graphics(...line_fns_) {
         if ( ! _check_number(y, 'setxy', 'y', true) ) { return; }
         const turtle = _state.turtle;
         const matrix = _state.matrix;
-        if (x === null || x === undefined) { x = turtle.x; }
+        if (x === null || x === undefined) { x = turtle.x; } // TODO: shouldn't this be ux ? (will be transformed below)
         if (y === null || y === undefined) { y = turtle.y; }
         
         // save previous position
@@ -649,6 +674,8 @@ export function make_turtle_graphics(...line_fns_) {
         [ turtle.px, turtle.py ] = _transform( [turtle.upx, turtle.upy], matrix );
         _draw();
     }
+    
+    // TODO: function setxyabs(x,y) {}
     
     /**
      * Set the turtle's position, without drawing to the new position.
@@ -1184,6 +1211,10 @@ export function make_turtle_graphics(...line_fns_) {
         x,
         y,
         heading,
+        absxy,
+        absx,
+        absy,
+        absheading,
         isdown,
         isup,
         state,
