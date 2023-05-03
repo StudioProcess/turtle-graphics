@@ -8,10 +8,10 @@ const SVG_CLIPPING = true; // Perform clipping to scaled viewbox (NOT target vie
 const SVG_MIN_LINE_LENGTH = 1/10; // Minimum length of a line in mm (Hopefully avoids belt slipping) (0 to deactivate filtering)
 const TARGET_SIZE = [420, 297]; // A3 Landscape, in mm
 const SIZES = {
-    'A3_LANDSCAPE': [420, 297],
-    'A3_PORTRAIT' : [297, 420],
-    'A4_LANDSCAPE': [297, 210],
-    'A4_PORTRAIT':  [210, 297],
+    'A3 Landscape': [420, 297],
+    'A3 Portrait' : [297, 420],
+    'A4 Landscape': [297, 210],
+    'A4 Portrait':  [210, 297],
 };
 const MARGIN = 0.05; // scale down (scaling factor = 1-MARGIN)
 // const SERVER_URL = 'wss://plotter.process.tools';
@@ -23,6 +23,7 @@ const RETRIES = -1 // -1 for unlimited
 
 function create_ui() {
     const tmp = document.createElement('template');
+    const format_options = Object.keys(SIZES).reduce( (acc, key) => acc += `<option value="${key}">${key}</option>`, '' ) ;
     tmp.innerHTML = `<div id="plotter-ui" style="display:none; font:11px system-ui; width:200px; position:fixed; top:0; right:0; padding:8px; background:rgba(255,255,255,0.66)">
     <div style="font-weight:bold; text-align:center; position:relative;">Plotter<span class="close-button" style="display:inline-block; position:absolute; right:0; cursor:pointer;">✕</span></div>
     <input class="server" placeholder="Server" value=""></input><br>
@@ -37,7 +38,7 @@ function create_ui() {
     <tr> <td>Short:</td> <td><span class="short">–</span></td> </tr>
     <tr> <td>Travel:</td> <td><span class="travel">–</span></td> </tr>
     <tr> <td>Ink:</td> <td><span class="ink">–</span></td> </tr>
-    <tr> <td>Format:</td> <td><select class="format"><option value="A3_LANDSCAPE">A3 Landscape</option><option value="A3_PORTRAIT">A3 Portrait</option></select></td> </tr>
+    <tr> <td>Format:</td> <td><select class="format">${format_options}</select></td> </tr>
     <tr> <td>Speed:</td> <td><input class="speed" placeholder="Drawing Speed (%)" type="number" value="100" min="10" max="100"></input></td> </tr>
     <tr> <td>Plotter queue:</td> <td><span class="queue_len">–</span></td> </tr>
     <tr> <td>Your job:</td> <td><span class="queue_pos">–</span></td> </tr>
@@ -651,7 +652,7 @@ export function make_plotter_client(tg_instance) {
     
     server_input.value = get_localstorage( 'tg-plot:server_url', SERVER_URL );
     client_id_input.value = get_localstorage( 'tg-plot:client_id', random_id(4, 26, 10).toUpperCase() );
-    format_select.value = get_localstorage( 'tg-plot:format', 'A3_LANDSCAPE' );
+    format_select.value = get_localstorage( 'tg-plot:format', 'A3 Landscape' );
     speed_input.value = get_localstorage( 'tg-plot:speed', 100 );
     
     close_button.onmousedown = (e) => {
