@@ -12,6 +12,10 @@ const SIZES = {
     'A3 Portrait' : [297, 420],
     'A4 Landscape': [297, 210],
     'A4 Portrait':  [210, 297],
+    'Ledger':  [431.8, 279.4], // 17 x 11 in (Axidraw V3/A3 Maximum)
+    'Tabloid': [279.4, 431.8], // 11 x 17 in
+    'Letter Landscape': [279.4, 215.9], // 11 x 8.5 in
+    'Letter Portrait': [215.9, 279.4], // 8.5 x 11 in
 };
 const MARGIN = 0.05; // scale down (scaling factor = 1-MARGIN)
 // const SERVER_URL = 'wss://plotter.process.tools';
