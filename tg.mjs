@@ -439,7 +439,7 @@ export function make_turtle_graphics(...line_fns_) {
      */
      
      // TODO: what is the intended behaviour?
-     // either xy returns untransfored and setxy transforms
+     // either xy returns untransformed and setxy transforms
      // or xy returns transformed (absolute) and setxy doesn't transform
      // but: if everything is done in absolyte coordinates, we can't use relative movements with setxy
     function xy() {
@@ -539,6 +539,39 @@ export function make_turtle_graphics(...line_fns_) {
         return { x: turtle.x, y: turtle.y, a: turtle.a, d: turtle.d };
     }
     _add_aliases_deprecated('state', ['getturtle']);
+    
+    
+    /**
+     * Get whether the turtle is currently outside of the canvas.
+     * 
+     * @function outside
+     * @returns {boolean} <code>true</code> if out of bounds, <code>false</code> otherwise.
+     * @see {@link inside} for the inverse.
+     */
+    function outside() {
+        const p5 = window?.p5?.instance;
+        if (p5 === undefined) {
+            console.warn('🐢 → outside() / inside(): No p5.js detected');
+            return undefined;
+        }
+        return _state.turtle.x < -p5.width/2 || _state.turtle.x > p5.width/2 ||
+            _state.turtle.y < -p5.height/2 || _state.turtle.y > p5.height/2;
+    }
+    
+    /**
+     * Get whether the turtle is currently inside of the canvas.
+     * 
+     * @function inside
+     * @returns {boolean} <code>true</code> if inbounds, <code>false</code> otherwise.
+     * @see {@link outside} for the inverse.
+     */
+    function inside() {
+        const out = outside();
+        if (out === undefined) {
+            return undefined;
+        }
+        return !outside();
+    }
     
     
     /*********************************************************
@@ -1218,6 +1251,8 @@ export function make_turtle_graphics(...line_fns_) {
         isdown,
         isup,
         state,
+        outside,
+        inside,
         // Get relative state
         bearing,
         distance,

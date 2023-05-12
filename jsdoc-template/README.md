@@ -79,6 +79,8 @@ Here is an index to all functions, grouped by type:
 * `{@link isdown}` — Get whether the pen is currently down
 * `{@link isup}` — Get whether the pen is currently up
 * `{@link state}` — Get the turtle's current position, heading angle and pen position as an object
+* `{@link outside}` — Get whether the turtle is currently outside of the canvas
+* `{@link inside}` — Get whether the turtle is currently inside of the canvas
 
 ### Get relative state
 
