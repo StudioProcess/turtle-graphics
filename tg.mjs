@@ -43,7 +43,7 @@ export function make_turtle_graphics(...line_fns_) {
         matrix_stack: [],                   // matrix stack
         line_fns:     [...line_fns_],       // line drawing callbacks
         turtle_fn:    undefined,            // function called to draw the turtle
-        mark_fn:      undefined,            // functino called to draw a mark
+        mark_fn:      undefined,            // function called to draw a mark
     };
     
     
