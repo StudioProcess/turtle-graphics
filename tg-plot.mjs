@@ -18,8 +18,9 @@ const SIZES = {
     'Letter Portrait': [215.9, 279.4], // 8.5 x 11 in
 };
 const MARGIN = 0.05; // scale down (scaling factor = 1-MARGIN)
-// const SERVER_URL = 'wss://plotter.process.tools';
-const SERVER_URL = 'wss://plotter.eu.ngrok.io';
+//const SERVER_URL = 'wss://plotter-local.process.tools';
+//const SERVER_URL = 'wss://plotter.eu.ngrok.io';
+const SERVER_URL = 'wss://plotter.process.tools:8000';
 
 const CONNECT_ON_START = true;
 const WAIT_BEFORE_RECONNECT = 10_000; // ms
