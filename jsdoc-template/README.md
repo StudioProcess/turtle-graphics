@@ -1,12 +1,19 @@
 ## Contents
 
-* [How to set up](#how-to-set-up)
+* [Getting started](#getting-started)
+* [How to set up (manually)](#how-to-set-up)
 * [The turtle coordinate system](#the-turtle-coordinate-system)
 * [Functions overview](#functions-overview)
 
+<span id="getting-started" />
+  
+## Getting started
+
+You can use this <a href="https://p5js.org">p5.js</a> starter sketch to get up and running quickly: <a href="https://bit.ly/turtle-sketch-v2">bit.ly/turtle-sketch-v2</a>
+
 <span id="how-to-set-up" />
 
-## How to set up
+## How to set up (manually)
 
 Include the following script tags in the `<head>` section of your `index.html`:
 
@@ -34,7 +41,6 @@ These scripts need to be included after `p5.js`, so your `index.html` should loo
     <script src="sketch.js"></script>
   </body>
 </html>
-
 ```
 
 <span id="the-turtle-coordinate-system" />
