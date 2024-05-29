@@ -29,7 +29,7 @@ These scripts need to be included after `p5.js`, so your `index.html` should loo
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.js"></script>
     <script src="https://sketch.process.studio/turtle-graphics/___VERSION___/tg.mjs" type="module"></script>
     <script src="https://sketch.process.studio/turtle-graphics/___VERSION___/tg-plot.mjs" type="module"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
