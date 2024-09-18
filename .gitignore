@@ -5,3 +5,4 @@ venv
 .nyc_output
 dist
 docs
+dist_*.zip
