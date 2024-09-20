@@ -629,7 +629,12 @@ function checkHotkeys(hotkeys, e) {
 // Supports: line(), rect(), square(), rectMode(), triangle(), quad(), ellipse(), circle(), arc(), ellipseMode()
 function capture_p5(p5, record_line) {    
     // helper for: rect, square
-    function render_rect(a, b, c, d) {
+    function render_rect(a, b, c, d, tl = 0, tr = undefined, br = undefined, bl = undefined) {
+        if (d === undefined) { d = c; }
+        if (tr === undefined) { tr = tl; }
+        if (br === undefined) { br = tr; }
+        if (bl === undefined) { bl = br; }
+        
         let x, y, w, h;
         const mode = this._renderer._rectMode;
         if (mode === this.CORNER) {
@@ -641,10 +646,31 @@ function capture_p5(p5, record_line) {
         } else if (mode === this.CENTER) {
             [x, y, w, h] = [a - c * 0.5, b - d * 0.5, c, d];
         }
-        record_line(x, y, x + w, y);
-        record_line(x + w, y, x + w, y + h);
-        record_line(x + w, y + h, x, y + h);
-        record_line(x, y + h, x, y);
+        
+        const orig__ellipseMode = this._renderer._ellipseMode;
+        this._renderer._ellipseMode = this.RADIUS;
+        
+        if (tl > 0) { // TL corner
+            render_ellipse.call(this, x + tl, y + tl, tl, tl, this.PI, this.PI + this.HALF_PI); 
+        } 
+        record_line(x + tl, y, x + w - tr, y); // TL to TR
+        
+        if (tr > 0) { // TR corner
+            render_ellipse.call(this, x + w - tr, y + tr, tr, tr, -this.HALF_PI, 0);
+        }
+        record_line(x + w, y + tr, x + w, y + h - br); // TR to BR
+        
+        if (br > 0) { // BR corner
+            render_ellipse.call(this, x + w - br, y + h - br, br, br, 0, this.HALF_PI);
+        }
+        record_line(x + w - br, y + h, x + bl, y + h); // br to bl
+        
+        if (bl > 0) { // BL corner
+            render_ellipse.call(this, x + bl, y + h - bl, bl, bl, this.HALF_PI, this.PI);
+        }
+        record_line(x, y + h - bl, x, y + tl); // bl to tl
+        
+        this._renderer._ellipseMode = orig__ellipseMode;
     }
     
     // helper for: triangle, quad
@@ -675,27 +701,31 @@ function capture_p5(p5, record_line) {
             x = a + r1;
             y = b + r2;
         }
-        let step = this.radians(360 / ELLIPSE_SEGMENTS);
-        for (let angle = start; angle <= stop-step; angle += step) {
+        function record_segment(start, stop) {
             record_line(
-                x + this.cos(angle) * r1,
-                y + this.sin(angle) * r2,
-                x + this.cos(angle + step) * r1,
-                y + this.sin(angle + step) * r2,
+                x + Math.cos(start) * r1,
+                y + Math.sin(start) * r2,
+                x + Math.cos(stop) * r1,
+                y + Math.sin(stop) * r2,
             );
         }
         
+        const step = this.radians(360 / ELLIPSE_SEGMENTS);
+        let last_angle = start;
+        for (let angle = start + step; angle < stop; angle += step) {
+            record_segment(angle-step, angle);
+            last_angle = angle;
+        }
+        record_segment(last_angle, stop);
+        
         if (mode === this.CHORD) {
             // from stop point to start point
-            record_line(
-                x + this.cos(stop) * r1, y + this.sin(stop) * r2,
-                x + this.cos(start) * r1, y + this.sin(start) * r2
-            );
+            record_segment(stop, start);
         } else if (mode == this.PIE) {
             // from stop point to center
-            record_line(x + this.cos(stop) * r1, y + this.sin(stop) * r2, x, y);
+            record_line(x + Math.cos(stop) * r1, y + Math.sin(stop) * r2, x, y);
             // from center to start
-            record_line(x, y, x + this.cos(start) * r1, y + this.sin(start) * r2);
+            record_line(x, y, x + Math.cos(start) * r1, y + Math.sin(start) * r2);
         }
         // undefined or OPEN -> do nothing
     }
