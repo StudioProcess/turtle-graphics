@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plot Test 6 (p5 capture)</title>
+    <script src="../node_modules/p5/lib/p5.min.js"></script>
+    <script src="../dist/latest/tg.mjs" type="module"></script>
+    <script src="../dist/latest/tg-plot.mjs" type="module"></script>
+    <script>
+        
+        function setup() {
+            createCanvas(500, 500);
+            noLoop();
+            noFill();
+        }
+        
+        function draw() {
+            background(220);
+            line(10, 20, 100, 200);
+            rect(-100, -100, 100, 100);
+            triangle(0, 0, 100, 0, 50, -50);
+            quad(100, 0, 200, 0, 170, -70, 130, -50);
+            ellipse(-50, 50, 100, 50);
+            circle(-50, 100, 50);
+            arc(50, 50, 100, 60, 0, HALF_PI, PIE);
+            plotter().plot();
+        }
+        
+    </script>
+</head>
+<body>
+
+</body>
+</html>
