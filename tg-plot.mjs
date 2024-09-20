@@ -716,7 +716,10 @@ function capture_p5(p5, record_line) {
             record_segment(angle-step, angle);
             last_angle = angle;
         }
-        record_segment(last_angle, stop);
+        // add last segment to the endpoint; only if it is > 0.5 degrees (avoids small segments)
+        if (this.degrees(stop-last_angle) > 0.5) {
+            record_segment(last_angle, stop);
+        }
         
         if (mode === this.CHORD) {
             // from stop point to start point
