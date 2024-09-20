@@ -1126,14 +1126,6 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
         div.style.display = 'none';
     }
     
-    // immediately show UI if "show" query param is set
-    function check_boolean_attr(attr) {
-        return attr !== null && attr !== "0" && attr.toLowerCase() !== 'false' && attr.toLowerCase() !== 'no';
-    }
-    const url = new URL(import.meta.url);
-    const do_show = check_boolean_attr( url.searchParams.get('show') );
-    if (do_show) { show_ui(); }
-    
     return public_fns;
 }   
 
@@ -1161,15 +1153,34 @@ if (globalThis?.addEventListener !== undefined) {
 }
 */
 
+
+function check_boolean_attr(attr) {
+    return attr !== null && attr !== "0" && attr.toLowerCase() !== 'false' && attr.toLowerCase() !== 'no';
+}
+
+function check_url_param(param_name) {
+    const url = new URL(import.meta.url);
+    return check_boolean_attr(url.searchParams.get(param_name)) ? true : false;
+}
+
+
 // browser bootstrap
 let _browser_bootstrapped = false;
 (function bootstrap_browser() {
     if (_browser_bootstrapped) { return; }
     const window = globalThis;
     if (window.tg?.default_turtle) {
-        console.log(`🖨️ Plotter Module (v${VERSION})`);
+        console.log(`🖨️ Plotter Module (v${VERSION}) lol`);
         
-        const plotter = make_plotter_client(window.tg.default_turtle);
+        const do_capture_p5 = !check_url_param('dont_capture_p5')
+        if (!do_capture_p5) {
+            console.log(`🖨️ → p5 Capture disabled`);
+        }
+        const plotter = make_plotter_client(window.tg.default_turtle, do_capture_p5);
+        
+        // show plotter UI if "show" query param is set
+        const do_show = check_url_param('show');
+        if (do_show) { plotter.show(); }
         
         // put plotter instance into global scope
         if (window[GLOBAL_INSTANCE_NAME] === undefined) {

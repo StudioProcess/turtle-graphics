@@ -1470,6 +1470,17 @@ function auto_init(do_globalize = false) {
     _init_called = true;
 }
 
+
+function check_boolean_attr(attr) {
+    return attr !== null && attr !== "0" && attr.toLowerCase() !== 'false' && attr.toLowerCase() !== 'no';
+}
+
+function check_url_param(param_name) {
+    const url = new URL(import.meta.url);
+    return check_boolean_attr(url.searchParams.get(param_name)) ? true : false;
+}
+
+
 (function bootstrap_browser() {
     if (_browser_bootstrapped) { return; }
     if (is_browser()) {
@@ -1492,12 +1503,8 @@ function auto_init(do_globalize = false) {
             console.log(`🐢 → Global turtle: ${GLOBAL_INSTANCE_NAME}`);
         }
         
-        // Do not gloablize functions if "dontglobalize" queryparam is set
-        function check_boolean_attr(attr) {
-            return attr !== null && attr !== "0" && attr.toLowerCase() !== 'false' && attr.toLowerCase() !== 'no';
-        }
-        const url = new URL(import.meta.url);
-        const do_globalize = check_boolean_attr(url.searchParams.get('dontglobalize')) ? false : true;
+        // Do not gloablize functions if "dont_globalize" queryparam is set
+        const do_globalize = !check_url_param('dont_globalize');
         
         auto_init(do_globalize);
         
