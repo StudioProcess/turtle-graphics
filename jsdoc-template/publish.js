@@ -4,7 +4,7 @@ const fs = require('jsdoc/fs');
 const helper = require('jsdoc/util/templateHelper');
 const logger = require('jsdoc/util/logger');
 const path = require('jsdoc/path');
-const taffy = require('taffydb').taffy;
+const { taffy } = require('@jsdoc/salty');
 const template = require('jsdoc/template');
 const util = require('util');
 
@@ -490,10 +490,9 @@ exports.publish = (taffyData, opts, tutorials) => {
 
     // update outdir if necessary, then create outdir
     packageInfo = ( find({kind: 'package'}) || [] )[0];
-    // Commented out: Don't use package name + version folders
-    // if (packageInfo && packageInfo.name) {
-    //     outdir = path.join( outdir, packageInfo.name, (packageInfo.version || '') );
-    // }
+    if (packageInfo && packageInfo.name) {
+        outdir = path.join( outdir, packageInfo.name, (packageInfo.version || '') );
+    }
     fs.mkPath(outdir);
 
     // copy the template's static files to outdir
@@ -613,10 +612,8 @@ exports.publish = (taffyData, opts, tutorials) => {
     // index page displays information from package.json and lists files
     files = find({kind: 'file'});
     packages = find({kind: 'package'});
-    
-    // console.log(packageInfo);
 
-    generate(packageInfo.name,
+    generate('Home',
         packages.concat(
             [{
                 kind: 'mainpage',

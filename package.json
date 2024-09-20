@@ -1,6 +1,6 @@
 {
   "name": "turtle-graphics",
-  "version": "2",
+  "version": "3",
   "description": "",
   "private": true,
   "scripts": {
@@ -14,19 +14,19 @@
   "author": "Martin Grödl <martin@process.studio> (https://process.studio)",
   "license": "AGPL-3.0",
   "engines": {
-    "node": "^20.13.1",
-    "npm": "^10.8.0"
+    "node": "^20.17.0",
+    "npm": "^10.8.3"
   },
   "dependencies": {
     "gl-matrix": "^3.4.3"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.0.1",
-    "@rollup/plugin-replace": "^5.0.1",
-    "browser-sync": "^2.27.10",
-    "jsdoc": "^3.6.11",
-    "p5": "^1.9.4",
-    "rollup": "^3.5.0",
-    "tap": "^16.3.2"
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^5.0.7",
+    "browser-sync": "^3.0.2",
+    "jsdoc": "^4.0.3",
+    "p5": "^1.10.0",
+    "rollup": "^4.22.2",
+    "tap": "^16.3.10"
   }
 }
