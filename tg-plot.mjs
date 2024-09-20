@@ -627,14 +627,7 @@ function checkHotkeys(hotkeys, e) {
 
 // Set up capturing p5 basic shape functions.
 // Supports: line(), rect(), square(), rectMode(), triangle(), quad(), ellipse(), circle(), arc(), ellipseMode()
-function capture_p5(p5, record_line) {
-    
-    const orig = {}; // object to store original functions
-    
-    function call_orig(fn_name, self, ...args) {
-        return orig[fn_name].call(self, ...args);
-    }
-    
+function capture_p5(p5, record_line) {    
     // helper for: rect, square
     function render_rect(a, b, c, d) {
         let x, y, w, h;
@@ -710,43 +703,49 @@ function capture_p5(p5, record_line) {
     const replaced = {
         'line': function(...args) {
             record_line(...args);
-            return call_orig('line', this, ...args);
         },
         'rect': function(...args) {
             render_rect.call(this, ...args);
-            return call_orig('rect', this, ...args);
         },
         'square': function(...args) {
             render_rect.call(this, args[0], args[1], args[2], args[2]);
-            return call_orig('square', this, ...args);
         },
         'triangle': function(...args) {
             const [x1, y1, x2, y2, x3, y3] = args;
             render_polygon.call(this, x1, y1, x2, y2, x3, y3);
-            return call_orig('triangle', this, ...args);
         },
         'quad': function(...args) {
             const [x1, y1, x2, y2, x3, y3, x4, y4] = args;
             render_polygon.call(this, x1, y1, x2, y2, x3, y3, x4, y4);
-            return call_orig('quad', this, ...args);
         },
         'ellipse': function(...args) {
             render_ellipse.call(this, args[0], args[1], args[2], args[3]);
-            return call_orig('ellipse', this, ...args);
         },
         'circle': function(...args) {
             render_ellipse.call(this, args[0], args[1], args[2], args[2]);
-            return call_orig('circle', this, ...args);
         },
         'arc': function(...args) {
             render_ellipse.call(this, ...args);
-            return call_orig('arc', this, ...args);
-        }      
+        }
+    };
+    
+    const orig = {}; // object to store original functions
+    
+    function call_orig(fn_name, self, ...args) {
+        return orig[fn_name].call(self, ...args);
     }
     
     for (let [fn_name, fn] of Object.entries(replaced)) {
         orig[fn_name] = p5.prototype[fn_name];
-        p5.prototype[fn_name] = fn;
+        p5.prototype[fn_name] = function(...args) {
+            // add a wrapper so the original function gets called in any case
+            try {
+                fn.call(this, ...args);
+            } catch (e) {
+                console.warn(`Error with captured p5 function: ${fn_name}`);
+            }
+            return call_orig(fn_name, this, ...args);
+        };
     }
     console.log(`🖨️ → Capturing p5 functions: ${Object.keys(replaced).join(", ")}`);
 }
@@ -1156,7 +1155,7 @@ let _browser_bootstrapped = false;
     if (_browser_bootstrapped) { return; }
     const window = globalThis;
     if (window.tg?.default_turtle) {
-        console.log(`🖨️ Plotter Module (v${VERSION}) lol`);
+        console.log(`🖨️ Plotter Module (v${VERSION})`);
         
         const do_capture_p5 = !check_url_param('dont_capture_p5')
         if (!do_capture_p5) {
