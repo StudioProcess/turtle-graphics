@@ -626,7 +626,7 @@ function checkHotkeys(hotkeys, e) {
 }
 
 // Set up capturing p5 basic shape functions.
-// Supports: line(), rect(), square(), rectMode(), triangle(), quad(), ellipse(), circle(), arc(), ellipseMode()
+// Supports: point(), line(), rect(), square(), rectMode(), triangle(), quad(), ellipse(), circle(), arc(), ellipseMode()
 function capture_p5(p5, record_line) {    
     // helper for: rect, square
     function render_rect(a, b, c, d, tl = 0, tr = undefined, br = undefined, bl = undefined) {
@@ -729,8 +729,17 @@ function capture_p5(p5, record_line) {
         }
         // undefined or OPEN -> do nothing
     }
-    
+        
     const replaced = {
+        'point': function(...args) {
+            const POINT_RADIUS = 0.5;
+            const [x, y] = [...args];
+            // draw as diamond shape
+            record_line(x - POINT_RADIUS, y, x, y - POINT_RADIUS);
+            record_line(x, y - POINT_RADIUS, x + POINT_RADIUS, y);
+            record_line(x + POINT_RADIUS, y, x, y + POINT_RADIUS);
+            record_line(x, y + POINT_RADIUS, x - POINT_RADIUS, y);
+        },
         'line': function(...args) {
             record_line(...args);
         },
