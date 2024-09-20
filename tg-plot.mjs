@@ -628,141 +628,127 @@ function checkHotkeys(hotkeys, e) {
 // Set up capturing p5 basic shape functions.
 // Supports: line(), rect(), square(), rectMode(), triangle(), quad(), ellipse(), circle(), arc(), ellipseMode()
 function capture_p5(p5, record_line) {
-    // init hook
-    // called in the p5 constructor
-    // after: _start(), _setup(), _draw(), remove() are added to the instance
-    // before: p5 properties are added to the window; _start() is called
-    p5.prototype._registeredMethods.init.push(function() {
-        // 'this' is the p5 instance
-        const p5_instance = this;
+    
+    const orig = {}; // object to store original functions
+    
+    function call_orig(fn_name, self, ...args) {
+        return orig[fn_name].call(self, ...args);
+    }
+    
+    // helper for: rect, square
+    function render_rect(a, b, c, d) {
+        let x, y, w, h;
+        const mode = this._renderer._rectMode;
+        if (mode === this.CORNER) {
+            [x, y, w, h] = [a, b, c, d];
+        } else if (mode === this.CORNERS) {
+            [x, y, w, h] = [a, b, c - a, d - b];
+        } else if (mode === this.RADIUS) {
+            [x, y, w, h] = [a - c, b - d, 2 * c, 2 * d];
+        } else if (mode === this.CENTER) {
+            [x, y, w, h] = [a - c * 0.5, b - d * 0.5, c, d];
+        }
+        record_line(x, y, x + w, y);
+        record_line(x + w, y, x + w, y + h);
+        record_line(x + w, y + h, x, y + h);
+        record_line(x, y + h, x, y);
+    }
+    
+    // helper for: triangle, quad
+    function render_polygon(...coords) {
+        for (let i = 0; i < coords.length; i += 2) {
+            const n = (i + 2 < coords.length) ? i + 2 : 0;
+            record_line(coords[i], coords[i + 1], coords[n], coords[n + 1]);
+        }
+    }
+    
+    // helper for: ellipse, circle, arc
+    const ELLIPSE_SEGMENTS = 60; // 12, 15, 18, 20, 24, 30, 36, 40, 45, 60, 72, 90, 120, 180, 360
+    function render_ellipse(a, b, c, d, start = 0, stop = 2 * Math.PI, mode = undefined) {
+        let x, y, r1, r2;
+        const ellipse_mode = this._renderer._ellipseMode;
+        if (ellipse_mode === this.CENTER) {
+            [x, y, r1, r2] = [a, b, c * 0.5, d * 0.5];
+        } else if (ellipse_mode === this.RADIUS) {
+            [x, y, r1, r2] = [a, b, c, d];
+        } else if (ellipse_mode === this.CORNER) {
+            r1 = c * 0.5;
+            r2 = d * 0.5;
+            x = a + r1;
+            y = b + r2;
+        } else if (ellipse_mode === this.CORNERS) {
+            r1 = (c - a) * 0.5;
+            r2 = (d - b) * 0.5;
+            x = a + r1;
+            y = b + r2;
+        }
+        let step = this.radians(360 / ELLIPSE_SEGMENTS);
+        for (let angle = start; angle <= stop-step; angle += step) {
+            record_line(
+                x + this.cos(angle) * r1,
+                y + this.sin(angle) * r2,
+                x + this.cos(angle + step) * r1,
+                y + this.sin(angle + step) * r2,
+            );
+        }
         
-        const orig = {};
-        
-        // line()
-        orig.line = p5_instance.line.bind(p5_instance);
-        p5_instance.line = function(...args) {
+        if (mode === this.CHORD) {
+            // from stop point to start point
+            record_line(
+                x + this.cos(stop) * r1, y + this.sin(stop) * r2,
+                x + this.cos(start) * r1, y + this.sin(start) * r2
+            );
+        } else if (mode == this.PIE) {
+            // from stop point to center
+            record_line(x + this.cos(stop) * r1, y + this.sin(stop) * r2, x, y);
+            // from center to start
+            record_line(x, y, x + this.cos(start) * r1, y + this.sin(start) * r2);
+        }
+        // undefined or OPEN -> do nothing
+    }
+    
+    const replaced = {
+        'line': function(...args) {
             record_line(...args);
-            orig.line(...args);
-        };
-        
-        // rect()
-        function render_rect(a, b, c, d) {
-            let x, y, w, h;
-            const mode = p5_instance._renderer._rectMode;
-            if (mode === p5_instance.CORNER) {
-                [x, y, w, h] = [a, b, c, d];
-            } else if (mode === p5_instance.CORNERS) {
-                [x, y, w, h] = [a, b, c - a, d - b];
-            } else if (mode === p5_instance.RADIUS) {
-                [x, y, w, h] = [a - c, b - d, 2 * c, 2 * d];
-            } else if (mode === p5_instance.CENTER) {
-                [x, y, w, h] = [a - c * 0.5, b - d * 0.5, c, d];
-            }
-            record_line(x, y, x + w, y);
-            record_line(x + w, y, x + w, y + h);
-            record_line(x + w, y + h, x, y + h);
-            record_line(x, y + h, x, y);
-        }
-        orig.rect = p5_instance.rect.bind(p5_instance);
-        p5_instance.rect = function(...args) {
-            render_rect(...args);
-            orig.rect(...args);
-        }
-        
-        // square()
-        orig.square = p5_instance.square.bind(p5_instance);
-        p5_instance.square = function(...args) {
-            render_rect(args[0], args[1], args[2], args[2]);
-            orig.square(...args);
-        }
-        
-        // triangle()
-        function render_polygon(...coords) {
-            for (let i = 0; i < coords.length; i += 2) {
-                const n = (i + 2 < coords.length) ? i + 2 : 0;
-                record_line(coords[i], coords[i + 1], coords[n], coords[n + 1]);
-            }
-        }
-        orig.triangle = p5_instance.triangle.bind(p5_instance);
-        p5_instance.triangle = function(...args) {
+            return call_orig('line', this, ...args);
+        },
+        'rect': function(...args) {
+            render_rect.call(this, ...args);
+            return call_orig('rect', this, ...args);
+        },
+        'square': function(...args) {
+            render_rect.call(this, args[0], args[1], args[2], args[2]);
+            return call_orig('square', this, ...args);
+        },
+        'triangle': function(...args) {
             const [x1, y1, x2, y2, x3, y3] = args;
-            render_polygon(x1, y1, x2, y2, x3, y3);
-            orig.triangle(...args);
-        }
-        
-        // quad()
-        orig.quad = p5_instance.quad.bind(p5_instance);
-        p5_instance.quad = function(...args) {
+            render_polygon.call(this, x1, y1, x2, y2, x3, y3);
+            return call_orig('triangle', this, ...args);
+        },
+        'quad': function(...args) {
             const [x1, y1, x2, y2, x3, y3, x4, y4] = args;
-            render_polygon(x1, y1, x2, y2, x3, y3, x4, y4);
-            orig.quad(...args);
-        }
-        
-        // ellipse()
-        const ELLIPSE_SEGMENTS = 60; // 12, 15, 18, 20, 24, 30, 36, 40, 45, 60, 72, 90, 120, 180, 360
-        function render_ellipse(a, b, c, d, start = 0, stop = p5_instance.TWO_PI, mode = undefined) {
-            let x, y, r1, r2;
-            const ellipse_mode = p5_instance._renderer._ellipseMode;
-            if (ellipse_mode === p5_instance.CENTER) {
-                [x, y, r1, r2] = [a, b, c * 0.5, d * 0.5];
-            } else if (ellipse_mode === p5_instance.RADIUS) {
-                [x, y, r1, r2] = [a, b, c, d];
-            } else if (ellipse_mode === p5_instance.CORNER) {
-                r1 = c * 0.5;
-                r2 = d * 0.5;
-                x = a + r1;
-                y = b + r2;
-            } else if (ellipse_mode === p5_instance.CORNERS) {
-                r1 = (c - a) * 0.5;
-                r2 = (d - b) * 0.5;
-                x = a + r1;
-                y = b + r2;
-            }
-            
-            let step = p5_instance.radians(360 / ELLIPSE_SEGMENTS);
-            for (let angle = start; angle <= stop-step; angle += step) {
-                record_line(
-                    x + p5_instance.cos(angle) * r1,
-                    y + p5_instance.sin(angle) * r2,
-                    x + p5_instance.cos(angle + step) * r1,
-                    y + p5_instance.sin(angle + step) * r2,
-                );
-            }
-            
-            if (mode === p5_instance.CHORD) {
-                // from stop point to start point
-                record_line(
-                    x + p5_instance.cos(stop) * r1, y + p5_instance.sin(stop) * r2,
-                    x + p5_instance.cos(start) * r1, y + p5_instance.sin(start) * r2
-                );
-            } else if (mode == p5_instance.PIE) {
-                // from stop point to center
-                record_line(x + p5_instance.cos(stop) * r1, y + p5_instance.sin(stop) * r2, x, y);
-                // from center to start
-                record_line(x, y, x + p5_instance.cos(start) * r1, y + p5_instance.sin(start) * r2);
-            }
-            // undefined or OPEN -> do nothing
-        }
-        orig.ellipse = p5_instance.ellipse.bind(p5_instance);
-        p5_instance.ellipse = function(...args) {
-            render_ellipse(args[0], args[1], args[2], args[3]);
-            orig.ellipse(...args);
-        }
-        
-        // circle
-        orig.circle = p5_instance.circle.bind(p5_instance);
-        p5_instance.circle = function(...args) {
-            render_ellipse(args[0], args[1], args[2], args[2]);
-            orig.circle(...args);
-        }
-        
-        // arc
-        orig.arc = p5_instance.arc.bind(p5_instance);
-        p5_instance.arc = function(...args) {
-            render_ellipse(...args);
-            orig.arc(...args);
-        }
-    });
+            render_polygon.call(this, x1, y1, x2, y2, x3, y3, x4, y4);
+            return call_orig('quad', this, ...args);
+        },
+        'ellipse': function(...args) {
+            render_ellipse.call(this, args[0], args[1], args[2], args[3]);
+            return call_orig('ellipse', this, ...args);
+        },
+        'circle': function(...args) {
+            render_ellipse.call(this, args[0], args[1], args[2], args[2]);
+            return call_orig('circle', this, ...args);
+        },
+        'arc': function(...args) {
+            render_ellipse.call(this, ...args);
+            return call_orig('arc', this, ...args);
+        }      
+    }
+    
+    for (let [fn_name, fn] of Object.entries(replaced)) {
+        orig[fn_name] = p5.prototype[fn_name];
+        p5.prototype[fn_name] = fn;
+    }
+    console.log(`🖨️ → Capturing p5 functions: ${Object.keys(replaced).join(", ")}`);
 }
 
 

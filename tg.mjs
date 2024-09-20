@@ -1335,8 +1335,7 @@ export function globalize(tg_instance = default_instance, global_object = global
     const overwritten_keys = Object.keys(overwritten);
     if (overwritten_keys.length > 0) {
         console.log(`🐢 → Overwritten global properties: ${overwritten_keys.join(', ')}`);
-    }
-    if (overwritten_keys.length > 0) {
+        
         for (const [key, val] of Object.entries(overwritten)) {
             Object.defineProperty(global_object[GLOBAL_OVERWRITTEN_NAME], key, {
                 configurable: true,
