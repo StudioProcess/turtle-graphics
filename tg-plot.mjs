@@ -691,6 +691,11 @@ function capture_p5(p5, record_line) {
     function render_ellipse(a, b, c, d, start = 0, stop = 2 * Math.PI, mode = undefined) {
         if (!is_number(a) || !is_number(b) || !is_number(c)) { return; } // Need at least three params
         if (d === undefined) { d = c; }
+        
+        start = start % (2 * Math.PI); // normalize angles
+        stop = stop % (2 * Math.PI);
+        if (stop < start) { stop += 2 * Math.PI; } // make sure stop is greater than start
+        
         let x, y, r1, r2;
         const ellipse_mode = this._renderer._ellipseMode;
         if (ellipse_mode === this.CENTER) {

@@ -9,7 +9,7 @@
     <!-- <script src="../dist/latest/tg-plot.mjs?dont_capture_p5" type="module"></script> -->
     <script src="../dist/latest/tg-plot.mjs" type="module"></script>
     <script>
-        
+        const GRID = 0;
         function setup() {
             createCanvas(800, 1000);
             noLoop();
@@ -18,101 +18,109 @@
         
         function draw() {
             background(220);
-            strokeWeight(0.5);
-            line(-400, -400, 400, -400);
-            line(-400, -300, 400, -300);
-            line(-400, -200, 400, -200);
-            line(-400, -100, 400, -100);
-            line(-400, 000, 400, 000);
-            line(-400, 100, 400, 100);
-            line(-400, 200, 400, 200);
-            line(-400, 300, 400, 300);
-            line(-400, 400, 400, 400);
-            
-            line(-300, -500, -300, 500);
-            line(-200, -500, -200, 500);
-            line(-100, -500, -100, 500);
-            line(000, -500, 000, 500);
-            line(100, -500, 100, 500);
-            line(200, -500, 200, 500);
-            line(300, -500, 300, 500);
-            
+            if (GRID) {
+                strokeWeight(0.5);
+                line(-400, -400, 400, -400);
+                line(-400, -300, 400, -300);
+                line(-400, -200, 400, -200);
+                line(-400, -100, 400, -100);
+                line(-400, 000, 400, 000);
+                line(-400, 100, 400, 100);
+                line(-400, 200, 400, 200);
+                line(-400, 300, 400, 300);
+                line(-400, 400, 400, 400);
+                
+                line(-300, -500, -300, 500);
+                line(-200, -500, -200, 500);
+                line(-100, -500, -100, 500);
+                line(000, -500, 000, 500);
+                line(100, -500, 100, 500);
+                line(200, -500, 200, 500);
+                line(300, -500, 300, 500);
+            }
             strokeWeight(2);
             
             // arc (CENTER)
             ellipseMode(CENTER);
-            arc(-350, -450, 100, 75, 0, HALF_PI);
-            arc(-250, -450, 100, 75, HALF_PI, PI);
-            arc(-150, -450, 100, 75, PI, PI + HALF_PI);
-            arc(-50, -450, 100, 75, PI + HALF_PI, 0);
+            arc(-350, -450, 100, 75, 0, HALF_PI); // (15 lines)
+            arc(-250, -450, 100, 75, HALF_PI, PI); // (30)
+            arc(-150, -450, 100, 75, PI, PI + HALF_PI); // (45)
+            arc(-50, -450, 100, 75, PI + HALF_PI, 0); // (60)
+            
             
             // ... CHORD + PIE
-            arc(-350, -350, 100, 75, 0, HALF_PI, CHORD);
-            arc(-250, -350, 100, 75, HALF_PI, PI, CHORD);
-            arc(-150, -350, 100, 75, PI, PI + HALF_PI, CHORD);
-            arc(-50, -350, 100, 75, PI + HALF_PI, 0, CHORD);
+            arc(-350, -350, 100, 75, 0, HALF_PI, CHORD); // (76)
+            arc(-250, -350, 100, 75, HALF_PI, PI, CHORD); // (9)
+            arc(-150, -350, 100, 75, PI, PI + HALF_PI, CHORD); // (108)
+            arc(-50, -350, 100, 75, PI + HALF_PI, 0, CHORD); // (124)
             
-            arc(50, -350, 100, 75, 0, HALF_PI, PIE);
-            arc(150, -350, 100, 75, HALF_PI, PI, PIE);
-            arc(250, -350, 100, 75, PI, PI + HALF_PI, PIE);
-            arc(350, -350, 100, 75, PI + HALF_PI, 0, PIE);
+            arc(50, -350, 100, 75, 0, HALF_PI, PIE); // (141)
+            arc(150, -350, 100, 75, HALF_PI, PI, PIE); // (158)
+            arc(250, -350, 100, 75, PI, PI + HALF_PI, PIE); // (175)
+            arc(350, -350, 100, 75, PI + HALF_PI, 0, PIE); // (192)
             
             
             // arc (RADIUS)
             ellipseMode(RADIUS);
-            arc(-350, -250, 50, 37.5, 0, HALF_PI);
-            arc(-250, -250, 50, 37.5, HALF_PI, PI);
-            arc(-150, -250, 50, 37.5, PI, PI + HALF_PI);
-            arc(-50, -250, 50, 37.5, PI + HALF_PI, 0);
+            arc(-350, -250, 50, 37.5, 0, HALF_PI); // (207)
+            arc(-250, -250, 50, 37.5, HALF_PI, PI); // (222)
+            arc(-150, -250, 50, 37.5, PI, PI + HALF_PI); // (237)
+            arc(-50, -250, 50, 37.5, PI + HALF_PI, 0); // (252)
+            
             
             // ... CHORD + PIE
-            arc(-350, -150, 50, 37.5, 0, HALF_PI, CHORD);
-            arc(-250, -150, 50, 37.5, HALF_PI, PI, CHORD);
-            arc(-150, -150, 50, 37.5, PI, PI + HALF_PI, CHORD);
-            arc(-50, -150, 50, 37.5, PI + HALF_PI, 0, CHORD);
+            arc(-350, -150, 50, 37.5, 0, HALF_PI, CHORD); // (268)
+            arc(-250, -150, 50, 37.5, HALF_PI, PI, CHORD); // (284)
+            arc(-150, -150, 50, 37.5, PI, PI + HALF_PI, CHORD); // (300)
+            arc(-50, -150, 50, 37.5, PI + HALF_PI, 0, CHORD); // (316)
             
-            arc(50, -150, 50, 37.5, 0, HALF_PI, PIE);
-            arc(150, -150, 50, 37.5, HALF_PI, PI, PIE);
-            arc(250, -150, 50, 37.5, PI, PI + HALF_PI, PIE);
-            arc(350, -150, 50, 37.5, PI + HALF_PI, 0, PIE);
+            arc(50, -150, 50, 37.5, 0, HALF_PI, PIE); // (333)
+            arc(150, -150, 50, 37.5, HALF_PI, PI, PIE); // (350)
+            arc(250, -150, 50, 37.5, PI, PI + HALF_PI, PIE); // (367)
+            arc(350, -150, 50, 37.5, PI + HALF_PI, 0, PIE); // (384)
             
             
             // arc (CORNER)
             ellipseMode(CORNER);
-            arc(-400, -87.5, 100, 75, 0, HALF_PI);
-            arc(-300, -87.5, 100, 75, HALF_PI, PI);
-            arc(-200, -87.5, 100, 75, PI, PI + HALF_PI);
-            arc(-100, -87.5, 100, 75, PI + HALF_PI, 0);
+            arc(-400, -87.5, 100, 75, 0, HALF_PI); // (399)
+            arc(-300, -87.5, 100, 75, HALF_PI, PI); // (414)
+            arc(-200, -87.5, 100, 75, PI, PI + HALF_PI); // (429)
+            arc(-100, -87.5, 100, 75, PI + HALF_PI, 0); // (444)
+            
             
             // ... CHORD + PIE
-            arc(-400, 12.5, 100, 75, 0, HALF_PI, CHORD);
-            arc(-300, 12.5, 100, 75, HALF_PI, PI, CHORD);
-            arc(-200, 12.5, 100, 75, PI, PI + HALF_PI, CHORD);
-            arc(-100, 12.5, 100, 75, PI + HALF_PI, 0, CHORD);
+            arc(-400, 12.5, 100, 75, 0, HALF_PI, CHORD); // (460)
+            arc(-300, 12.5, 100, 75, HALF_PI, PI, CHORD); // (476)
+            arc(-200, 12.5, 100, 75, PI, PI + HALF_PI, CHORD); // (492)
+            arc(-100, 12.5, 100, 75, PI + HALF_PI, 0, CHORD); // (508)
             
-            arc(0, 12.5, 100, 75, 0, HALF_PI, PIE);
-            arc(100, 12.5, 100, 75, HALF_PI, PI, PIE);
-            arc(200, 12.5, 100, 75, PI, PI + HALF_PI, PIE);
-            arc(300, 12.5, 100, 75, PI + HALF_PI, 0, PIE);
+            
+            arc(0, 12.5, 100, 75, 0, HALF_PI, PIE); // (525)
+            arc(100, 12.5, 100, 75, HALF_PI, PI, PIE); // (542)
+            arc(200, 12.5, 100, 75, PI, PI + HALF_PI, PIE); // (559)
+            arc(300, 12.5, 100, 75, PI + HALF_PI, 0, PIE); // (576)
             
             
             // arc (CORNERS)
             ellipseMode(CORNERS);
-            arc(-400, 112.5, -300, 187.5, 0, HALF_PI); // -> p5 BUG ?
-            arc(-300, 112.5, -200, 187.5, HALF_PI, PI); // -> p5 BUG ?
-            arc(-200, 112.5, -100, 187.5, PI, PI + HALF_PI); // -> p5 BUG ?
-            arc(-100, 112.5, 0, 187.5, PI + HALF_PI, 0); // -> p5 BUG ?
+            stroke('red');
+            arc(-400, 112.5, -300, 187.5, 0, HALF_PI); // TODO: p5 BUG ?
+            arc(-300, 112.5, -200, 187.5, HALF_PI, PI); // TODO: p5 BUG ?
+            arc(-200, 112.5, -100, 187.5, PI, PI + HALF_PI); // TODO: p5 BUG ?
+            arc(-100, 112.5, 0, 187.5, PI + HALF_PI, 0); // TODO: p5 BUG ?
+            
             
             // ... CHORD + PIE
-            arc(-400, 212.5, -300, 287.5, 0, HALF_PI, CHORD); // -> p5 BUG ?
-            arc(-300, 212.5, -200, 287.5, HALF_PI, PI, CHORD); // -> p5 BUG ?
-            arc(-200, 212.5, -100, 287.5, PI, PI + HALF_PI, CHORD); // -> p5 BUG ?
-            arc(-100, 212.5, 0, 287.5, PI + HALF_PI, 0, CHORD); // -> p5 BUG ?
+            arc(-400, 212.5, -300, 287.5, 0, HALF_PI, CHORD); // TODO: p5 BUG ?
+            arc(-300, 212.5, -200, 287.5, HALF_PI, PI, CHORD); // TODO: p5 BUG ?
+            arc(-200, 212.5, -100, 287.5, PI, PI + HALF_PI, CHORD); // TODO: p5 BUG ?
+            stroke(0);
+            arc(-100, 212.5, 0, 287.5, PI + HALF_PI, 0, CHORD);
             
-            arc(0, 212.5, 100, 287.5, 0, HALF_PI, PIE); // -> p5 BUG ?
-            arc(100, 212.5, 200, 287.5, HALF_PI, PI, PIE); // -> p5 BUG ?
-            arc(200, 212.5, 300, 287.5, PI, PI + HALF_PI, PIE); // -> p5 BUG ?
-            arc(300, 212.5, 400, 287.5, PI + HALF_PI, 0, PIE); // -> p5 BUG ?
+            arc(0, 212.5, 100, 287.5, 0, HALF_PI, PIE);
+            arc(100, 212.5, 200, 287.5, HALF_PI, PI, PIE);
+            arc(200, 212.5, 300, 287.5, PI, PI + HALF_PI, PIE);
+            arc(300, 212.5, 400, 287.5, PI + HALF_PI, 0, PIE);
             
             plotter().plot();
         }
