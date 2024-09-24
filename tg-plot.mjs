@@ -627,9 +627,16 @@ function checkHotkeys(hotkeys, e) {
 
 // Set up capturing p5 basic shape functions.
 // Supports: point(), line(), rect(), square(), rectMode(), triangle(), quad(), ellipse(), circle(), arc(), ellipseMode()
-function capture_p5(p5, record_line) {    
+function capture_p5(p5, record_line) {
+    
+    function limit(x, max) {
+        if (x > max) { x = max; }
+        return x;
+    }
+        
     // helper for: rect, square
     function render_rect(a, b, c, d, tl = 0, tr = undefined, br = undefined, bl = undefined) {
+        if (c === undefined) { return; } // Needs three params
         if (d === undefined) { d = c; }
         if (tr === undefined) { tr = tl; }
         if (br === undefined) { br = tr; }
@@ -647,30 +654,45 @@ function capture_p5(p5, record_line) {
             [x, y, w, h] = [a - c * 0.5, b - d * 0.5, c, d];
         }
         
-        const orig__ellipseMode = this._renderer._ellipseMode;
+        // limit corner radii
+        const max_radius = Math.min(h/2, w/2);
+        tl = limit(tl, max_radius);
+        tr = limit(tr, max_radius);
+        br = limit(br, max_radius);
+        bl = limit(bl, max_radius);
+        
+        const orig__ellipseMode = this._renderer._ellipseMode; // set ellipseMode for rendering round corners
         this._renderer._ellipseMode = this.RADIUS;
         
         if (tl > 0) { // TL corner
             render_ellipse.call(this, x + tl, y + tl, tl, tl, this.PI, this.PI + this.HALF_PI); 
-        } 
-        record_line(x + tl, y, x + w - tr, y); // TL to TR
+        }
+        if (w > tl + tr) { // only render line if there is actually something between the round corners
+            record_line(x + tl, y, x + w - tr, y); // TL to TR
+        }
         
         if (tr > 0) { // TR corner
             render_ellipse.call(this, x + w - tr, y + tr, tr, tr, -this.HALF_PI, 0);
         }
-        record_line(x + w, y + tr, x + w, y + h - br); // TR to BR
+        if (h > tr + br) {
+            record_line(x + w, y + tr, x + w, y + h - br); // TR to BR
+        }
         
         if (br > 0) { // BR corner
             render_ellipse.call(this, x + w - br, y + h - br, br, br, 0, this.HALF_PI);
         }
-        record_line(x + w - br, y + h, x + bl, y + h); // br to bl
+        if (w > bl + br) {
+            record_line(x + w - br, y + h, x + bl, y + h); // br to bl
+        }
         
         if (bl > 0) { // BL corner
             render_ellipse.call(this, x + bl, y + h - bl, bl, bl, this.HALF_PI, this.PI);
         }
-        record_line(x, y + h - bl, x, y + tl); // bl to tl
+        if (h > bl + tl) {
+            record_line(x, y + h - bl, x, y + tl); // bl to tl
+        }
         
-        this._renderer._ellipseMode = orig__ellipseMode;
+        this._renderer._ellipseMode = orig__ellipseMode; // restore ellipseMode
     }
     
     // helper for: triangle, quad
@@ -715,7 +737,6 @@ function capture_p5(p5, record_line) {
         }
         
         if (!r1 && !r2) { return; } // don't render if both radii are 0, undefined or NaN
-        console.log(x,y,r1,r2);
         
         function record_segment(start, stop) {
             record_line(
@@ -768,7 +789,7 @@ function capture_p5(p5, record_line) {
             render_rect.call(this, ...args);
         },
         'square': function(...args) {
-            render_rect.call(this, args[0], args[1], args[2], args[2]);
+            render_rect.call(this, args[0], args[1], args[2], args[2], args[3], args[4], args[5], args[6]);
         },
         'triangle': function(...args) {
             render_polygon.call(this, ...args);

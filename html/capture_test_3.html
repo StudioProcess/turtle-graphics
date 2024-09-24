@@ -9,6 +9,7 @@
     <!-- <script src="../dist/latest/tg-plot.mjs?dont_capture_p5" type="module"></script> -->
     <script src="../dist/latest/tg-plot.mjs" type="module"></script>
     <script>
+        const GRID = 0;
         
         function setup() {
             createCanvas(800, 1000);
@@ -18,68 +19,75 @@
         
         function draw() {
             background(220);
-            strokeWeight(0.5);
-            line(-400, -400, 400, -400);
-            line(-400, -300, 400, -300);
-            line(-400, -200, 400, -200);
-            line(-400, -100, 400, -100);
-            line(-400, 000, 400, 000);
-            line(-400, 100, 400, 100);
-            line(-400, 200, 400, 200);
-            line(-400, 300, 400, 300);
-            line(-400, 400, 400, 400);
             
-            line(-300, -500, -300, 500);
-            line(-200, -500, -200, 500);
-            line(-100, -500, -100, 500);
-            line(000, -500, 000, 500);
-            line(100, -500, 100, 500);
-            line(200, -500, 200, 500);
-            line(300, -500, 300, 500);
-            
+            if (GRID) {
+                strokeWeight(0.5);
+                line(-400, -400, 400, -400);
+                line(-400, -300, 400, -300);
+                line(-400, -200, 400, -200);
+                line(-400, -100, 400, -100);
+                line(-400, 000, 400, 000);
+                line(-400, 100, 400, 100);
+                line(-400, 200, 400, 200);
+                line(-400, 300, 400, 300);
+                line(-400, 400, 400, 400);
+                
+                line(-300, -500, -300, 500);
+                line(-200, -500, -200, 500);
+                line(-100, -500, -100, 500);
+                line(000, -500, 000, 500);
+                line(100, -500, 100, 500);
+                line(200, -500, 200, 500);
+                line(300, -500, 300, 500);
+            }
             strokeWeight(2);
             
             
             // rect (CORNER)
             rectMode(CORNER);
-            rect(-400, -475, 100, 50);
-            rect(-300, -475, 100, 50, 25); // -> TODO: limit radius
-            rect(-200, -475, 100, 50, 0, 10);
-            rect(-100, -475, 100, 50, 0, 10, 20);
-            rect(0,    -475, 100, 50, 0, 10, 20, 30);
-            rect(100, -475); // -> missing 3rd and 4th params -> empty
-            rect(225, -475, 50); // -> missing 4th param -> square
+            rect(-400, -475, 100, 50); // (4 lines)
+            rect(-300, -475, 100, 50, 50); // (66)
+            rect(-200, -475, 100, 50, 0, 10); // (115)
+            rect(-100, -475, 100, 50, 0, 10, 20); // (164)
+            rect(0,    -475, 100, 50, 0, 10, 20, 30); // (213)
+            rect(100, -475); // missing 3rd and 4th params -> empty (213)
+            rect(225, -475, 50); // missing 4th param -> square (217)
             
             // square (CORNER)
-            square(-400, -400, 100);
-            square(-300, -400, 100, 25); // corner radius
-            square(-200, -400, 100, 0, 10);
-            square(-100, -400, 100, 0, 10, 20);
-            square(0,    -400, 100, 0, 10, 20, 30);
-            square(100,  -400); // -> missing 3rd param -> empty
+            square(-400, -400, 100); // (221)
+            square(-300, -400, 100, 25); // corner radius (285)
+            square(-200, -400, 100, 0, 10); // (334)
+            square(-100, -400, 100, 0, 10, 20); // (383)
+            square(0,    -400, 100, 0, 10, 20, 30); // (432)
+            square(100,  -400); // missing 3rd param -> empty (432)
             
             // rect (CORNERS)
             rectMode(CORNERS);
-            rect(-400, -275, -300, -225);
-            rect(-300, -275, -200, -225, 25); // -> TODO: limit radius
-            rect(-200, -275, -100, -225, 0, 10);
-            rect(-100, -275,    0, -225, 0, 10, 20);
-            rect(   0, -275,  100, -225, 0, 10, 20, 30);
-            rect(100, -275); // -> missing 3rd and 4th params -> empty
-            rect(225, -275, 275); // -> TODO
+            rect(-400, -275, -300, -225); // (436)
+            rect(-300, -275, -200, -225, 25); // (498)
+            rect(-200, -275, -100, -225, 0, 10); // (547)
+            rect(-100, -275,    0, -225, 0, 10, 20); // (596)
+            rect(   0, -275,  100, -225, 0, 10, 20, 30); // (645)
+            rect(100, -275); // missing 3rd and 4th params -> empty (645)
+            rect(225, -275, 275); // copies 3rd param to 4th (649)
             
             // square (CORNERS)
-            // square(-400, -200, -300, -100); -> ??
+            stroke('red');
+            // square(-400, -200, -300); // TODO: p5 BUG ?
+            // square(-300, -200, -200, 100, 25); // TODO: p5 BUG ?
+            // square(-200, -200, -100, 100, 0, 25); // TODO: p5 BUG ?
+            // square(-100, -200,    0, 100); // TODO: p5 BUG ?
+            stroke(0);
             
             // rect (CENTER)
-            rectMode(CENTER)
+            rectMode(CENTER);
             rect(-350, -50, 100, 50);
             rect(-250, -50, 100, 50, 25);
             rect(-150, -50, 100, 50, 0, 10);
             rect(-50,  -50, 100, 50, 0, 10, 20);
             rect(50,   -50, 100, 50, 0, 10, 20, 30);
-            rect(150,  -50); // -> missing 3rd and 4th params -> empty
-            rect(250,  -50, 50); // -> missing 4th param -> square
+            rect(150,  -50); // missing 3rd and 4th params -> empty
+            rect(250,  -50, 50); // missing 4th param -> square
             
             // square (CENTER)
             square(-350, 50, 100);
@@ -87,8 +95,8 @@
             square(-150, 50, 100, 0, 10);
             square(-50,  50, 100, 0, 10, 20);
             square( 50,  50, 100, 0, 10, 20, 30);
-            square(150,  50); // -> missing 3rd param -> empty
-            
+            square(150,  50); // missing 3rd param -> empty
+           
             // rect (RADIUS)
             rectMode(RADIUS);
             rect(-350, 150, 50, 25);
@@ -96,8 +104,8 @@
             rect(-150, 150, 50, 25, 0, 10);
             rect(-50,  150, 50, 25, 0, 10, 20);
             rect( 50,  150, 50, 25, 0, 10, 20, 30);
-            rect(150,  150); // -> missing 3rd and 4th params -> empty
-            rect(250,  150, 25); // -> missing 4th param -> square
+            rect(150,  150); // missing 3rd and 4th params -> empty
+            rect(250,  150, 25); // missing 4th param -> square
             
             // square (RADIUS)
             square(-350, 250, 50);
@@ -105,7 +113,7 @@
             square(-150, 250, 50, 0, 10);
             square(-50,  250, 50, 0, 10, 20);
             square( 50,  250, 50, 0, 10, 20, 30);
-            square(150,  250); // -> missing 3rd param -> empty
+            square(150,  250); // missing 3rd param -> empty
             
             plotter().plot();
         }
