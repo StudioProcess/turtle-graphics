@@ -675,15 +675,22 @@ function capture_p5(p5, record_line) {
     
     // helper for: triangle, quad
     function render_polygon(...coords) {
+        if (coords.length < 4) { return; } // only draw for two or more points
         for (let i = 0; i < coords.length; i += 2) {
             const n = (i + 2 < coords.length) ? i + 2 : 0;
             record_line(coords[i], coords[i + 1], coords[n], coords[n + 1]);
         }
     }
     
+    function is_number(x) {
+        return typeof x === 'number';
+    }
+    
     // helper for: ellipse, circle, arc
     const ELLIPSE_SEGMENTS = 60; // 12, 15, 18, 20, 24, 30, 36, 40, 45, 60, 72, 90, 120, 180, 360
     function render_ellipse(a, b, c, d, start = 0, stop = 2 * Math.PI, mode = undefined) {
+        if (!is_number(a) || !is_number(b) || !is_number(c)) { return; } // Need at least three params
+        if (d === undefined) { d = c; }
         let x, y, r1, r2;
         const ellipse_mode = this._renderer._ellipseMode;
         if (ellipse_mode === this.CENTER) {
@@ -701,6 +708,10 @@ function capture_p5(p5, record_line) {
             x = a + r1;
             y = b + r2;
         }
+        
+        if (!r1 && !r2) { return; } // don't render if both radii are 0, undefined or NaN
+        console.log(x,y,r1,r2);
+        
         function record_segment(start, stop) {
             record_line(
                 x + Math.cos(start) * r1,
@@ -735,6 +746,7 @@ function capture_p5(p5, record_line) {
         
     const replaced = {
         'point': function(...args) {
+            if (args.length < 2) { return; } // Need at least 2 args
             const POINT_RADIUS = 0.5;
             const [x, y] = [...args];
             // draw as diamond shape
@@ -744,6 +756,7 @@ function capture_p5(p5, record_line) {
             record_line(x, y + POINT_RADIUS, x - POINT_RADIUS, y);
         },
         'line': function(...args) {
+            if (args.length < 4) { return; } // Need at least 4 args
             record_line(...args);
         },
         'rect': function(...args) {
@@ -753,12 +766,10 @@ function capture_p5(p5, record_line) {
             render_rect.call(this, args[0], args[1], args[2], args[2]);
         },
         'triangle': function(...args) {
-            const [x1, y1, x2, y2, x3, y3] = args;
-            render_polygon.call(this, x1, y1, x2, y2, x3, y3);
+            render_polygon.call(this, ...args);
         },
         'quad': function(...args) {
-            const [x1, y1, x2, y2, x3, y3, x4, y4] = args;
-            render_polygon.call(this, x1, y1, x2, y2, x3, y3, x4, y4);
+            render_polygon.call(this, ...args);
         },
         'ellipse': function(...args) {
             render_ellipse.call(this, args[0], args[1], args[2], args[3]);

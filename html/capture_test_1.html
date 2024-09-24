@@ -9,6 +9,7 @@
     <!-- <script src="../dist/latest/tg-plot.mjs?dont_capture_p5" type="module"></script> -->
     <script src="../dist/latest/tg-plot.mjs" type="module"></script>
     <script>
+        const GRID = 0;
         
         function setup() {
             createCanvas(800, 1000);
@@ -18,87 +19,83 @@
         
         function draw() {
             background(220);
-            strokeWeight(0.5);
-            line(-400, -400, 400, -400);
-            line(-400, -300, 400, -300);
-            line(-400, -200, 400, -200);
-            line(-400, -100, 400, -100);
-            line(-400, 000, 400, 000);
-            line(-400, 100, 400, 100);
-            line(-400, 200, 400, 200);
-            line(-400, 300, 400, 300);
-            line(-400, 400, 400, 400);
             
-            line(-300, -500, -300, 500);
-            line(-200, -500, -200, 500);
-            line(-100, -500, -100, 500);
-            line(000, -500, 000, 500);
-            line(100, -500, 100, 500);
-            line(200, -500, 200, 500);
-            line(300, -500, 300, 500);
+            if (GRID) {
+                strokeWeight(0.5);
+                line(-400, -400, 400, -400);
+                line(-400, -300, 400, -300);
+                line(-400, -200, 400, -200);
+                line(-400, -100, 400, -100);
+                line(-400, 000, 400, 000);
+                line(-400, 100, 400, 100);
+                line(-400, 200, 400, 200);
+                line(-400, 300, 400, 300);
+                line(-400, 400, 400, 400);
+                
+                line(-300, -500, -300, 500);
+                line(-200, -500, -200, 500);
+                line(-100, -500, -100, 500);
+                line(000, -500, 000, 500);
+                line(100, -500, 100, 500);
+                line(200, -500, 200, 500);
+                line(300, -500, 300, 500);
+            }
             
             strokeWeight(2);
             
             // point and line
-            point(-350, -450);
-            line(-300, -400, -200, -500);
+            point(-350, -450); // (4 lines)
+            line(-300, -400, -200, -500); // (5)
             
             // triangle
-            triangle(-400, -300, -350, -400, -300, -300);
-            triangle(-300, -300); // one point only -> empty
-            triangle(-200, -300, -150, -400); // two points only -> line
+            triangle(-400, -300, -350, -400, -300, -300); // (8)
+            triangle(-300, -300); // one point only -> empty (8)
+            triangle(-200, -300, -150, -400); // two points only -> double line (10)
             
             // quad
-            quad(-400, -200, -350, -300, -300, -250, -350, -200); 
-            quad(-300, -200); // one point only -> empty
-            quad(-200, -200, -150, -300); // two points only -> line
-            quad(-100, -200, -50, -300, 0, -250); // just three points -> auto close
+            quad(-400, -200, -350, -300, -300, -250, -350, -200); // (14)
+            quad(-300, -200); // one point only -> empty (14)
+            quad(-200, -200, -150, -300); // two points only -> double line (16)
+            quad(-100, -200, -50, -300, 0, -250); // just three points -> auto close to triangle (19)
+            
             
             // ellipse + circle (CENTER)
             ellipseMode(CENTER);
-            ellipse(-350, -150, 100, 50);
-            ellipse(-250, -150); // missing 3rd and 4th params
-            ellipse(-150, -150, 100); // missing 4th param -> like circle
-            circle(-50, -150, 100);
-            circle(50, -150); // missing 3rd param -> empty
+            
+            ellipse(-350, -150, 100, 50); // (79)
+            ellipse(-250, -150); // missing 3rd and 4th params -> empty (79)
+            ellipse(-150, -150, 100); // missing 4th param -> like circle (139)
+            circle(-50, -150, 100); // (199)
+            circle(50, -150); // missing 3rd param -> empty // (199)
             
             // ellipse + circle (RADIUS)
             ellipseMode(RADIUS);
-            ellipse(-350, -50, 50, 25);
-            ellipse(-250, -50);
-            ellipse(-150, -50, 50);
-            circle(-50, -50, 50);
-            circle(0, -50);
+            ellipse(-350, -50, 50, 25); // (259)
+            ellipse(-250, -50); // missing 3rd and 4th params -> empty (259)
+            ellipse(-150, -50, 50); // missing 4th params -> circle (319)
+            circle(-50, -50, 50); // (379)
+            circle(0, -50); // missing 3rd param -> empty (379)
+           
             
             // ellipse + circle (CORNER)
             ellipseMode(CORNER);
-            ellipse(-400, 25, 100, 50);
-            ellipse(-300, 25);
-            ellipse(-200, 0, 100);
-            circle(-100, 0, 100);
-            circle(0, 0);
+            ellipse(-400, 25, 100, 50); // (439)
+            ellipse(-300, 25); // missing 3rd and 4th params -> empty (439)
+            ellipse(-200, 0, 100); // missing 4th param -> circle (499)
+            circle(-100, 0, 100); // (559)
+            circle(0, 0); // missing 3rd param -> empty (559)
+            
             
             // ellipse + circle (CORNERS)
             ellipseMode(CORNERS);
-            ellipse(-400, 125, -300, 175); // --> BUG in p5.js?!
-            ellipse(-300, 125);
-            // ellipse(-200, 125, -100); // --> crashes p5
-            // circle(-100, 100, 0, 100); // --> crashes p5
-            circle(0, 100, 100); // --> wtf is this?
+            stroke('red');
+            ellipse(-400, 125, -300, 175); // (619) TODO: BUG in p5.js
+            stroke(0);
             
-            
-            // rect(-100, -100, 100, 100);
-            // square
-            
-
-            // 
-            // arc(50, 50, 100, 60, 0, HALF_PI, PIE);
-            // 
-            // rect(-225, -225, 200, 100, 10, 20, 30, 40);
-            // arc(-170, 170, 150, 100, 0, HALF_PI, PIE);
-            // arc(-170, 170, 150, 100, HALF_PI, PI, PIE);
-            // arc(-170, 170, 150, 100, PI, PI + HALF_PI, PIE);
-            // arc(-170, 170, 150, 100, PI + HALF_PI, TWO_PI, PIE);
+            ellipse(-300, 125); // missing 3rd and 4th params -> empty (619)
+            // ellipse(-200, 125, -100); // TODO: crashes p5
+            // circle(-100, 100, 0, 100); // TODO crashes p5
+            circle(0, 100, 100); // 4th param missing -> duplicates 3rd // TODO: produces shorts
             
             plotter().plot();
         }
