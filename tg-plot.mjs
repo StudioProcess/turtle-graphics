@@ -929,7 +929,7 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
             console.warn(`🖨️ → Preview window was blocked. Please allow the pop-up in your browser and try again!`);
             return;
         }
-        w.document.write(`<html><head><title>${filename}</title></head><body style="padding:0; margin:0; font:10px system-ui; color:dimgray; background:lightgray; display:flex; flex-direction:column; align-items:center; justify-content:center;"><div><img src="${url}" style="background:white; max-width:90vw; max-height:80vh; box-shadow:3px 3px 10px 1px gray;" /><div style="margin-top:2em;">${filename}<br>${format_num(stats.count)} lines<br>${format_num(Math.floor(stats.travel_ink))} / ${format_num(Math.floor(stats.travel))} mm<br>${format_name} (${size[0]} ✕ ${size[1]} mm)<br><a href="${url}" download="${filename}" style="color:dimgray;">Download</a></div></div></body></html>`);
+        w.document.write(`<html><head><title>${filename}</title></head><body style="padding:0; margin:0; font:10px system-ui; color:dimgray; background:lightgray; display:flex; flex-direction:column; align-items:center; justify-content:center;"><div><img src="${url}" style="background:white; max-width:90vw; max-height:80vh; box-shadow:3px 3px 10px 1px gray;" /><div style="margin-top:2em;">${filename}<br>${format_num(stats.count)} lines<br>${format_num(Math.floor(stats.travel_ink)/1000)} / ${format_num(Math.floor(stats.travel)/1000)} m<br>${format_name} (${size[0]} ✕ ${size[1]} mm)<br><a href="${url}" download="${filename}" style="color:dimgray;">Download</a></div></div></body></html>`);
     };
     
     savesvg_button.onmousedown = async (e) => {
@@ -951,15 +951,25 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
         line_stats.set_viewbox(tg_instance._p5_viewbox);
         line_stats.set_scale(scale_factor());
         const stats = line_stats.update(); // update stats, if viewbox or scale is different
-        const unit = tg_instance._p5_viewbox ? ' mm' : ' px';
+        
+        let unit, travel, ink;
+        if (tg_instance._p5_viewbox) {
+            unit = ' m';
+            travel = Math.floor(stats.travel) / 1000; // from mm to m
+            ink = Math.floor(stats.travel_ink) / 1000;
+        } else {
+            unit = ' px';
+            travel = Math.floor(stats.travel);
+            ink = Math.floor(stats.travel_ink);
+        }
         
         lines_span.innerText = format_num(stats.count);
         oob_span.innerText = format_num(stats.oob_count);
         oob_span.style.color = stats.oob_count > 0 ? 'red' : '';
         short_span.innerText = format_num(stats.short_count);
         short_span.style.color = stats.short_count > 0 ? 'red' : '';
-        travel_span.innerText = format_num(Math.floor(stats.travel)) + unit;
-        ink_span.innerText = format_num(Math.floor(stats.travel_ink)) + unit;
+        travel_span.innerText = format_num(travel) + unit;
+        ink_span.innerText = format_num(ink) + unit;
     }
     const update_stats_debounced = debounce(update_stats, 1000);
     
