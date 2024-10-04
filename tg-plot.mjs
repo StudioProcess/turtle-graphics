@@ -101,9 +101,9 @@ function scale_args_viewbox(viewbox, target_size = [420, 297], margin = 0.05) {
 // move to the center given by (cx, cy), then scale by (sx, sy)
 function scale_lines(lines, sx = 1, sy = 1, cx = 0, cy = 0) {
     return lines.map( ([x0, y0, x1, y1]) => [
-        sx * (x0 - cx), 
-        sy * (y0 - cy), 
-        sx * (x1 - cx), 
+        sx * (x0 - cx),
+        sy * (y0 - cy),
+        sx * (x1 - cx),
         sy * (y1 - cy) ] );
 }
 
@@ -259,7 +259,7 @@ function clip_lines(lines, bounds) {
     return lines;
 }
 
-function filter_short_lines(lines, min_len) {    
+function filter_short_lines(lines, min_len) {
     function len(x0, y0, x1, y1) {
         return Math.sqrt( (x1-x0)**2 + (y1-y0)**2 );
     }
@@ -323,7 +323,7 @@ async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date 
     const _timestamp = timestamp(date);
     const d = to_path(lines);
     
-    let svg =`<svg xmlns="http://www.w3.org/2000/svg" 
+    let svg =`<svg xmlns="http://www.w3.org/2000/svg"
      xmlns:tg="https://sketch.process.studio/turtle-graphics"
      tg:count="${stats.count}" tg:travel="${Math.trunc(stats.travel)}" tg:travel_ink="${Math.trunc(stats.travel_ink)}" tg:travel_blank="${Math.trunc(stats.travel)-Math.trunc(stats.travel_ink)}"
      width="${target_size[0]}mm"
@@ -370,7 +370,7 @@ function make_line_stats(viewbox = undefined, scale = undefined) {
     }
     
     function add_line(x0, y0, x1, y1, save = true) {
-        if (save) { 
+        if (save) {
             lines.push([x0, y0, x1, y1]); // Save lines for possible recomputation when viewbox or scale change
         }
         let blank = px !== undefined ? dist(px, py, x0, y0) : 0; // blank travel to line start
@@ -401,7 +401,7 @@ function make_line_stats(viewbox = undefined, scale = undefined) {
     function set_viewbox(new_viewbox) {
         viewbox_changed = true;
         if (JSON.stringify(new_viewbox) === JSON.stringify(viewbox)) {
-            viewbox_changed = false; 
+            viewbox_changed = false;
         }
         viewbox = new_viewbox;
     }
@@ -474,7 +474,7 @@ function autoconnect(options = {}) {
     let should_stop = true;
     
     function retry() {
-        if (options.retries > -1 && retries + 1 > options.retries) { 
+        if (options.retries > -1 && retries + 1 > options.retries) {
             // no (more) retries
             callback(options.on_disconnected);
             return;
@@ -620,7 +620,7 @@ function checkHotkeys(hotkeys, e) {
     for (let h of hotkeys) {
         if ( checkHotkey(h, e) ) {
             return true;
-        } 
+        }
     }
     return false;
 }
@@ -665,7 +665,7 @@ function capture_p5(p5, record_line) {
         this._renderer._ellipseMode = this.RADIUS;
         
         if (tl > 0) { // TL corner
-            render_ellipse.call(this, x + tl, y + tl, tl, tl, this.PI, this.PI + this.HALF_PI); 
+            render_ellipse.call(this, x + tl, y + tl, tl, tl, this.PI, this.PI + this.HALF_PI);
         }
         if (w > tl + tr) { // only render line if there is actually something between the round corners
             record_line(x + tl, y, x + w - tr, y); // TL to TR
@@ -833,7 +833,7 @@ function capture_p5(p5, record_line) {
 export function make_plotter_client(tg_instance, do_capture_p5 = true) {
     let recording = true;
     let lines = []; // lines as they arrive from tg module (in px)
-    let line_stats = make_line_stats(); // Can't immediately initialize with tg_instance._p5_viewbox (not yet available) -> Init via line_fn callbacks 
+    let line_stats = make_line_stats(); // Can't immediately initialize with tg_instance._p5_viewbox (not yet available) -> Init via line_fn callbacks
     let line_stats_viewbox_initialized = false;
     let plotting = false;
     
@@ -877,8 +877,8 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
         if (valid) {
             set_localstorage('tg-plot:client_id', e.target.value );
         }
-        if (ac.state() === ac.STATE.connected) { 
-            plot_button.disabled = !valid; 
+        if (ac.state() === ac.STATE.connected) {
+            plot_button.disabled = !valid;
         }
     };
     
@@ -942,8 +942,8 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
     
     // Scale factor to proportionally scale the viewbox to the selected format, with margin
     function scale_factor() {
-        return tg_instance._p5_viewbox ? 
-        scale_args_viewbox(tg_instance._p5_viewbox, SIZES[format_select.value], MARGIN)[0] : 
+        return tg_instance._p5_viewbox ?
+        scale_args_viewbox(tg_instance._p5_viewbox, SIZES[format_select.value], MARGIN)[0] :
         1.0;
     }
     
@@ -1008,7 +1008,7 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
       * An object containing a bunch of functions to control plotting your turtle graphics.
       * <br>
       * Retrieved with {@link plotter}.
-      * 
+      *
       * @typedef {Object} Plotter
       * @property {function} plot - Stop recording lines and show to plotter UI.
       * @property {function} stop - Stop recording lines. Can be used to exclude a part of your drawing from being plotted.
@@ -1045,7 +1045,7 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
         
         plot() {
             recording = false;
-            show_ui();        
+            show_ui();
         },
         
         show() {
@@ -1139,7 +1139,7 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
                     pos = '🖨️ Drawing...';
                     plot_button.disabled = true;
                 }
-                else { 
+                else {
                     pos = "⌛ " + msg.position + " before you...";
                     plot_button.disabled = false;
                 }
@@ -1190,8 +1190,8 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
     function show_ui() {
         if (div.style.display !== 'none') { return; }
         const connect_on_start = get_localstorage( 'tg-plot:connect_on_start', CONNECT_ON_START );
-        if (connect_on_start != '0') { 
-            ac.start(server_input.value); 
+        if (connect_on_start != '0') {
+            ac.start(server_input.value);
         }
         div.style.display = 'block';
     }
@@ -1201,7 +1201,7 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
     }
     
     return public_fns;
-}   
+}
 
 /*
 if (globalThis?.addEventListener !== undefined) {
@@ -1211,7 +1211,7 @@ if (globalThis?.addEventListener !== undefined) {
             // console.log('-> p5 detected (%s)', window.p5.VERSION);
             
             // proxy the global preload function
-            // this is the earliest the p5 instance is available 
+            // this is the earliest the p5 instance is available
             // AND p5 functions are in the global scope (so we can overwrite them)
             const original_preload = window.preload;
             window.preload = (...args) => {
@@ -1265,7 +1265,7 @@ let _browser_bootstrapped = false;
         // put plotter function on tg default intance
         /**
           * Get the {@link Plotter} object, containing all the functions to control plotting your turtle graphics.
-          * 
+          *
           * @function plotter
           * @returns The {@link Plotter} object.
           */
