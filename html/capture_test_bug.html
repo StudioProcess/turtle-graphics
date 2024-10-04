@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>p5 capture bug</title>
+    <script src="../node_modules/p5/lib/p5.min.js"></script>
+    <script src="../dist/latest/tg.mjs" type="module"></script>
+    <script src="../dist/latest/tg-plot.mjs?capture_p5" type="module"></script>
+    <script>
+        
+        function setup() {
+            createCanvas(400, 400);
+            noLoop();
+            noFill();
+        }
+        
+        function draw() {
+            forward(100); // This line should only be captured once
+            plotter().plot();
+        }
+        
+    </script>
+</head>
+<body>
+
+</body>
+</html>

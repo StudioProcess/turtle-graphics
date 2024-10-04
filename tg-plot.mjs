@@ -627,7 +627,7 @@ function checkHotkeys(hotkeys, e) {
 
 // Set up capturing p5 basic shape functions.
 // Supports: point(), line(), rect(), square(), rectMode(), triangle(), quad(), ellipse(), circle(), arc(), ellipseMode()
-function capture_p5(p5, record_line) {
+function capture_p5(p5, record_line, tg_instance = undefined) {
     
     function limit(x, max) {
         if (x > max) { x = max; }
@@ -715,7 +715,7 @@ function capture_p5(p5, record_line) {
         if (d === undefined) { d = c; }
         
         start = start % (2 * Math.PI); // normalize angles
-        stop = stop % (2 * Math.PI);
+        if (stop > 2 * Math.PI) { stop = stop % (2 * Math.PI); } // keep it at 2*PI (or lower), so 0 to 2*PI (full cirlce) is drawn
         if (stop < start) { stop += 2 * Math.PI; } // make sure stop is greater than start
         
         let x, y, r1, r2;
@@ -825,6 +825,11 @@ function capture_p5(p5, record_line) {
             }
             return call_orig(fn_name, this, ...args);
         };
+    }
+    // Save uncaptured line function in the instance, so it can be used for plotting
+    // Otherwise lines would be plotted double
+    if (tg_instance && 'line' in orig) {
+        tg_instance['_tg-plot_orig_line_fn'] = orig['line'];
     }
     console.log(`🖨️ → Capturing p5 functions: ${Object.keys(replaced).join(", ")}`);
 }
@@ -1000,7 +1005,7 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
     tg_instance._add_line_fn(record_line);
     
     if (do_capture_p5 && window.p5) {
-        capture_p5(window.p5, record_line);
+        capture_p5(window.p5, record_line, tg_instance);
     }
     
      
@@ -1246,7 +1251,7 @@ let _browser_bootstrapped = false;
     if (window.tg?.default_turtle) {
         console.log(`🖨️ Plotter Module (v${VERSION})`);
         
-        const do_capture_p5 = !check_url_param('dont_capture_p5')
+        const do_capture_p5 = check_url_param('capture_p5')
         if (!do_capture_p5) {
             console.log(`🖨️ → p5 Capture disabled`);
         }

@@ -1418,7 +1418,12 @@ function auto_init(do_globalize = false) {
         window.p5.prototype._registeredMethods.init.push(function() {
             // 'this' is the p5 instance
             // -> set line function
-            default_instance._add_line_fn( this.line.bind(this) );
+            if ('_tg-plot_orig_line_fn' in default_instance) { // Check if line function was captured (overwritten by tg-plot)
+                // Use the original/uncaptured line function, so lines don't get drawn double
+                default_instance._add_line_fn( default_instance['_tg-plot_orig_line_fn'].bind(this) );
+            } else {
+                default_instance._add_line_fn( this.line.bind(this) );
+            }
             
             const original__start = this._start;
             this._start = function(...args) {
