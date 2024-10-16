@@ -18,9 +18,7 @@ const SIZES = {
     'Letter Portrait': [215.9, 279.4], // 8.5 x 11 in
 };
 const MARGIN = 0.05; // scale down (scaling factor = 1-MARGIN)
-//const SERVER_URL = 'wss://plotter-local.process.tools';
-//const SERVER_URL = 'wss://plotter.eu.ngrok.io';
-const SERVER_URL = 'wss://plotter.process.tools';
+const SERVER_URL = [ 'plotter.process.tools', 'plotter-local.process.tools' ];
 
 const CONNECT_ON_START = true;
 const WAIT_BEFORE_RECONNECT = 10_000; // ms
@@ -29,9 +27,11 @@ const RETRIES = -1 // -1 for unlimited
 function create_ui() {
     const tmp = document.createElement('template');
     const format_options = Object.keys(SIZES).reduce( (acc, key) => acc += `<option value="${key}">${key}</option>`, '' ) ;
+    const server_options= SERVER_URL.reduce( (acc, url) => acc + `<option value="${url}">`, '');
+    
     tmp.innerHTML = `<div id="plotter-ui" style="display:none; font:11px system-ui; width:200px; position:fixed; top:0; right:0; padding:8px; background:rgba(255,255,255,0.66)">
     <div style="font-weight:bold; text-align:center; position:relative;">Plotter<span class="close-button" style="display:inline-block; position:absolute; right:0; cursor:pointer;">✕</span></div>
-    <input class="server" placeholder="Server" value="" style="width:193px;"></input><br>
+    <input class="server" placeholder="Server" value="" list="server-list" style="width:193px;"></input><datalist id="server-list">${server_options}</datalist><br>
     <button class="connect" style="margin:5px 5px auto auto;">Connect</button><span class="status">○</span><br>
     <hr>
     <table>
@@ -602,6 +602,9 @@ function autoconnect(options = {}) {
         if (state !== STATE.disconnected) { return; }
         // console.log('starting');
         url = url_;
+        if (!url.toLowerCase().startsWith('wss://')) {
+            url = 'wss://' + url;
+        }
         retries = 0;
         should_stop = false;
         connect();
@@ -916,7 +919,7 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
     const format_select = div.querySelector('.format');
     const close_button = div.querySelector('.close-button');
     
-    server_input.value = get_localstorage( 'tg-plot:server_url', SERVER_URL );
+    server_input.value = get_localstorage( 'tg-plot:server_url', SERVER_URL[0] );
     client_id_input.value = get_localstorage( 'tg-plot:client_id', random_id(4, 26, 10).toUpperCase() );
     format_select.value = get_localstorage( 'tg-plot:format', 'A3 Landscape' );
     speed_input.value = get_localstorage( 'tg-plot:speed', 100 );
