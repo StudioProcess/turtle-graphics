@@ -297,8 +297,41 @@ function filter_short_lines(lines, min_len) {
     return out;
 }
 
+// separate lines into layers
+function to_layers(lines, layers_indices) {
+    if (layers_indices === undefined || layers_indices === 0) {
+        // return a single layer with all the lines
+        return [ lines ];
+    }
+    
+    // we have at least one layer
+    const layers = [];
+    let last_idx = 0;
+    for (let idx of layers_indices) {
+        layers.push( lines.slice(last_idx, idx) );
+        last_idx = idx;
+    }
+    if (lines.length > last_idx) {
+        layers.push( lines.slice(last_idx, lines.length) );
+    }
+    return layers;
+}
+
+function to_svg_layers(layers, num_decimals = -1) {
+    let svg = '';
+    for (let [idx, lines] of layers.entries()) {
+        const d = to_path(lines);
+        svg += `    <g id="Layer ${idx}" serif:id="Layer ${idx}" inkscape:groupmode="layer" inkscape:label="${idx > 0 ? '!' : ''}${idx} Layer ${idx}">\n`;
+        svg += `        <path d="${d}" />\n`;
+        svg += '    </g>\n';
+    }
+    return svg;
+}
+
 // TODO: stroke width
 async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date = undefined) {
+    const layers_indices = lines._layers;
+    
     if (lines_viewbox === 'bbox') { // calculate bounding box
         lines_viewbox = geb_bbox(lines);
         lines = scale_lines_viewbox(lines, lines_viewbox, target_size, MARGIN);
@@ -308,30 +341,41 @@ async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date 
     
     lines = lines.map(line => line.map(limit_precision));
     
+    // separate lines into layers
+    const layers = to_layers(lines, layers_indices);
+    
     if (SVG_CLIPPING) {
         const scaled_vb = scale_viewbox(lines_viewbox, target_size, MARGIN); // original viewbox scaled up to target size
         let bounds = [ scaled_vb[0], scaled_vb[1], scaled_vb[0] + scaled_vb[2], scaled_vb[1] + scaled_vb[3] ];
         bounds = bounds.map(limit_precision);
-        lines = clip_lines(lines, bounds);
+        
+        // clip per layer
+        for (let [idx, lines] of layers.entries() ) {
+            layers[idx] = clip_lines(lines, bounds);
+        }
     }
     
     if (SVG_MIN_LINE_LENGTH > 0) {
-        lines = filter_short_lines(lines, SVG_MIN_LINE_LENGTH);
+        // filter per layer
+        for (let [idx, lines] of layers.entries() ) {
+            layers[idx] = filter_short_lines(lines, SVG_MIN_LINE_LENGTH);
+        }
     }
     
-    const stats = line_stats(lines); // No need to provide viewbox (out of bounds were clipped already) or scale (lines are already scaled, short lines removed)
+    const stats = layer_stats(layers); // No need to provide viewbox (out of bounds were clipped already) or scale (lines are already scaled, short lines removed)
     const _timestamp = timestamp(date);
-    const d = to_path(lines);
+    const data = to_svg_layers(layers);
     
     let svg =`<svg xmlns="http://www.w3.org/2000/svg"
      xmlns:tg="https://sketch.process.studio/turtle-graphics"
+     xmlns:serif="http://www.serif.com/"
+     xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
      tg:count="${stats.count}" tg:travel="${Math.trunc(stats.travel)}" tg:travel_ink="${Math.trunc(stats.travel_ink)}" tg:travel_blank="${Math.trunc(stats.travel)-Math.trunc(stats.travel_ink)}"
      width="${target_size[0]}mm"
      height="${target_size[1]}mm"
      viewBox="-${target_size[0]/2} -${target_size[1]/2} ${target_size[0]} ${target_size[1]}"
      stroke="black" fill="none" stroke-linecap="round">
-    <path d="${d}" />
-</svg>`;
+${data}</svg>`;
     
     const _hash = await hash(svg); // hash without comment (contains timestamp)
     svg = `<!-- Created with tg-plot (v${VERSION}) at ${_timestamp} -->\n`
@@ -432,6 +476,14 @@ function make_line_stats(viewbox = undefined, scale = undefined) {
 function line_stats(lines, viewbox = undefined, scale = undefined) {
     const stats = make_line_stats(viewbox, scale);
     for (let line of lines) { stats.add_line(...line); }
+    return stats.get();
+}
+
+function layer_stats(layers, viewbox = undefined, scale = undefined) {
+    const stats = make_line_stats(viewbox, scale);
+    for (let lines of layers) {
+        for (let line of lines) { stats.add_line(...line); }
+    }
     return stats.get();
 }
 
@@ -838,6 +890,7 @@ function capture_p5(p5, record_line, tg_instance = undefined) {
 export function make_plotter_client(tg_instance, do_capture_p5 = true) {
     let recording = true;
     let lines = []; // lines as they arrive from tg module (in px)
+    lines._layers = []; // array of indices where layers start (except first layer which always starts at 0)
     let line_stats = make_line_stats(); // Can't immediately initialize with tg_instance._p5_viewbox (not yet available) -> Init via line_fn callbacks
     let line_stats_viewbox_initialized = false;
     let plotting = false;
@@ -1071,6 +1124,11 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
         
         stats() {
             return line_stats.get();
+        },
+        
+        newlayer() {
+            // remember index where a new layer starts
+            lines._layers.push(lines.length);
         }
     };
     
