@@ -973,21 +973,30 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
         }
     };
     
-    preview_button.onmousedown = async (e) => {
+    preview_button.onmousedown = (e) => {
         if (e.button !== 0) { return; } // left mouse button only
         if (lines.length == 0) { return; }
-        const size = SIZES[format_select.value]; // target size in mm
-        const { svg, timestamp, stats, hash } = await to_svg(lines, tg_instance._p5_viewbox, size);
-        const url = svg_data_url(svg);
-        const filename = `${timestamp}_${hash.slice(0,5)}.svg`;
-        const format_name = format_select.querySelector('option:checked').innerText;
         
-        const w = window.open('about:blank');
+        // Circumvent Pop-up block: https://stackoverflow.com/a/39387533
+        const w = window.open();
         if (!w) {
             console.warn(`🖨️ → Preview window was blocked. Please allow the pop-up in your browser and try again!`);
             return;
         }
-        w.document.write(`<html><head><title>${filename}</title></head><body style="padding:0; margin:0; font:10px system-ui; color:dimgray; background:lightgray; display:flex; flex-direction:column; align-items:center; justify-content:center;"><div><img src="${url}" style="background:white; max-width:90vw; max-height:80vh; box-shadow:3px 3px 10px 1px gray;" /><div style="margin-top:2em;">${filename}<br>${format_num(stats.count)} lines<br>${format_num(Math.floor(stats.travel_ink)/1000)} / ${format_num(Math.floor(stats.travel)/1000)} m<br>${format_name} (${size[0]} ✕ ${size[1]} mm)<br><a href="${url}" download="${filename}" style="color:dimgray;">Download</a></div></div></body></html>`);
+        
+        const size = SIZES[format_select.value]; // target size in mm
+        to_svg(lines, tg_instance._p5_viewbox, size).then( ({svg, timestamp, stats, hash}) => {
+            const svg_url = svg_data_url(svg);
+            const filename = `${timestamp}_${hash.slice(0,5)}.svg`;
+            const format_name = format_select.querySelector('option:checked').innerText;
+            
+            const html = `<html><head><title>${filename}</title></head><body style="padding:0; margin:0; font:10px system-ui; color:dimgray; background:lightgray; display:flex; flex-direction:column; align-items:center; justify-content:center;"><div><img src="${svg_url}" style="background:white; max-width:90vw; max-height:80vh; box-shadow:3px 3px 10px 1px gray;" /><div style="margin-top:2em;">${filename}<br>${format_num(stats.count)} lines<br>${format_num(Math.floor(stats.travel_ink)/1000)} / ${format_num(Math.floor(stats.travel)/1000)} m<br>${format_name} (${size[0]} ✕ ${size[1]} mm)<br><a href="${svg_url}" download="${filename}" target="_blank" style="color:dimgray;">Download</a></div></div></body></html>`;
+
+            // Create Object URL, so we have a reloadable window
+            const blob = new Blob([html], { type: 'text/html'});
+            const url = URL.createObjectURL(blob);
+            w.location = url;
+        });
     };
     
     savesvg_button.onmousedown = async (e) => {
