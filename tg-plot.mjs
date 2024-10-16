@@ -31,7 +31,7 @@ function create_ui() {
     const format_options = Object.keys(SIZES).reduce( (acc, key) => acc += `<option value="${key}">${key}</option>`, '' ) ;
     tmp.innerHTML = `<div id="plotter-ui" style="display:none; font:11px system-ui; width:200px; position:fixed; top:0; right:0; padding:8px; background:rgba(255,255,255,0.66)">
     <div style="font-weight:bold; text-align:center; position:relative;">Plotter<span class="close-button" style="display:inline-block; position:absolute; right:0; cursor:pointer;">✕</span></div>
-    <input class="server" placeholder="Server" value=""></input><br>
+    <input class="server" placeholder="Server" value="" style="width:193px;"></input><br>
     <button class="connect" style="margin:5px 5px auto auto;">Connect</button><span class="status">○</span><br>
     <hr>
     <table>
