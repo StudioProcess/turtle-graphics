@@ -52,6 +52,7 @@ function create_ui() {
     <hr>
     <div style="text-align:center";><button class="preview" style="width:80px; margin-right:5px; margin-bottom:0;">Preview</button><button class="savesvg" style="width:80px; margin-bottom:0;">Save SVG</button></div>
     <div style="text-align:center";><!-- <button class="clear">Clear</button> --> <button class="plot" style="width:165px; height:28px; margin-top:5px;" disabled>Plot</button> <!-- <button class="cancel" disabled>Cancel</button></div> -->
+    <div class="empty-warning" style="display:none;color:red;">No lines recorded!</div>
     </div> `;
     const div = tmp.content.firstChild;
     document.body.appendChild(div);
@@ -394,7 +395,7 @@ function svg_data_url(svg) {
 function make_line_stats(viewbox = undefined, scale = undefined) {
     const empty = {
         count: 0,
-        layer_count: 1,
+        layer_count: 0,
         oob_count: 0, // out of bounds lines
         short_count: 0, // lines shorter than SVG_MIN_LINE_LENGTH
         travel: 0,
@@ -416,6 +417,7 @@ function make_line_stats(viewbox = undefined, scale = undefined) {
     }
     
     function add_line(x0, y0, x1, y1, save = true) {
+        if (stats.layer_count === 0) { stats.layer_count = 1; }
         if (save) {
             lines.push([x0, y0, x1, y1]); // Save lines for possible recomputation when viewbox or scale change
         }
@@ -922,6 +924,7 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
     // const clear_button = div.querySelector('.clear');
     // const cancel_button = div.querySelector('.cancel');
     const plot_button = div.querySelector('.plot');
+    const empty_warning_div = div.querySelector('.empty-warning');
     const status_span = div.querySelector('.status');
     const server_input = div.querySelector('.server');
     const speed_input = div.querySelector('.speed');
@@ -1048,13 +1051,18 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
         }
         
         lines_span.innerText = format_num(stats.count);
+        lines_span.style.color = stats.count == 0 ? 'red' : '';
         layers_span.innerText = format_num(stats.layer_count);
+        layers_span.style.color = stats.layer_count == 0 ? 'red' : '';
         oob_span.innerText = format_num(stats.oob_count);
         oob_span.style.color = stats.oob_count > 0 ? 'red' : '';
         short_span.innerText = format_num(stats.short_count);
         short_span.style.color = stats.short_count > 0 ? 'red' : '';
         travel_span.innerText = format_num(travel) + unit;
+        travel_span.style.color = travel == 0 ? 'red' : '';
         ink_span.innerText = format_num(ink) + unit;
+        ink_span.style.color = ink == 0 ? 'red' : '';
+        empty_warning_div.style.display = stats.count > 0 ? 'none' : 'block';
     }
     const update_stats_debounced = debounce(update_stats, 1000);
     
@@ -1285,6 +1293,7 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
             ac.start(server_input.value);
         }
         div.style.display = 'block';
+        update_stats_debounced();
     }
     
     function hide_ui() {
