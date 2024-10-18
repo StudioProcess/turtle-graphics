@@ -39,6 +39,7 @@ function create_ui() {
     <tr> <td>Your ID:</td> <td><input type="text" class="client_id" style="font-weight:bold;" required size=
     12" maxlength="10" min="3" pattern="\\w{3,10}"></input></td> </tr>
     <tr> <td>Lines:</td> <td><span class="lines">–</span></td> </tr>
+    <tr class="layers-row"> <td>Layers:</td> <td><span class="layers">–</span></td> </tr>
     <tr> <td>Out of bounds:</td> <td><span class="oob">–</span></td> </tr>
     <tr> <td>Short:</td> <td><span class="short">–</span></td> </tr>
     <tr> <td>Travel:</td> <td><span class="travel">–</span></td> </tr>
@@ -393,6 +394,7 @@ function svg_data_url(svg) {
 function make_line_stats(viewbox = undefined, scale = undefined) {
     const empty = {
         count: 0,
+        layer_count: 1,
         oob_count: 0, // out of bounds lines
         short_count: 0, // lines shorter than SVG_MIN_LINE_LENGTH
         travel: 0,
@@ -437,6 +439,10 @@ function make_line_stats(viewbox = undefined, scale = undefined) {
         }
     }
     
+    function add_layer(count = 1) {
+        stats.layer_count += count;
+    }
+    
     function get() {
         return Object.assign({}, stats);
     }
@@ -470,13 +476,18 @@ function make_line_stats(viewbox = undefined, scale = undefined) {
         return get();
     }
     
-    return { add_line, get, update, set_viewbox, set_scale };
+    return { add_line, add_layer, get, update, set_viewbox, set_scale };
 }
 
 function line_stats(lines, viewbox = undefined, scale = undefined) {
     const stats = make_line_stats(viewbox, scale);
     for (let line of lines) { stats.add_line(...line); }
-    return stats.get();
+    const res = stats.get();
+    // add layer_count property
+    if (Array.isArray(lines._layers)) {
+        res.layer_count = lines._layers.length + 1;
+    }
+    return res;
 }
 
 function layer_stats(layers, viewbox = undefined, scale = undefined) {
@@ -484,6 +495,8 @@ function layer_stats(layers, viewbox = undefined, scale = undefined) {
     for (let lines of layers) {
         for (let line of lines) { stats.add_line(...line); }
     }
+    const res = stats.get();
+    res.layer_count = layers.length; // add layer_count property
     return stats.get();
 }
 
@@ -900,6 +913,7 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
     
     const div = create_ui();
     const lines_span = div.querySelector('.lines');
+    const layers_span = div.querySelector('.layers');
     const oob_span = div.querySelector('.oob');
     const short_span = div.querySelector('.short');
     const travel_span = div.querySelector('.travel');
@@ -1034,6 +1048,7 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
         }
         
         lines_span.innerText = format_num(stats.count);
+        layers_span.innerText = format_num(stats.layer_count);
         oob_span.innerText = format_num(stats.oob_count);
         oob_span.style.color = stats.oob_count > 0 ? 'red' : '';
         short_span.innerText = format_num(stats.short_count);
@@ -1141,6 +1156,7 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
         newlayer() {
             // remember index where a new layer starts
             lines._layers.push(lines.length);
+            line_stats.add_layer();
         }
     };
     
