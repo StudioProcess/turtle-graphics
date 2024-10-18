@@ -335,6 +335,9 @@ function to_svg_layers(layers, num_decimals = -1) {
 
 // TODO: stroke width
 async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date = undefined) {
+    // save _layers propery (gets removed by scale_lines_viewbox, map)
+    const layer_indices = lines._layers;
+    
     if (lines_viewbox === 'bbox') { // calculate bounding box
         lines_viewbox = geb_bbox(lines);
         lines = scale_lines_viewbox(lines, lines_viewbox, target_size, MARGIN);
@@ -345,7 +348,7 @@ async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date 
     lines = lines.map(line => line.map(limit_precision));
     
     // separate lines into layers
-    const layers = to_layers(lines, lines._layers);
+    const layers = to_layers(lines, layer_indices);
     
     if (SVG_CLIPPING) {
         const scaled_vb = scale_viewbox(lines_viewbox, target_size, MARGIN); // original viewbox scaled up to target size
@@ -1363,6 +1366,15 @@ function check_url_param(param_name) {
     return check_boolean_attr(url.searchParams.get(param_name)) ? true : false;
 }
 
+// Make an object 'callable'
+function make_callable(obj, func) {
+    const fn = (...args) => func(...args);
+    for (let prop of Object.getOwnPropertyNames(obj)) {
+        fn[prop] = obj[prop];
+    }
+    return fn;
+}
+
 
 // browser bootstrap
 let _browser_bootstrapped = false;
@@ -1388,21 +1400,21 @@ let _browser_bootstrapped = false;
             console.log(`🖨️ → Global plotter: ${GLOBAL_INSTANCE_NAME}`);
         }
         
-        // put plotter function on tg default intance
         /**
           * Get the {@link Plotter} object, containing all the functions to control plotting your turtle graphics.
           *
           * @function plotter
           * @returns The {@link Plotter} object.
           */
-        const plotter_fn = () => plotter;
-        if (window.tg.default_turtle[PLOTTER_FUNCTION_NAME] === undefined) {
-            window.tg.default_turtle[PLOTTER_FUNCTION_NAME] = plotter_fn;
-            console.log(`🖨️ → Plotter function (added to turtles): ${PLOTTER_FUNCTION_NAME}`);
-        }
-        
+        // Put plotter function on tg default intance
+        // Add properties from the object to the function as well, so `plotter()` and `plotter` are effectively equivalent
         // Note: No need to add plotter_fn to global scope.
         // Since it's on the default instance, it will be globalized by it
+        const plotter_fn = make_callable(plotter, () => plotter);
+        if (window.tg.default_turtle[PLOTTER_FUNCTION_NAME] === undefined) {
+            window.tg.default_turtle[PLOTTER_FUNCTION_NAME] = plotter_fn;
+            console.log(`🖨️ → Plotter function/object (added to turtles): ${PLOTTER_FUNCTION_NAME}`);
+        }
         
         
         // Add hotkeys

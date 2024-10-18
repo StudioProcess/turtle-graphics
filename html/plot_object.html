@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plot Test (Object vs Function)</title>
+    <script src="../node_modules/p5/lib/p5.min.js"></script>
+    <script src="../dist/latest/tg.mjs" type="module"></script>
+    <script src="../dist/latest/tg-plot.mjs" type="module"></script>
+    <script>
+        
+        function setup() {
+            createCanvas(500, 500);
+            noLoop();
+        }
+        
+        function draw() {
+            background(220);
+            console.log('Plotter object:', plotter);
+            console.log('Plotter function:', plotter());
+            
+            forward();
+            plotter.plot();
+        }
+        
+    </script>
+</head>
+<body>
+
+</body>
+</html>
