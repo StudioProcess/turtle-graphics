@@ -17,6 +17,8 @@ const SIZES = {
     'Letter Landscape': [279.4, 215.9], // 11 x 8.5 in
     'Letter Portrait': [215.9, 279.4], // 8.5 x 11 in
 };
+const LAYER_COLORS = [ 'black', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple' ];
+const USE_LAYER_COLORS = true;
 const MARGIN = 0.05; // scale down (scaling factor = 1-MARGIN)
 const SERVER_URL = [ 'plotter.process.tools', 'plotter-local.process.tools' ];
 
@@ -323,7 +325,8 @@ function to_svg_layers(layers, num_decimals = -1) {
     let svg = '';
     for (let [idx, lines] of layers.entries()) {
         const d = to_path(lines);
-        svg += `    <g id="Layer ${idx}" serif:id="Layer ${idx}" inkscape:groupmode="layer" inkscape:label="${idx > 0 ? '!' : ''}${idx} Layer ${idx}">\n`;
+        const layer_color = USE_LAYER_COLORS ? LAYER_COLORS[idx % LAYER_COLORS.length] : 'black';
+        svg += `    <g id="Layer ${idx}" stroke="${layer_color}" serif:id="Layer ${idx}" inkscape:groupmode="layer" inkscape:label="${idx > 0 ? '!' : ''}${idx} Layer ${idx}">\n`;
         svg += `        <path d="${d}" />\n`;
         svg += '    </g>\n';
     }
@@ -372,7 +375,7 @@ async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date 
      xmlns:tg="https://sketch.process.studio/turtle-graphics"
      xmlns:serif="http://www.serif.com/"
      xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-     tg:count="${stats.count}" tg:travel="${Math.trunc(stats.travel)}" tg:travel_ink="${Math.trunc(stats.travel_ink)}" tg:travel_blank="${Math.trunc(stats.travel)-Math.trunc(stats.travel_ink)}"
+     tg:count="${stats.count}" tg:layer_count="${stats.layer_count}" tg:travel="${Math.trunc(stats.travel)}" tg:travel_ink="${Math.trunc(stats.travel_ink)}" tg:travel_blank="${Math.trunc(stats.travel)-Math.trunc(stats.travel_ink)}"
      width="${target_size[0]}mm"
      height="${target_size[1]}mm"
      viewBox="-${target_size[0]/2} -${target_size[1]/2} ${target_size[0]} ${target_size[1]}"
@@ -499,7 +502,7 @@ function layer_stats(layers, viewbox = undefined, scale = undefined) {
     }
     const res = stats.get();
     res.layer_count = layers.length; // add layer_count property
-    return stats.get();
+    return res;
 }
 
 // Save text data to file
@@ -1004,13 +1007,32 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
             return;
         }
         
+        function make_color_key(num_colors) {
+            let out = '<div><style>table {font-size:10px; border:1px solid dimgray; } td {text-align:center} th {text-align:right} .swatch {-webkit-text-stroke-width:0.5px; -webkit-text-stroke-color:dimgray;}</style>';
+            out += '<table>';
+            out += '<tr><th>Layer</th>';
+            for (let i=0; i<num_colors; i++) {
+                out += `<td>${i}</td>`;
+            }
+            out += '</tr>';
+            out += '<tr><th>Color</th>';
+            for (let i=0; i<num_colors; i++) {
+                let color = LAYER_COLORS[i % LAYER_COLORS.length];
+                out += `<td class="swatch" style="color:${color}">●</td>`;
+            }
+            out += '</tr>';
+            out += '</table></div>';
+            return out;
+        }
+        
         const size = SIZES[format_select.value]; // target size in mm
         to_svg(lines, tg_instance._p5_viewbox, size).then( ({svg, timestamp, stats, hash}) => {
             const svg_url = svg_data_url(svg);
             const filename = `${timestamp}_${hash.slice(0,5)}.svg`;
             const format_name = format_select.querySelector('option:checked').innerText;
+            const color_key = (USE_LAYER_COLORS && stats.layer_count > 1) ? make_color_key(stats.layer_count) : '';
             
-            const html = `<html><head><meta charset="utf-8"><title>${filename}</title></head><body style="padding:0; margin:0; height:100%; font:10px system-ui; color:dimgray; background:lightgray; display:flex; flex-direction:column; align-items:center; justify-content:center;"><div><img src="${svg_url}" style="background:white; max-width:90vw; max-height:80vh; box-shadow:3px 3px 10px 1px gray;" /><div style="margin-top:2em;">${filename}<br>${format_num(stats.count)} lines<br>${format_num(Math.floor(stats.travel_ink)/1000)} / ${format_num(Math.floor(stats.travel)/1000)} m<br>${format_name} (${size[0]} ✕ ${size[1]} mm)<br><a href="${svg_url}" download="${filename}" target="_blank" style="color:dimgray;">Download</a></div></div></body></html>`;
+            const html = `<html><head><meta charset="utf-8"><title>${filename}</title></head><body style="padding:0; margin:0; height:100%; font:10px system-ui; color:dimgray; background:lightgray; display:flex; flex-direction:column; align-items:center; justify-content:center;"><div><img src="${svg_url}" style="background:white; max-width:90vw; max-height:80vh; box-shadow:3px 3px 10px 1px gray;" /><div class="side-by-side" style="margin-top:2em; display:flex; justify-content:space-between;"><div>${filename}<br>${format_num(stats.count)} line${stats.count != 1 ? 's' : ''}, ${format_num(stats.layer_count)} layer${stats.layer_count != 1 ? 's' : ''}<br>${format_num(Math.floor(stats.travel_ink)/1000)} / ${format_num(Math.floor(stats.travel)/1000)} m<br>${format_name} (${size[0]} ✕ ${size[1]} mm)<br><a href="${svg_url}" download="${filename}" target="_blank" style="color:dimgray;">Download</a></div>${color_key}</div></div></body></html>`;
 
             // Create Object URL, so we have a reloadable window
             const blob = new Blob([html], { type: 'text/html'});
