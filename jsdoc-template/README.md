@@ -9,7 +9,7 @@
   
 ## Getting started
 
-You can use this <a href="https://p5js.org">p5.js</a> starter sketch to get up and running quickly: <a href="https://bit.ly/turtle-sketch-v3">bit.ly/turtle-sketch-v3</a>
+You can use this <a href="https://p5js.org">p5.js</a> starter sketch to get up and running quickly: <a href="https://bit.ly/turtle-sketch-v4">bit.ly/turtle-sketch-v4</a>
 
 <span id="how-to-set-up" />
 
