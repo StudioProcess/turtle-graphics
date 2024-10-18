@@ -335,8 +335,6 @@ function to_svg_layers(layers, num_decimals = -1) {
 
 // TODO: stroke width
 async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date = undefined) {
-    const layers_indices = lines._layers;
-    
     if (lines_viewbox === 'bbox') { // calculate bounding box
         lines_viewbox = geb_bbox(lines);
         lines = scale_lines_viewbox(lines, lines_viewbox, target_size, MARGIN);
@@ -347,7 +345,7 @@ async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date 
     lines = lines.map(line => line.map(limit_precision));
     
     // separate lines into layers
-    const layers = to_layers(lines, layers_indices);
+    const layers = to_layers(lines, lines._layers);
     
     if (SVG_CLIPPING) {
         const scaled_vb = scale_viewbox(lines_viewbox, target_size, MARGIN); // original viewbox scaled up to target size
@@ -1126,6 +1124,7 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
       *
       * @typedef {Object} Plotter
       * @property {function} plot - Stop recording lines and show to plotter UI.
+      * @property {function} newlayer - Start a new layer. The plotter pauses between layers so the pen can be changed.
       * @property {function} stop - Stop recording lines. Can be used to exclude a part of your drawing from being plotted.
       * @property {function} record - Start recording lines. Recording is enabled from the start, so this function is only useful if <code>stop</code> was used before.
       * @property {function} clear - Clear all recorded lines. Doesn't change if recording is enabled or not.
@@ -1134,6 +1133,7 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
       * @property {function} hide - Hide the plotter UI.
       * @property {function} isshown - Returns <code>true</code> if the plotter UI is visible, <code>false</code> otherwise.
       * @property {function} lines - (Advanced) Returns an array of all recorded lines so far.
+      * @property {function} layers - (Advanced) Returns an array of layers recorded so far. Each layer is an array of lines.
       * @property {function} stats - (Advanced) Returns an object containing statistics for the recorded lines so far.
       */
     const public_fns = {
@@ -1175,8 +1175,12 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
             return div.style.display !== 'none';
         },
         
-        lines()  {
+        lines() {
             return structuredClone(lines);
+        },
+        
+        layers() {
+            return to_layers(lines, lines._layers);
         },
         
         stats() {
