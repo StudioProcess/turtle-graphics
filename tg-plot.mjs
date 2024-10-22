@@ -381,7 +381,7 @@ async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], meta 
      xmlns:tg="https://sketch.process.studio/turtle-graphics"
      xmlns:serif="http://www.serif.com/"
      xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-     tg:count="${stats.count}" tg:layer_count="${stats.layer_count}" tg:oob_count="${stats.oob_count}" tg:short_count="${stats.short_count}" tg:travel="${Math.trunc(stats.travel)}" tg:travel_ink="${Math.trunc(stats.travel_ink)}" tg:travel_blank="${Math.trunc(stats.travel_blank)}" tg:format="${coalesce(meta.format)}" tg:width_mm="${target_size[0]}" tg:height_mm="${target_size[1]}" tg:speed="${coalesce(meta.speed)}" tg:author="${coalesce(meta.author)}" tg:timestamp="${_timestamp}"
+     tg:version="${VERSION}" tg:count="${stats.count}" tg:layer_count="${stats.layer_count}" tg:oob_count="${stats.oob_count}" tg:short_count="${stats.short_count}" tg:travel="${Math.trunc(stats.travel)}" tg:travel_ink="${Math.trunc(stats.travel_ink)}" tg:travel_blank="${Math.trunc(stats.travel_blank)}" tg:format="${coalesce(meta.format)}" tg:width_mm="${target_size[0]}" tg:height_mm="${target_size[1]}" tg:speed="${coalesce(meta.speed)}" tg:author="${coalesce(meta.author)}" tg:timestamp="${_timestamp}"
      width="${target_size[0]}mm"
      height="${target_size[1]}mm"
      viewBox="-${target_size[0]/2} -${target_size[1]/2} ${target_size[0]} ${target_size[1]}"
