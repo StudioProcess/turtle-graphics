@@ -334,7 +334,8 @@ function to_svg_layers(layers, num_decimals = -1) {
 }
 
 // TODO: stroke width
-async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date = undefined) {
+// meta { date, format, speed, author } // all optional
+async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], meta = {}) {
     // save _layers propery (gets removed by scale_lines_viewbox, map)
     const layer_indices = lines._layers;
     
@@ -369,24 +370,26 @@ async function to_svg(lines, lines_viewbox = null, target_size=[420, 297], date 
     }
     
     const stats = layer_stats(layers); // No need to provide viewbox (out of bounds were clipped already) or scale (lines are already scaled, short lines removed)
-    const _timestamp = timestamp(date);
+    const _timestamp = timestamp(meta.date);
     const data = to_svg_layers(layers);
+    
+    function coalesce(val, replacement="") {
+        return val !== undefined ? val : replacement;
+    }
     
     let svg =`<svg xmlns="http://www.w3.org/2000/svg"
      xmlns:tg="https://sketch.process.studio/turtle-graphics"
      xmlns:serif="http://www.serif.com/"
      xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-     tg:count="${stats.count}" tg:layer_count="${stats.layer_count}" tg:travel="${Math.trunc(stats.travel)}" tg:travel_ink="${Math.trunc(stats.travel_ink)}" tg:travel_blank="${Math.trunc(stats.travel)-Math.trunc(stats.travel_ink)}"
+     tg:count="${stats.count}" tg:layer_count="${stats.layer_count}" tg:oob_count="${stats.oob_count}" tg:short_count="${stats.short_count}" tg:travel="${Math.trunc(stats.travel)}" tg:travel_ink="${Math.trunc(stats.travel_ink)}" tg:travel_blank="${Math.trunc(stats.travel_blank)}" tg:format="${coalesce(meta.format)}" tg:width_mm="${target_size[0]}" tg:height_mm="${target_size[1]}" tg:speed="${coalesce(meta.speed)}" tg:author="${coalesce(meta.author)}" tg:timestamp="${_timestamp}"
      width="${target_size[0]}mm"
      height="${target_size[1]}mm"
      viewBox="-${target_size[0]/2} -${target_size[1]/2} ${target_size[0]} ${target_size[1]}"
      stroke="black" fill="none" stroke-linecap="round">
 ${data}</svg>`;
     
-    const _hash = await hash(svg); // hash without comment (contains timestamp)
-    svg = `<!-- Created with tg-plot (v${VERSION}) at ${_timestamp} -->\n`
-        + `<!-- SHA-1 (after this line): ${_hash} -->\n`
-        + svg;
+    svg = `<!-- Created with tg-plot (v${VERSION}) at ${_timestamp} -->\n` + svg;
+    const _hash = await hash(svg);
     return { svg, stats, timestamp: _timestamp, hash: _hash };
 }
 
@@ -970,9 +973,9 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
             if (lines.length == 0) { return; }
             const format = format_select.value;
             const size = SIZES[format]; // target size in mm
-            const { svg, timestamp, stats, hash } = await to_svg(lines, tg_instance._p5_viewbox, size);
             let speed = parseInt(speed_input.value);
             if (isNaN(speed)) { speed = 100; }
+            const { svg, timestamp, stats, hash } = await to_svg(lines, tg_instance._p5_viewbox, size, {format, speed, author: client_id_input.value});
             const msg = JSON.stringify({
                 type: 'plot',
                 client: client_id_input.value,
