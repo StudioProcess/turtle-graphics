@@ -685,7 +685,7 @@ function checkHotkey(hotkey, e) {
     hotkey = hotkey.at(-1); // last element is the actual key
     if (e.code !== hotkey) { return false; } // comparing to event.code i.e. "KeyP"
     
-    let modifiers = { altGraphKey:false, altKey:false, ctrlKey:false, metaKey:false, shiftKey:false };
+    let modifiers = { altKey:false, ctrlKey:false, metaKey:false, shiftKey:false };
     for (let m of hotkey_mods) { modifiers[m] = true; }
     for (let [m, val] of Object.entries(modifiers)) {
         if (e[m] !== val) { return false; }
