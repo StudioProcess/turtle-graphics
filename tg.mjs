@@ -653,7 +653,7 @@ export function make_turtle_graphics(...line_fns_) {
      * Get the distance from the turtle to a given point.
      *
      * @function distance
-     * @param {number|Position} - The x-coordinate of the point to get the distance to or a {@link Position} object. The other parameter (<code>y</code>) is ignored, if a {@link Position} object is given.
+     * @param {number|Position} x - The x-coordinate of the point to get the distance to or a {@link Position} object. The other parameter (<code>y</code>) is ignored, if a {@link Position} object is given.
      * @param {number} [y] - The y-coordinate of the point to get the distance to.
      * @returns {number} The distance to the given point in pixels.
      */
@@ -746,7 +746,7 @@ export function make_turtle_graphics(...line_fns_) {
      * Turn the turtle to face a given point.
      *
      * @function face
-     * @param {number|Position} - The x-coordinate of the point to face or a {@link Position} object. The other parameter (<code>y</code>) is ignored, if a {@link Position} object is given.
+     * @param {number|Position} x - The x-coordinate of the point to face or a {@link Position} object. The other parameter (<code>y</code>) is ignored, if a {@link Position} object is given.
      * @param {number} [y] - The y-coordinate of the point to face.
      */
     function face(x, y) {
