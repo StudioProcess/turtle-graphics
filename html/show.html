@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transform Bug with p5 functions</title>
+    <script src="../node_modules/p5/lib/p5.min.js"></script>
+    <script src="../dist/latest/tg.mjs" type="module"></script>
+    <script>
+        
+        function setup() {
+            createCanvas(500, 500);
+            noLoop();
+            background(220);
+        }
+        
+        function draw() {
+            jumpxy(-50, 0);
+            show();
+            
+            jumpxy(50, 0);
+            penup();
+            show();
+            
+            jumpxy(-50, 50);
+            pendown();
+            show(30);
+            
+            jumpxy(50, 50);
+            penup();
+            show(30);
+            
+            
+            jumpxy(-50, 150);
+            pendown();
+            show(100);
+            
+            jumpxy(50, 150);
+            penup();
+            show(100);
+        }
+        
+    </script>
+</head>
+<body>
+
+</body>
+</html>

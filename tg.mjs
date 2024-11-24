@@ -863,16 +863,24 @@ export function make_turtle_graphics(...line_fns_) {
      * @param {number} [size=15] Size of the drawn turtle in pixels (height from tip to base).
      * @see {@link setturtlefunction} to customize drawing of the turtle.
      */
+    function _map(x, a1, b1, a2, b2) {
+        const f = (x - a1) / (b1 - a1);
+        return a2 + (b2 - a2) * f;
+    }
+    
     function show(size = 15) {
         const top_angle = 36;
         const height = size;
-        const diamond_size = size / 15;
-        const center = 2/3; // 0 (top) .. 1 (bottom) (2/3 = center of gravity)
+        const diamond_size = size / _map(size, 15, 100, 4, 15); // map size divisor so small turtles have larger diamond
+        // 0 (top) .. 1 (bottom) (2/3 = center of gravity)
+        // map center position; move up a little for smaller turtles
+        const center = _map(size, 15, 100, 0.6, 2/3);
         
         const base_angle = (180 - top_angle) / 2;
         const side = height / Math.cos(top_angle/2 / 360 * Math.PI * 2);
         const base = 2 * height * Math.tan(top_angle/2 / 360 * Math.PI * 2);
         const diamond_side = Math.sqrt(2) * diamond_size / 2;
+        const down = isdown();
         
         pushstate();
         pendown();
@@ -880,7 +888,7 @@ export function make_turtle_graphics(...line_fns_) {
         if (typeof _state.turtle_fn === 'function') {
             _state.turtle_fn.call(undefined, size);
         } else {
-            // center diamond
+            // center diamond (position indicator)
             penup();
             forward(diamond_size/2);
             pendown();
@@ -893,6 +901,20 @@ export function make_turtle_graphics(...line_fns_) {
             right(90);
             forward(diamond_side);
             left(45);
+            
+            // pendown indicator
+            if (down) {
+                pushstate();
+                back(diamond_size);
+                left(45);
+                penup();
+                forward(diamond_side);
+                right(135);
+                pendown();
+                forward(diamond_size);
+                popstate();
+            }
+
             
             // turtle
             penup();

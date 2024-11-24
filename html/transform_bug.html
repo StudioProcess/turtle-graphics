@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transform Bug with p5 functions</title>
+    <script src="../node_modules/p5/lib/p5.min.js"></script>
+    <script src="../dist/latest/tg.mjs" type="module"></script>
+    <script>
+        
+        function setup() {
+            createCanvas(500, 500);
+            noLoop();
+            background(220);
+        }
+        
+        function draw() {
+            
+            translate(100, 0);
+            rotate(90);
+            scale(2);
+            show();
+
+            // Bug: translate doesn't affect p5 functions
+            // p5 transformations affect everything
+            // p5.translate(100, 0);
+            square(0, 0, 100);
+        }
+        
+    </script>
+</head>
+<body>
+
+</body>
+</html>
