@@ -16,26 +16,31 @@
         
         function draw() {
             jumpxy(-50, 0);
+            forward(10);
             show();
             
             jumpxy(50, 0);
+            forward(10);
             penup();
             show();
             
-            jumpxy(-50, 50);
+            jumpxy(-50, 70);
             pendown();
+            forward(20);
             show(30);
             
-            jumpxy(50, 50);
+            jumpxy(50, 70);
+            forward(20);
             penup();
             show(30);
             
-            
-            jumpxy(-50, 150);
+            jumpxy(-50, 220);
             pendown();
+            forward(50);
             show(100);
             
-            jumpxy(50, 150);
+            jumpxy(50, 220);
+            forward(50);
             penup();
             show(100);
         }

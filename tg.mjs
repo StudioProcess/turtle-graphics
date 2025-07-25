@@ -874,7 +874,7 @@ export function make_turtle_graphics(...line_fns_) {
         const diamond_size = size / _map(size, 15, 100, 4, 15); // map size divisor so small turtles have larger diamond
         // 0 (top) .. 1 (bottom) (2/3 = center of gravity)
         // map center position; move up a little for smaller turtles
-        const center = _map(size, 15, 100, 0.6, 2/3);
+        const center = _map(size, 15, 100, 2/3, 0.725);
         
         const base_angle = (180 - top_angle) / 2;
         const side = height / Math.cos(top_angle/2 / 360 * Math.PI * 2);
@@ -888,33 +888,37 @@ export function make_turtle_graphics(...line_fns_) {
         if (typeof _state.turtle_fn === 'function') {
             _state.turtle_fn.call(undefined, size);
         } else {
-            // center diamond (position indicator)
+            // center cross/plus (position indicator)
+            pushstate();
             penup();
             forward(diamond_size/2);
             pendown();
-            right(135); // 180 - 45
-            forward(diamond_side);
-            right(90);
-            forward(diamond_side);
-            right(90);
-            forward(diamond_side);
-            right(90);
-            forward(diamond_side);
+            back(diamond_size);
             left(45);
+            penup();
+            forward(diamond_side);
+            right(135);
+            pendown();
+            forward(diamond_size);
+            popstate();
             
-            // pendown indicator
+            // center diamond (pendown indicator)
             if (down) {
                 pushstate();
-                back(diamond_size);
-                left(45);
                 penup();
-                forward(diamond_side);
-                right(135);
+                forward(diamond_size/2);
                 pendown();
-                forward(diamond_size);
+                right(135); // 180 - 45
+                forward(diamond_side);
+                right(90);
+                forward(diamond_side);
+                right(90);
+                forward(diamond_side);
+                right(90);
+                forward(diamond_side);
+                left(45);
                 popstate();
             }
-
             
             // turtle
             penup();
