@@ -1193,6 +1193,8 @@ export function make_plotter_client(tg_instance, do_capture_p5 = true) {
         },
         
         newlayer() {
+            if (!recording) return;
+            
             // remember index where a new layer starts
             lines._layers.push(lines.length);
             line_stats.add_layer();
