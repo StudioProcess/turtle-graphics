@@ -17,6 +17,8 @@
         function draw() {
             background(220);
             plotter().plot();
+            plotter().newlayer(); // layer won't be recorded
+            forward(100); // line won't be recorded
         }
         
     </script>
