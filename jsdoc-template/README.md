@@ -95,8 +95,9 @@ Here is an index to all functions, grouped by type:
 
 ### Set state
 
-* `{@link setxy}` — Set the turtle's position
-* `{@link jumpxy}` — Set the turtle's position, without drawing to the new position
+* `{@link moveto}` — Set the turtle's position, drawing a line <i>if pen is down</i>
+* `{@link lineto}` — Set the turtle's position, <i>always</i> drawing a line to the new position
+* `{@link jumpto}` — Set the turtle's position, <i>without</i> drawing to the new position
 * `{@link setheading}` — Set the turtle's heading
 * `{@link face}` — Turn the turtle to face a given point
 * `{@link setstate}` — Set the turtle's position, heading angle and/or pen state

@@ -674,13 +674,10 @@ export function make_turtle_graphics(...line_fns_) {
      *********************************************************/
     
     /**
-     * Set the turtle's position.
-     * <br>
-     * Draws a line to the new position, if the pen is down (see <code>{@link pendown}</code> and <code>{@link penup}</code>).
+     * Alias for {@link moveto}.
      *
      * @function setxy
-     * @param {(number|Position)} x - The x-coordinate or a {@link Position} object. The other parameter (<code>y</code>) is ignored if a {@link Position} object is given.
-     * @param {number} [y] - The y-coordinate. Ignored if <code>x</code> is given a {@link Position} object.
+     * @see <code>{@link moveto}</code>
      */
     // TODO: think about naming (e.g. moveto, lineto)
     function setxy(x, y) {
@@ -711,11 +708,23 @@ export function make_turtle_graphics(...line_fns_) {
     // TODO: function setxyabs(x,y) {}
     
     /**
-     * Set the turtle's position, without drawing to the new position.
+     * Set the turtle's position.
+     * <br>
+     * Draws a line to the new position if the pen is down (see <code>{@link pendown}</code> and <code>{@link penup}</code>).
+     *
+     * @function moveto
+     * @param {(number|Position)} x - The x-coordinate or a {@link Position} object. The other parameter (<code>y</code>) is ignored if a {@link Position} object is given.
+     * @param {number} [y] - The y-coordinate. Ignored if <code>x</code> is given a {@link Position} object.
+     */
+    function moveto(x, y) {
+        return setxy(x, y);
+    }
+    
+    /**
+     * Alias for {@link jumpto}.
      *
      * @function jumpxy
-     * @param {number|Position} x - The x-coordinate or a {@link Position} object. The other parameter (<code>y</code>) is ignored if a {@link Position} object is given.
-     * @param {number} [y] - The y-coordinate.
+     * @see <code>{@link jumpto}</code>
      */
     function jumpxy(x, y) {
         const down = isdown(); // save pen down state
@@ -723,6 +732,36 @@ export function make_turtle_graphics(...line_fns_) {
         setxy(x, y);
         pendown(down); // restore pen down state
     }
+    
+    /**
+     * Set the turtle's position, without drawing to the new position.
+     * <br>
+     * The state of the pen (up or down) doesn't change.
+     *
+     * @function jumpto
+     * @param {number|Position} x - The x-coordinate or a {@link Position} object. The other parameter (<code>y</code>) is ignored if a {@link Position} object is given.
+     * @param {number} [y] - The y-coordinate.
+     */
+    function jumpto(x, y) {
+        return jumpxy(x, y);
+    }
+    
+    /**
+     * Set the turtle's position, drawing a line to the new position.
+     * <br>
+     * The state of the pen (up or down) doesn't change.
+     *
+     * @function lineto
+     * @param {number|Position} x - The x-coordinate or a {@link Position} object. The other parameter (<code>y</code>) is ignored if a {@link Position} object is given.
+     * @param {number} [y] - The y-coordinate.
+     */
+    function lineto(x, y) {
+        const down = isdown(); // save pen down state
+        pendown();
+        moveto(x, y);
+        pendown(down); // restore pen down state
+    }
+    
     
     /**
      * Set the turtle's heading.
@@ -1283,7 +1322,10 @@ export function make_turtle_graphics(...line_fns_) {
         bearing,
         distance,
         // Set state
+        moveto,
         setxy,
+        lineto,
+        jumpto,
         jumpxy,
         setheading,
         face,
